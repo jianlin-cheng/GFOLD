@@ -38,17 +38,32 @@ Install cmake
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c.4.	Execute the following commands in the order given:
 
 ```
-cd  /data/commons/tools
-wget https://cmake.org/files/v2.8/cmake-2.8.12.2.tar.gz
-Download and uncompress tar –zxvf cmake-2.8.12.2.tar.gz
-cd cmake-2.8.12.2
-./bootstrap --prefix=/data/commons/tools/cmake-2.8.12.2
-gmake
-make install (require administrative) or try 
-make DESTDIR=/data/commons/tools/cmake-2.8.12.2/ install
-alias cmake=/data/commons/tools/cmake-2.8.12.2/bin/cmake
-cmake
-cmake --version
+	cd  /data/commons/tools
+	wget https://cmake.org/files/v2.8/cmake-2.8.12.2.tar.gz
+	Download and uncompress tar –zxvf cmake-2.8.12.2.tar.gz
+	cd cmake-2.8.12.2
+	./bootstrap --prefix=/data/commons/tools/cmake-2.8.12.2
+	gmake
+	make install (require administrative) or try 
+	make DESTDIR=/data/commons/tools/cmake-2.8.12.2/ install
+	alias cmake=/data/commons/tools/cmake-2.8.12.2/bin/cmake
+	cmake
+	cmake --version
+```
+and cmake3.5.2
+
+```
+	cd  /data/commons/tools
+	wget https://cmake.org/files/v3.5/cmake-3.5.2.tar.gz
+	Download and uncompress tar –zxvf cmake-3.5.2.tar.gz
+	cd cmake-3.5.2
+	./bootstrap --prefix=/data/commons/tools/cmake-3.5.2
+	gmake
+	make install (require administrative) or try 
+	make DESTDIR=/data/commons/tools/cmake-3.5.2/ install
+	alias cmake=/data/commons/tools/cmake-3.5.2/bin/cmake
+	cmake
+	cmake --version
 ```
 
 
@@ -62,13 +77,13 @@ cmake --version
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d.4.	Execute the following commands in the order given:
 ```
-cd  /data/commons/tools/IMP_tools/
-wget http://www.netlib.org/blas/blas-3.6.0.tgz(If failed to wget, please download it manually from website)
-tar -zxvf blas-3.6.0.tgz 
-cd BLAS-3.6.0/
-make
-mv blas_LINUX.a libblas.a
-sudo cp libblas.a /usr/local/lib/(if don’t have permission, can use lib directory when compile mocapy)
+	cd  /data/commons/tools/IMP_tools/
+	wget http://www.netlib.org/blas/blas-3.6.0.tgz(If failed to wget, please download it manually from website)
+	tar -zxvf blas-3.6.0.tgz 
+	cd BLAS-3.6.0/
+	make
+	mv blas_LINUX.a libblas.a
+	sudo cp libblas.a /usr/local/lib/(if don’t have permission, can use lib directory when compile mocapy)
 ```
 
 ***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(e) Check the LAPACK version. If exists, ignore installation, otherwise try install it and set the environment path***
@@ -80,14 +95,14 @@ sudo cp libblas.a /usr/local/lib/(if don’t have permission, can use lib direct
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.3.	Execute the following commands in the order given:
 
 ```
-cd  /data/commons/tools/IMP_tools/
-wget http://www.netlib.org/lapack/lapack-3.4.1.tgz(If failed to wget, please download it manually from website)
-tar -zxvf lapack-3.4.1.tgz
-cd lapack-3.4.1
-cp make.inc.example make.inc
-make blaslib  # To generate the Reference BLAS Library
-make
-sudo cp liblapack.a /usr/local/lib/(if don’t have permission, can use lib directory when compile mocapy)
+	cd  /data/commons/tools/IMP_tools/
+	wget http://www.netlib.org/lapack/lapack-3.4.1.tgz(If failed to wget, please download it manually from website)
+	tar -zxvf lapack-3.4.1.tgz
+	cd lapack-3.4.1
+	cp make.inc.example make.inc
+	make blaslib  # To generate the Reference BLAS Library
+	make
+	sudo cp liblapack.a /usr/local/lib/(if don’t have permission, can use lib directory when compile mocapy)
 ```
 
 ***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(f) Check the BOOST version. If exists, ignore installation, otherwise try install it and set the environment path***
@@ -101,23 +116,23 @@ sudo cp liblapack.a /usr/local/lib/(if don’t have permission, can use lib dire
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f.4.	Execute the following commands in the order given:
 
 ```
-cd  /data/commons/tools/
- wget http://sourceforge.net/projects/boost/files/boost/1.38.0/boost_1_38_0.tar.gz
- (If failed to wget, please download it manually from website)
-./configure --prefix=/data/commons/tools/boost_1_38_0/
-make install
-(Check if boost_1_38_0/lib and boost_1_38_0/include is generated, if not, boost didn’t install correctly)
+	cd  /data/commons/tools/
+	 wget http://sourceforge.net/projects/boost/files/boost/1.38.0/boost_1_38_0.tar.gz
+	 (If failed to wget, please download it manually from website)
+	./configure --prefix=/data/commons/tools/boost_1_38_0/
+	make install
+	(Check if boost_1_38_0/lib and boost_1_38_0/include is generated, if not, boost didn’t install correctly)
 ```
 or better install Boost_1_55_0
 ```
-cd  /data/commons/tools/
- tar -zxvf boost_1_55_0.tar.gz
- (If failed to wget, please download it manually from website)
- cd boost_1_55_0
-./bootstrap.sh --prefix=/data/commons/tools/boost_1_55_0
-./b2
-./b2 install
-(Check if boost_1_55_0/lib and boost_1_55_0/include is generated, if not, boost didn’t install correctly)
+	cd  /data/commons/tools/
+	 tar -zxvf boost_1_55_0.tar.gz
+	 (If failed to wget, please download it manually from website)
+	 cd boost_1_55_0
+	./bootstrap.sh --prefix=/data/commons/tools/boost_1_55_0
+	./b2
+	./b2 install
+	(Check if boost_1_55_0/lib and boost_1_55_0/include is generated, if not, boost didn’t install correctly)
 ```
 ***Important: I found in different linux system Mocapy need different version of boost, maybe some gfortran/gcc version required when cmake in Mocapy.***
 
@@ -130,20 +145,20 @@ cd  /data/commons/tools/
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g.1.	install hdf5 with zlib
 
 ```
-cd /data/commons/tools/IMP_tools
+	cd /data/commons/tools/IMP_tools
 
-tar -zxvf zlib-1.2.8.tar.gz
-cd zlib-1.2.8
-./configure  --prefix=/data/commons/tools/IMP_tools/zlib-1.2.8
-make
-make install
+	tar -zxvf zlib-1.2.8.tar.gz
+	cd zlib-1.2.8
+	./configure  --prefix=/data/commons/tools/IMP_tools/zlib-1.2.8
+	make
+	make install
 
 
-tar -zxvf hdf5-1.8.16.tar.gz
-cd hdf5-1.8.16
-./configure --with-zlib=/data/commons/tools/IMP_tools/zlib-1.2.8/
-make 
-make install
+	tar -zxvf hdf5-1.8.16.tar.gz
+	cd hdf5-1.8.16
+	./configure --with-zlib=/data/commons/tools/IMP_tools/zlib-1.2.8/
+	make 
+	make install
 ```
 
 
@@ -159,6 +174,40 @@ make install
 	make install
 ```
 
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(i) install gmp ***
+```
+	 cd /data/commons/tools/IMP_tools/gmp-4.3.2
+	 ./configure --prefix=/data/commons/tools/IMP_tools/gmp-4.3.2
+	 make 
+	 make install
+```
+or install gmp as static library in future when building static tool
+
+```
+	 cd /data/commons/tools/IMP_tools/gmp-4.3.2
+	 ./configure --prefix=/data/commons/tools/IMP_tools/gmp-4.3.2  --enable-static --disable-shared
+	 make 
+	 make install
+```
+
+
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(j) build mpft***
+```
+	cd /data/commons/tools/IMP_tools/mpfr-2.4.2/
+	./configure --prefix=/data/commons/tools/IMP_tools/mpfr-2.4.2/ --with-gmp-build=/data/commons/tools/IMP_tools/gmp-4.3.2
+	make
+	make install
+```
+
+or install mpft as static library in future when building static tool
+
+```
+	cd /data/commons/tools/IMP_tools/mpfr-2.4.2/
+	./configure --prefix=/data/commons/tools/IMP_tools/mpfr-2.4.2/ --enable-static --disable-shared  --with-gmp-build=/data/commons/tools/IMP_tools/gmp-4.3.2
+	make
+	make install
+```
+
 ***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(i) Install install CGAL from https://github.com/CGAL/cgal/releases, http://doc.cgal.org/latest/Manual/installation.html***
 
 ```
@@ -166,67 +215,84 @@ make install
 	wget https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.8.1/CGAL-4.8.1.tar.xz 
 	tar -xvf CGAL-4.8.1.tar.xz
 	cd CGAL-4.8.1
+	export PATH=/data/commons/tools/IMP_tools/gmp-4.3.2/:$PATH
+	export PATH=/data/commons/tools/IMP_tools/mpfr-2.4.2/:$PATH
+	export BOOST_ROOT="/data/commons/tools/boost_1_55_0"
+	export BOOST_INCLUDE="/data/commons/tools/boost_1_55_0/include"
+	export BOOST_LIBDIR="/data/commons/tools/boost_1_55_0/lib"
+	export BOOST_OPTS="-DBOOST_ROOT=${BOOST_ROOT} -DBOOST_INCLUDEDIR=${BOOST_INCLUDE} -DBOOST_LIBRARYDIR=${BOOST_LIBDIR}"
 	cmake .   (cmake require >2.8.10)
-make
-	
-export PATH=/storage/htc/bdm/tools/Mocapy_tools/CGAL-4.8.1:$PATH
+	make
+
+	export PATH=/data/commons/tools/IMP_tools/CGAL-4.8.1:$PATH
+
+```
+
+or install cgal as static library in future when building static tool
+
+```
+	add to cgal-releases-CGAL-4.8.1/CMakeLists.txt 
+			set(BUILD_SHARED_LIBS false)
+			export PATH=/data/commons/tools/IMP_tools/gmp-4.3.2/:$PATH
+			export PATH=/data/commons/tools/IMP_tools/mpfr-2.4.2/:$PATH
+			/data/commons/tools/cmake-2.8.12.2/bin/cmake -DCMAKE_BUILD_TYPE=Debug  ./ -DBUILD_SHARED_LIBS=false
+			make
+```
 
 
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(j) Install FFTW http://www.fftw.org/download.html***
 
-# install FFTW http://www.fftw.org/download.html
+```
+	cd /data/commons/tools/IMP_tools
 	wget ftp://ftp.fftw.org/pub/fftw/fftw-3.3.4.tar.gz
 	tar -zxvf fftw-3.3.4.tar.gz
- ./configure --prefix=/storage/htc/bdm/tools/Mocapy_tools/fftw-3.3.4 --enable-shared  --with-pic
- make 
- make install
+	 ./configure --prefix=/data/commons/tools/IMP_tools/fftw-3.3.4 --enable-shared  --with-pic
+	 make 
+	 make install
+```
 
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(j) Install libTau***
 
-
-
-
-
-# install libTau 
+```
+	cd /data/commons/tools/IMP_tools
 	wget https://integrativemodeling.org/libTAU/libTAU-1.0.1.zip
-unzip libTAU-1.0.1.zip
+	unzip libTAU-1.0.1.zip
+	export CFLAGS="$CFLAGS -I/data/commons/tools/IMP_tools/libTAU-1.0.1/include"
+	export LDFLAGS="$LDFLAGS -L/data/commons/tools/IMP_tools/libTAU-1.0.1//lib" 
+```
 
-
-export CFLAGS="$CFLAGS -I/storage/htc/bdm/tools/Mocapy_tools/libTAU-1.0.1/include"
-export LDFLAGS="$LDFLAGS -L/storage/htc/bdm/tools/Mocapy_tools/libTAU-1.0.1//lib" 
-
-#install openCV  http://docs.opencv.org/3.0-beta/doc/tutorials/introduction/linux_install/linux_install.html
-
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(k) Install openCV  http://docs.opencv.org/3.0-beta/doc/tutorials/introduction/linux_install/linux_install.html***
+```
+	cd /data/commons/tools/IMP_tools
 	git clone https://github.com/Itseez/opencv.git
 	cd opencv
 	mkdir release
-	cmake -D CMAKE_BUILD_TYPE=RELEASE -D  CMAKE_INSTALL_PREFIX=/storage/htc/bdm/tools/Mocapy_tools/opencv/release ..
+	/data/commons/tools/cmake-3.5.2/bin/cmake -D CMAKE_BUILD_TYPE=RELEASE -D  CMAKE_INSTALL_PREFIX=/data/commons/tools/IMP_tools/opencv/release ..
 	make -j 8
 	make install
-	
-	
-
+```
 	
 
-
-
-#install doxygen  http://www.stack.nl/~dimitri/doxygen/download.html
-	https://geeksww.com/tutorials/miscellaneous/bison_gnu_parser_generator/installation/installing_bison_gnu_parser_generator_ubuntu_linux.php
-            wget http://ftp.gnu.org/gnu/bison/bison-2.3.tar.gz
-	cd bison-2.3/
 	
-	
-git clone https://github.com/doxygen/doxygen.git
-cd doxygen
-
-mkdir build
-cd build
-cmake -G "Unix Makefiles" ..
-make
 
 
 
-tar -zxvf doxygen-1.8.6.linux.bin.tar.gz
-cd doxygen-1.8.6
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(l) Install doxygen  http://www.stack.nl/~dimitri/doxygen/download.html, https://geeksww.com/tutorials/miscellaneous/bison_gnu_parser_generator/installation/installing_bison_gnu_parser_generator_ubuntu_linux.php ***
+```
+	 wget http://ftp.gnu.org/gnu/bison/bison-2.3.tar.gz
+	 cd bison-2.3/
 
+	git clone https://github.com/doxygen/doxygen.git
+	cd doxygen
+
+	mkdir build
+	cd build
+	cmake -G "Unix Makefiles" ..
+	make
+
+	tar -zxvf doxygen-1.8.6.linux.bin.tar.gz
+	cd doxygen-1.8.6
+```
 	
 
 
