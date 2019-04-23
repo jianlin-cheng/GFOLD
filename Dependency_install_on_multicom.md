@@ -321,7 +321,9 @@ export PATH=/data/commons/tools/IMP_tools/fftw-3.3.4/:$PATH
 ## sometimes the multifit.so will failed, but it is okay to include fftw-3.3.4, won't influence other lib
 export PATH=/data/commons/tools/IMP_tools/doxygen-1.8.6/bin/:$PATH
 export PATH=/data/commons/tools/IMP_tools/gsl-2.1/:$PATH
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/commons/tools/IMP_tools/opencv_install/
+export PATH=$PATH:/data/commons/tools/IMP_tools/PATH/
+export LD_LIBRARY_PATH=/data/commons/tools/IMP_tools/opencv_install/lib:$LD_LIBRARY_PATH
+
 
 cd /data/commons/tools/IMP_tools/IMP2.6/
 
