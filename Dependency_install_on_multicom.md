@@ -365,7 +365,8 @@ cd /storage/htc/bdm/tools/Mocapy_tools/Mocapy++-1.07
 edit ./CMakeLists.txt, and comment #add_subdirectory (tests), we don’t need this
 edit ./examples/CMakeLists.txt, and
 1.	add: SET(BLAS_LIBRARY "/storage/htc/bdm/tools/Mocapy_tools/BLAS-3.6.0/libblas.a")
-2.	change part of code by adding ${BLAS_LIBRARY} (Be careful of the space between variables)
+2.	add:  '-w -L/home/jh7x3/Mocapy_tool/boost_1_55_0/lib -I/home/jh7x3/Mocapy_tool/boost_1_55_0/include/  -lboost_program_options -lboost_system  -lboost_thread  -lboost_serialization' in the 'SET(CMAKE_CXX_FLAGS '
+3.	change part of code by adding ${BLAS_LIBRARY} (Be careful of the space between variables)
        FOREACH(p ${PROGS})
         add_executable(${p} ${p}.cpp)
         target_link_libraries (${p} ${MOCAPYLIB} ${Boost_SERIALIZATION_LIBRARY} ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${CMAKE_FLIB})
