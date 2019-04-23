@@ -267,39 +267,62 @@ or install cgal as static library in future when building static tool
 	git clone https://github.com/Itseez/opencv.git
 	cd opencv
 	mkdir release
-	/data/commons/tools/cmake-3.5.2/bin/cmake -D CMAKE_BUILD_TYPE=RELEASE -D  CMAKE_INSTALL_PREFIX=/data/commons/tools/IMP_tools/opencv/release ..
+	mkdir /data/commons/tools/IMP_tools/opencv_install
+	/data/commons/tools/cmake-3.5.2/bin/cmake -D CMAKE_BUILD_TYPE=RELEASE -D  CMAKE_INSTALL_PREFIX=/data/commons/tools/IMP_tools/opencv_install ..
 	make -j 8
 	make install
 ```
-	
-
-	
-
 
 
 ***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(l) Install doxygen  http://www.stack.nl/~dimitri/doxygen/download.html, https://geeksww.com/tutorials/miscellaneous/bison_gnu_parser_generator/installation/installing_bison_gnu_parser_generator_ubuntu_linux.php ***
 ```
-	 wget http://ftp.gnu.org/gnu/bison/bison-2.3.tar.gz
-	 cd bison-2.3/
-
+	cd /data/commons/tools/IMP_tools
+	wget http://ftp.gnu.org/gnu/bison/bison-2.3.tar.gz
+	cd bison-2.3/
+	./configure --prefix=/data/commons/tools/IMP_tools/bison-2.3
+	
+	cd /data/commons/tools/IMP_tools
 	git clone https://github.com/doxygen/doxygen.git
 	cd doxygen
 
 	mkdir build
 	cd build
-	cmake -G "Unix Makefiles" ..
+	/data/commons/tools/cmake-3.5.2/bin/cmake -G "Unix Makefiles" ..
 	make
 
+	cd /data/commons/tools/IMP_tools
 	tar -zxvf doxygen-1.8.6.linux.bin.tar.gz
 	cd doxygen-1.8.6
 ```
 	
 
 
-### download imp-2.6.2.tar.gz from  https://integrativemodeling.org
-cd /storage/htc/bdm/tools/Mocapy_tools/
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(m) Install imp-2.6.2.tar.gz from  https://integrativemodeling.org
+
+```
+cd /data/commons/tools/IMP_tools/
 tar -zxvf imp-2.6.2.tar.gz
 mkdir IMP2.6
+
+
+export PATH=/data/commons/tools/boost_1_55_0/:$PATH 
+export PATH=/data/commons/tools/IMP_tools/hdf5-1.8.16/hdf5/:$PATH
+export PATH=/data/commons/tools/IMP_tools/CGAL-4.8.1:$PATH  
+## CGAL-4.8.1 will increase foxs performance
+export PATH=/data/commons/tools/IMP_tools/fftw-3.3.4/:$PATH 
+## sometimes the multifit.so will failed, but it is okay to include fftw-3.3.4, won't influence other lib
+export PATH=/data/commons/tools/IMP_tools/doxygen-1.8.6/bin/:$PATH
+export PATH=/data/commons/tools/IMP_tools/gsl-2.1/:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/commons/tools/IMP_tools/opencv_install/
+
+cd /data/commons/tools/IMP_tools/IMP2.6/
+
+/data/commons/tools/cmake-3.5.2/bin/cmake ../imp-2.6.2/  -DCMAKE_INSTALL_PREFIX=/home/jh7x3/tools/IMP2.6/  -DIMP_DOXYGEN_FOUND=""
+```
+
+
+
+
 
 
 
