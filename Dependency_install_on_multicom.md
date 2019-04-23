@@ -1,17 +1,15 @@
-# CONFOLD-UNICON3D
-Integration of CONFOLD and UNICON3D for Ab Initio Protein Structure Modeling
 
-### Mocalpy Installation Steps On Lewis server
+### IMP Installation Steps On multicom server
 
 --------------------------------------------------------------------------------------
 
-**(A) (Optional if already installed) Install the Mocapy tool on sunflower**  
+**(A) (Optional if already installed) Install the IMP and dependency tools on multicom**  
 
 ***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(a) Create tool directory to install Mocapy dependency***
 
 ```
-> mkdir /storage/htc/bdm/tools/Mocapy_tools/
-> cd /storage/htc/bdm/tools/Mocapy_tools/
+> mkdir /data/commons/tools/IMP_tools/
+> cd /data/commons/tools/IMP_tools/
 ```
 
 ***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(b) Check the same version of gcc and gfortran. If exists, ignore installation, otherwise try install it and set the environment path***
@@ -19,7 +17,7 @@ Integration of CONFOLD and UNICON3D for Ab Initio Protein Structure Modeling
 ```
 >  gcc -v
 >  gfortran -v 
-     Lewis: gcc version 4.8.5 20150623 (Red Hat 4.8.5-16) (GCC)
+     multicom: gcc version 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC)
 ```
 
 ***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(c) Check the cmake version. If exists, ignore installation, otherwise try install it and set the environment path***
@@ -27,7 +25,27 @@ Integration of CONFOLD and UNICON3D for Ab Initio Protein Structure Modeling
 ```
 > cmake -version
 	(cmake version 2.8.12.2)
+	
 ```
+Install cmake
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d.1.	Download the Unix/Linux source file in tar.gz format from http://www.cmake.org/download (e.g., cmake-2.8.3.tar.gz or later)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d.1.	Expand the compressed package: tar xvfz cmake-2.8.3.tar.gz
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d.1.	Go to the package root directory
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d.1.	Execute the following commands in the order given:
+cd  /data/commons/tools
+Download and uncompress tar –zxvf cmake-2.8.3.tar.gz
+cd cmake-2.8.3
+./bootstrap --prefix=/data/commons/tools/cmake-2.8.3
+gmake
+make install (require administrative) or try 
+make DESTDIR=/data/commons/tools/cmake-2.8.3/ install
+alias cmake=/data/commons/tools/cmake-2.8.3/bin/cmake
+cmake
+cmake --version
+
+Done!!
+
 
 ***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(d) Check the BLAS version. If exists, ignore installation, otherwise try install it and set the environment path***
 
@@ -39,7 +57,7 @@ Integration of CONFOLD and UNICON3D for Ab Initio Protein Structure Modeling
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d.4.	Execute the following commands in the order given:
 ```
-cd  /storage/htc/bdm/tools/Mocapy_tools
+cd  /data/commons/tools/IMP_tools/
 wget http://www.netlib.org/blas/blas-3.6.0.tgz(If failed to wget, please download it manually from website)
 tar -zxvf blas-3.6.0.tgz 
 cd BLAS-3.6.0/
@@ -57,7 +75,7 @@ sudo cp libblas.a /usr/local/lib/(if don’t have permission, can use lib direct
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.3.	Execute the following commands in the order given:
 
 ```
-cd  /storage/htc/bdm/tools/Mocapy_tools/
+cd  /data/commons/tools/IMP_tools/
 wget http://www.netlib.org/lapack/lapack-3.4.1.tgz(If failed to wget, please download it manually from website)
 tar -zxvf lapack-3.4.1.tgz
 cd lapack-3.4.1
@@ -78,19 +96,20 @@ sudo cp liblapack.a /usr/local/lib/(if don’t have permission, can use lib dire
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f.4.	Execute the following commands in the order given:
 
 ```
-cd  /storage/htc/bdm/tools/Mocapy_tools/
+cd  /data/commons/tools/
  wget http://sourceforge.net/projects/boost/files/boost/1.38.0/boost_1_38_0.tar.gz
  (If failed to wget, please download it manually from website)
-./configure --prefix=/storage/htc/bdm/tools/Mocapy_tools/boost_1_38_0/
+./configure --prefix=/data/commons/tools/boost_1_38_0/
 make install
 (Check if boost_1_38_0/lib and boost_1_38_0/include is generated, if not, boost didn’t install correctly)
 ```
 or better install Boost_1_55_0
 ```
-cd  /storage/htc/bdm/tools/Mocapy_tools/
+cd  /data/commons/tools/
  tar -zxvf boost_1_55_0.tar.gz
  (If failed to wget, please download it manually from website)
-./bootstrap.sh --prefix=/storage/htc/bdm/tools/Mocapy_tools/boost_1_55_0
+ cd boost_1_55_0
+./bootstrap.sh --prefix=/data/commons/tools/boost_1_55_0
 ./b2
 ./b2 install
 (Check if boost_1_55_0/lib and boost_1_55_0/include is generated, if not, boost didn’t install correctly)
@@ -100,7 +119,136 @@ cd  /storage/htc/bdm/tools/Mocapy_tools/
 ***For now, I found sunflower and sysbio server support Boost_1_38_0/Boost_1_55_0, but failed with Boost_1_59_0**
 
 
-***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(g) Check the Mocapy version. If exists, ignore installation, otherwise try install it and set the environment path***
+
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(g) Install install hdf5 with zlib. Check the dependecies of IMP in http://www.integrativemodeling.org/2.6.1/doc/manual/installation.html***
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g.1.	install hdf5 with zlib
+
+```
+cd /data/commons/tools/IMP_tools
+
+tar -zxvf zlib-1.2.8.tar.gz
+cd zlib-1.2.8
+./configure  --prefix=/data/commons/tools/IMP_tools/zlib-1.2.8
+make
+
+
+tar -zxvf hdf5-1.8.16.tar.gz
+cd hdf5-1.8.16
+./configure --with-zlib=/storage/htc/bdm/tools/Mocapy_tools/zlib-1.2.8/
+make 
+make install
+```
+
+
+
+
+
+# install GSL  http://www.linuxfromscratch.org/blfs/view/svn/general/gsl.html
+ftp://ftp.gnu.org/pub/gnu/gsl/gsl-2.1.tar.gz
+	
+	wget ftp://ftp.gnu.org/pub/gnu/gsl/gsl-2.1.tar.gz
+	tar -zxvf gsl-2.1.tar.gz
+	cd gsl-2.1
+	./configure  --prefix=/storage/htc/bdm/tools/Mocapy_tools/gsl-2.1/
+	make
+	make install
+
+
+# install CGAL from https://github.com/CGAL/cgal/releases, http://doc.cgal.org/latest/Manual/installation.html
+
+cd /storage/htc/bdm/tools/Mocapy_tools
+
+
+	wget https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.8.1/CGAL-4.8.1.tar.xz 
+	tar -xvf CGAL-4.8.1.tar.xz
+	cd CGAL-4.8.1
+	cmake .   (cmake require >2.8)
+make
+	
+export PATH=/storage/htc/bdm/tools/Mocapy_tools/CGAL-4.8.1:$PATH
+
+
+
+# install FFTW http://www.fftw.org/download.html
+	wget ftp://ftp.fftw.org/pub/fftw/fftw-3.3.4.tar.gz
+	tar -zxvf fftw-3.3.4.tar.gz
+ ./configure --prefix=/storage/htc/bdm/tools/Mocapy_tools/fftw-3.3.4 --enable-shared  --with-pic
+ make 
+ make install
+
+
+
+
+
+
+# install libTau 
+	wget https://integrativemodeling.org/libTAU/libTAU-1.0.1.zip
+unzip libTAU-1.0.1.zip
+
+
+export CFLAGS="$CFLAGS -I/storage/htc/bdm/tools/Mocapy_tools/libTAU-1.0.1/include"
+export LDFLAGS="$LDFLAGS -L/storage/htc/bdm/tools/Mocapy_tools/libTAU-1.0.1//lib" 
+
+#install openCV  http://docs.opencv.org/3.0-beta/doc/tutorials/introduction/linux_install/linux_install.html
+
+	git clone https://github.com/Itseez/opencv.git
+	cd opencv
+	mkdir release
+	cmake -D CMAKE_BUILD_TYPE=RELEASE -D  CMAKE_INSTALL_PREFIX=/storage/htc/bdm/tools/Mocapy_tools/opencv/release ..
+	make -j 8
+	make install
+	
+	
+
+	
+
+
+
+#install doxygen  http://www.stack.nl/~dimitri/doxygen/download.html
+	https://geeksww.com/tutorials/miscellaneous/bison_gnu_parser_generator/installation/installing_bison_gnu_parser_generator_ubuntu_linux.php
+            wget http://ftp.gnu.org/gnu/bison/bison-2.3.tar.gz
+	cd bison-2.3/
+	
+	
+git clone https://github.com/doxygen/doxygen.git
+cd doxygen
+
+mkdir build
+cd build
+cmake -G "Unix Makefiles" ..
+make
+
+
+
+tar -zxvf doxygen-1.8.6.linux.bin.tar.gz
+cd doxygen-1.8.6
+
+	
+
+
+### download imp-2.6.2.tar.gz from  https://integrativemodeling.org
+cd /storage/htc/bdm/tools/Mocapy_tools/
+tar -zxvf imp-2.6.2.tar.gz
+mkdir IMP2.6
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**(B) (Optional if already installed) Install the IMP tools on multicom for c++ developement, which is Dynamic Bayesian Network toolkit** 
+
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(a) Check the Mocapy version. If exists, ignore installation, otherwise try install it and set the environment path***
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g.1.	Download Mocapy++-1.07.tar.gz from https://sourceforge.net/projects/mocapy/
 
