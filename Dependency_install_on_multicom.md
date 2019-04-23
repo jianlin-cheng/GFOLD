@@ -29,10 +29,15 @@
 ```
 Install cmake
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d.1.	Download the Unix/Linux source file in tar.gz format from http://www.cmake.org/download (e.g., cmake-2.8.3.tar.gz or later)
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d.1.	Expand the compressed package: tar xvfz cmake-2.8.3.tar.gz
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d.1.	Go to the package root directory
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d.1.	Execute the following commands in the order given:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c.1.	Download the Unix/Linux source file in tar.gz format from http://www.cmake.org/download (e.g., cmake-2.8.3.tar.gz or later)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c.2.	Expand the compressed package: tar xvfz cmake-2.8.3.tar.gz
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c.3.	Go to the package root directory
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c.4.	Execute the following commands in the order given:
+
+```
 cd  /data/commons/tools
 Download and uncompress tar –zxvf cmake-2.8.3.tar.gz
 cd cmake-2.8.3
@@ -43,8 +48,7 @@ make DESTDIR=/data/commons/tools/cmake-2.8.3/ install
 alias cmake=/data/commons/tools/cmake-2.8.3/bin/cmake
 cmake
 cmake --version
-
-Done!!
+```
 
 
 ***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(d) Check the BLAS version. If exists, ignore installation, otherwise try install it and set the environment path***
@@ -131,11 +135,12 @@ tar -zxvf zlib-1.2.8.tar.gz
 cd zlib-1.2.8
 ./configure  --prefix=/data/commons/tools/IMP_tools/zlib-1.2.8
 make
+make install
 
 
 tar -zxvf hdf5-1.8.16.tar.gz
 cd hdf5-1.8.16
-./configure --with-zlib=/storage/htc/bdm/tools/Mocapy_tools/zlib-1.2.8/
+./configure --with-zlib=/data/commons/tools/IMP_tools/zlib-1.2.8/
 make 
 make install
 ```
