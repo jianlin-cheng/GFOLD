@@ -271,6 +271,14 @@ or install cgal as static library in future when building static tool
 	/data/commons/tools/cmake-3.5.2/bin/cmake -D CMAKE_BUILD_TYPE=RELEASE -D  CMAKE_INSTALL_PREFIX=/data/commons/tools/IMP_tools/opencv_install ..
 	make -j 8
 	make install
+	
+	
+	wget https://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.1/OpenCV-2.1.0.tar.bz2/download
+	tar -xvf OpenCV-2.1.0.tar.bz2
+	cd OpenCV-2.1.0/
+	/data/commons/tools/cmake-3.5.2/bin/cmake -D CMAKE_BUILD_TYPE=RELEASE -D  CMAKE_INSTALL_PREFIX=/data/commons/tools/IMP_tools/opencv2.1_install ..
+
+
 ```
 
 
