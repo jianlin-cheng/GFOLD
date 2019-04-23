@@ -39,13 +39,14 @@ Install cmake
 
 ```
 cd  /data/commons/tools
-Download and uncompress tar –zxvf cmake-2.8.3.tar.gz
-cd cmake-2.8.3
-./bootstrap --prefix=/data/commons/tools/cmake-2.8.3
+wget https://cmake.org/files/v2.8/cmake-2.8.12.2.tar.gz
+Download and uncompress tar –zxvf cmake-2.8.12.2.tar.gz
+cd cmake-2.8.12.2
+./bootstrap --prefix=/data/commons/tools/cmake-2.8.12.2
 gmake
 make install (require administrative) or try 
-make DESTDIR=/data/commons/tools/cmake-2.8.3/ install
-alias cmake=/data/commons/tools/cmake-2.8.3/bin/cmake
+make DESTDIR=/data/commons/tools/cmake-2.8.12.2/ install
+alias cmake=/data/commons/tools/cmake-2.8.12.2/bin/cmake
 cmake
 cmake --version
 ```
@@ -146,29 +147,26 @@ make install
 ```
 
 
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(h) Install install GSL  http://www.linuxfromscratch.org/blfs/view/svn/general/gsl.html, ftp://ftp.gnu.org/pub/gnu/gsl/gsl-2.1.tar.gz***
 
-
-
-# install GSL  http://www.linuxfromscratch.org/blfs/view/svn/general/gsl.html
-ftp://ftp.gnu.org/pub/gnu/gsl/gsl-2.1.tar.gz
-	
+```
+	cd /data/commons/tools/IMP_tools
 	wget ftp://ftp.gnu.org/pub/gnu/gsl/gsl-2.1.tar.gz
 	tar -zxvf gsl-2.1.tar.gz
 	cd gsl-2.1
-	./configure  --prefix=/storage/htc/bdm/tools/Mocapy_tools/gsl-2.1/
+	./configure  --prefix=/data/commons/tools/IMP_tools/gsl-2.1/
 	make
 	make install
+```
 
+***&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(i) Install install CGAL from https://github.com/CGAL/cgal/releases, http://doc.cgal.org/latest/Manual/installation.html***
 
-# install CGAL from https://github.com/CGAL/cgal/releases, http://doc.cgal.org/latest/Manual/installation.html
-
-cd /storage/htc/bdm/tools/Mocapy_tools
-
-
+```
+	cd /data/commons/tools/IMP_tools
 	wget https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.8.1/CGAL-4.8.1.tar.xz 
 	tar -xvf CGAL-4.8.1.tar.xz
 	cd CGAL-4.8.1
-	cmake .   (cmake require >2.8)
+	cmake .   (cmake require >2.8.10)
 make
 	
 export PATH=/storage/htc/bdm/tools/Mocapy_tools/CGAL-4.8.1:$PATH
