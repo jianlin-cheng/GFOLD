@@ -375,15 +375,15 @@ cd examples
 ./hmm_simple
 ```
 
-# Attention, when compiling on multicom server, I met new issues that were not appeared on other servers, can be solved by the following:
+##Attention, when compiling Mocapy on multicom server, I met new issues that were not appeared on other servers, can be solved by the following:
 
 ```
 (1) Error 1: mdarray.h:1252:38: error: ‘max’ was not declared in this scope
 
-4. in src/utils/mdarray.h:
-	void MDArray<T>::clip
-	change
-	'values[i] = max(minimum, values[i]);'
-	to 
-	'values[i] = std::max(minimum, values[i]);'
+	Solution: in src/utils/mdarray.h:
+		void MDArray<T>::clip
+		change
+		'values[i] = max(minimum, values[i]);'
+		to 
+		'values[i] = std::max(minimum, values[i]);'
 ```
