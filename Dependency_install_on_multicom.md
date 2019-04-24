@@ -377,7 +377,6 @@ ENDFOREACH(p)
        
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g.5.	Execute the following commands in the order given:
 
-#Lewis: 
 ```
 cd /data/commons/tools/Mocapy++-1.07
 export LD_LIBRARY_PATH=/data/commons/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
