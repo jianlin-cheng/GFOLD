@@ -1,5 +1,7 @@
 
-### IMP Installation Steps On multicom server
+### IMP Installation Steps On multicom server 
+
+(Need following the installations step-by-step sequentially, the whole compilation/installation may take few hours if all steps run smoothly)
 
 --------------------------------------------------------------------------------------
 
