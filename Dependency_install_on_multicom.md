@@ -363,12 +363,12 @@ cd /data/commons/tools/IMP_tools/IMP2.6/
 
 ```
 ## For Linux
-cd /storage/htc/bdm/tools/Mocapy_tools/Mocapy++-1.07
+cd /data/commons/tools/Mocapy++-1.07
 edit ./CMakeLists.txt, and comment #add_subdirectory (tests), we don’t need this
 edit ./examples/CMakeLists.txt, and
-1.	add: SET(BLAS_LIBRARY "/storage/htc/bdm/tools/Mocapy_tools/BLAS-3.6.0/libblas.a")
-2.	add:  '-w -L/home/jh7x3/Mocapy_tool/boost_1_55_0/lib -I/home/jh7x3/Mocapy_tool/boost_1_55_0/include/  -lboost_program_options -lboost_system  -lboost_thread  -lboost_serialization' in the 'SET(CMAKE_CXX_FLAGS '
-3.	change part of code by adding ${BLAS_LIBRARY} (Be careful of the space between variables)
+1.	add: SET(BLAS_LIBRARY "/data/commons/tools/BLAS-3.6.0/libblas.a")
+2.	add:  '-w -L/data/commons/tools/boost_1_55_0/lib -I/data/commons/tools/boost_1_55_0/include/  -lboost_program_options -lboost_system  -lboost_thread  -lboost_serialization' in the 'SET(CMAKE_CXX_FLAGS '
+3.	change part of code in line 67 by adding ${BLAS_LIBRARY} (Be careful of the space between variables)
        FOREACH(p ${PROGS})
         add_executable(${p} ${p}.cpp)
         target_link_libraries (${p} ${MOCAPYLIB} ${Boost_SERIALIZATION_LIBRARY} ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${CMAKE_FLIB})
@@ -379,13 +379,14 @@ ENDFOREACH(p)
 
 #Lewis: 
 ```
-cd /storage/htc/bdm/tools/Mocapy_tools/Mocapy++-1.07
-export LD_LIBRARY_PATH=/storage/htc/bdm/tools/Mocapy_tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
-cmake -DBOOST_ROOT='/storage/htc/bdm/tools/Mocapy_tools/boost_1_55_0/' -DLAPACK_LIBRARY:FILEPATH='/storage/htc/bdm/tools/Mocapy_tools/lapack-3.4.1/liblapack.a' .
+cd /data/commons/tools/Mocapy++-1.07
+export LD_LIBRARY_PATH=/data/commons/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
+/data/commons/tools/cmake-2.8.12.2/bin/cmake -DBOOST_ROOT='/data/commons/tools/boost_1_55_0/' -DLAPACK_LIBRARY:FILEPATH='/data/commons/tools/IMP_tools/lapack-3.4.1/liblapack.a' .
 make
 cd examples
 ./hmm_simple
 ```
+
 
 
 
