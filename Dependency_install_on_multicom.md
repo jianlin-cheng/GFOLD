@@ -358,8 +358,10 @@ cd /data/commons/tools/Mocapy++-1.07
 edit ./CMakeLists.txt, and comment #add_subdirectory (tests), we don’t need this
 edit ./examples/CMakeLists.txt, and
 1.	add: SET(BLAS_LIBRARY "/data/commons/tools/BLAS-3.6.0/libblas.a")
-2.	add:  '-w -L/data/commons/tools/boost_1_55_0/lib -I/data/commons/tools/boost_1_55_0/include/  -lboost_program_options -lboost_system  -lboost_thread  -lboost_serialization' in the 'SET(CMAKE_CXX_FLAGS '
-3.	change part of code in line 67 by adding ${BLAS_LIBRARY} (Be careful of the space between variables)
+2.	add: SET(IMP_include "/data/commons/tools/IMP_tools/IMP2.6/include/")
+3.	add: SET(IMP_lib "/data/commons/tools/IMP_tools/IMP2.6/lib/")
+4.	add:  ' -w -I${IMP_include} -L${IMP_lib} -limp_kernel -limp_core -limp_algebra -L/data/commons/tools/boost_1_55_0/lib -I/data/commons/tools/boost_1_55_0/include/  -lboost_program_options -lboost_system  -lboost_thread  -lboost_serialization'
+5.	change part of code in line 67 by adding ${BLAS_LIBRARY} (Be careful of the space between variables)
        FOREACH(p ${PROGS})
         add_executable(${p} ${p}.cpp)
         target_link_libraries (${p} ${MOCAPYLIB} ${Boost_SERIALIZATION_LIBRARY} ${LAPACK_LIBRARY} ${BLAS_LIBRARY} ${CMAKE_FLIB})
