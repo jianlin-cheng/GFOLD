@@ -12,3 +12,10 @@ export LD_LIBRARY_PATH=/data/commons/tools/IMP_tools/IMP2.6/lib:/data/commons/to
 
 
 
+PYTHONPATH="/data/commons/tools/IMP_tools/IMP2.6/lib:/data/commons/tools/IMP_tools/IMP2.6/lib:$PYTHONPATH"
+python simple.py
+
+
+
+
+
