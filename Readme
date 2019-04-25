@@ -7,4 +7,8 @@ export LD_LIBRARY_PATH=/data/commons/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
 /data/commons/tools/cmake-2.8.12.2/bin/cmake -DBOOST_ROOT='/data/commons/tools/boost_1_55_0/' -DLAPACK_LIBRARY:FILEPATH='/data/commons/tools/IMP_tools/lapack-3.4.1/liblapack.a' .
 make
 cd examples
+export LD_LIBRARY_PATH=/data/commons/tools/IMP_tools/IMP2.6/lib:/data/commons/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
+./simple
+
+
 
