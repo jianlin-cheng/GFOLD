@@ -389,5 +389,5 @@ cd examples
 		change
 		'values[i] = max(minimum, values[i]);'
 		to 
-		'values[i] = std::max(minimum, values[i]);'
+		'values[i] = std::max(minimum, values[i]);' 
 ```
