@@ -1,0 +1,2 @@
+/data/jh7x3/GFOLD_v0.1/src/CMakeFiles/GFOLD.dir
+/data/jh7x3/GFOLD_v0.1/examples/CMakeFiles/simple.dir
