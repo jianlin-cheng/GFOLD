@@ -360,7 +360,7 @@ export LD_LIBRARY_PATH=/data/commons/tools/IMP_tools/opencv_install/lib:$LD_LIBR
 
 cd /data/commons/tools/IMP_tools/IMP2.8/
 
-/data/commons/tools/cmake-3.5.2/bin/cmake ../imp-2.8.0/  -DCMAKE_INSTALL_PREFIX=/home/jh7x3/tools/IMP2.8/  -DIMP_DOXYGEN_FOUND=""
+/data/commons/tools/cmake-3.5.2/bin/cmake ../imp-2.8.0/  -DCMAKE_INSTALL_PREFIX=/data/commons/tools/IMP_tools/IMP2.8/  -DIMP_DOXYGEN_FOUND=""
 make
 make install
 
