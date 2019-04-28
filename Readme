@@ -18,6 +18,17 @@ python simple.py
 
 
 
+#### imp 2.8.0
+
+
+export LD_LIBRARY_PATH=/data/jh7x3/multicom_github/multicom/tools/modeller-9.16/lib/x86_64-intel8/:/data/commons/tools/IMP_tools/IMP2.8/lib:/data/commons/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
+PYTHONPATH="/data/commons/tools/IMP_tools/IMP2.6/lib:/data/jh7x3/multicom_github/multicom/tools/modeller-9.16/lib/x86_64-intel8/python2.5/:/data/jh7x3/multicom_github/multicom/tools/modeller-9.16/modlib/:$PYTHONPATH"
+export PYTHONPATH
+python simple.py
+
+
+
+
 
 
 
