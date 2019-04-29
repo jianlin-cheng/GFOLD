@@ -334,6 +334,37 @@ make
 make install
 ```
 
+or install IMP-2.8.0
+```
+
+cd /data/commons/tools/IMP_tools
+wget https://integrativemodeling.org/2.8.0/download/imp-2.8.0.tar.gz
+
+
+cd /data/commons/tools/IMP_tools/
+tar -zxvf imp-2.8.0.tar.gz
+mkdir IMP2.8
+
+
+export PATH=/data/commons/tools/boost_1_55_0/:$PATH 
+export PATH=/data/commons/tools/IMP_tools/hdf5-1.8.16/hdf5/:$PATH
+export PATH=/data/commons/tools/IMP_tools/CGAL-4.8.1:$PATH  
+## CGAL-4.8.1 will increase foxs performance
+export PATH=/data/commons/tools/IMP_tools/fftw-3.3.4/:$PATH 
+## sometimes the multifit.so will failed, but it is okay to include fftw-3.3.4, won't influence other lib
+export PATH=/data/commons/tools/IMP_tools/doxygen-1.8.6/bin/:$PATH
+export PATH=/data/commons/tools/IMP_tools/gsl-2.1/:$PATH
+export PATH=$PATH:/data/commons/tools/IMP_tools/PATH/
+export LD_LIBRARY_PATH=/data/commons/tools/IMP_tools/opencv_install/lib:$LD_LIBRARY_PATH
+
+
+cd /data/commons/tools/IMP_tools/IMP2.8/
+
+/data/commons/tools/cmake-3.5.2/bin/cmake ../imp-2.8.0/  -DCMAKE_INSTALL_PREFIX=/data/commons/tools/IMP_tools/IMP2.8/  -DIMP_DOXYGEN_FOUND=""
+make
+make install
+
+```
 
 
 
