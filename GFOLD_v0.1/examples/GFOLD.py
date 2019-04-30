@@ -77,7 +77,7 @@ topology.apply_default_patches()
 # Make an IMP Hierarchy (atoms, residues, chains) that corresponds to
 # this topology
 m = IMP.Model()
-h = topology.create_hierarchy(m)
+h = topology.create_hierarchy(m)   ##### can we add secondary structure information to build extend structure, or add secondary structure angle restraints later
 topology.add_atom_types(h)
 topology.add_coordinates(h)
 
@@ -155,6 +155,7 @@ for i in range(0,len(cont_native.get_particles())):
 #for key in index2ResidueName:
 #	print(key," ",index2ResidueName[key])
 
+
 #oindex2AtomCoord = collections.OrderedDict(sorted(index2AtomCoord.items()))
 #for key in sorted(oindex2AtomCoord):
 #	print(key,": ",oindex2AtomCoord[key])
@@ -203,7 +204,8 @@ for i in range(0,len(residue_array)):
 	res1_CB_atom = str(res1_indx)+'-'+res1_name+'-CB'
 	
 	# get native coordinates, suppose the template structure is provided
-	
+	'''
+	this part is not needed, which can be replaced by stereo restraints
 	# get N-CA
 	if res1_N_atom in index2AtomCoord.keys() and res1_CA_atom in index2AtomCoord.keys():
 		res1_N_atom_coord = index2AtomCoord[res1_N_atom]
@@ -270,7 +272,7 @@ for i in range(0,len(residue_array)):
 	
 	## Need add angle restraints
 	## https://integrativemodeling.org/2.4.0/doc/html/stereochemistry_8py_source.html
-	
+	'''
 	
 	for j in range(i+1,len(residue_array)):
 		res2_indx = residue_array[j]
@@ -278,6 +280,7 @@ for i in range(0,len(residue_array)):
 		
 		res2_CA_atom = str(res2_indx)+'-'+res2_name+'-CA'
 		res2_CB_atom = str(res2_indx)+'-'+res2_name+'-CB'
+		res2_O_atom = str(res2_indx)+'-'+res2_name+'-O'
 		# get CA-CA
 		if res1_CA_atom in index2AtomCoord.keys() and res2_CA_atom in index2AtomCoord.keys():
 			res1_CA_atom_coord = index2AtomCoord[res1_CA_atom]
@@ -294,7 +297,7 @@ for i in range(0,len(residue_array)):
 			r = IMP.core.PairRestraint(m, s, (p1, p2))
 			restraints_list.append(r)
 		
-	#	# get CB-CB
+		# get CB-CB
 		if res1_CB_atom in index2AtomCoord.keys() and res2_CB_atom in index2AtomCoord.keys():
 			res1_CB_atom_coord = index2AtomCoord[res1_CB_atom]
 			res2_CB_atom_coord = index2AtomCoord[res2_CB_atom]
@@ -310,6 +313,29 @@ for i in range(0,len(residue_array)):
 			r = IMP.core.PairRestraint(m, s, (p1, p2))
 			restraints_list.append(r)
 		
+		
+		# this is very useful for secondary structure folding. get N-O to get hydrogen bond, check confold how to add all N-O. pulchar also does post-hydrogen bond optimization.  We don't need all N-O which will cause large energy, we only need small part N-O, check confold
+		if res1_N_atom in index2AtomCoord.keys() and res2_O_atom in index2AtomCoord.keys():
+			res1_N_atom_coord = index2AtomCoord[res1_N_atom]
+			res2_O_atom_coord = index2AtomCoord[res2_O_atom]
+			x1,y1,z1 = [res1_N_atom_coord.get_x(),res1_N_atom_coord.get_y(),res1_N_atom_coord.get_z()]
+			x2,y2,z2 = [res2_O_atom_coord.get_x(),res2_O_atom_coord.get_y(),res2_O_atom_coord.get_z()]
+			dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
+			
+			# get the particle index in model 
+			p1 = cont_model.get_particles()[model_particle_index[res1_N_atom]]
+			p2 = cont_model.get_particles()[model_particle_index[res2_O_atom]]
+			f = IMP.core.Harmonic(dist, 1.0)
+			s = IMP.core.DistancePairScore(f)
+			r = IMP.core.PairRestraint(m, s, (p1, p2))
+			restraints_list.append(r)
+			
+
+#### check using the predicted distance	
+#### use predicted CB-CB distance,  
+#### add secondary structure bond
+#### in future, we can add predicted dihedral angles, predicted CA-CA	
+
 
 
 # Read in the CHARMM heavy atom topology and parameter files
@@ -346,7 +372,7 @@ ff.add_well_depths(prot)
 
 
 
-#restraints_list.append(r1)
+restraints_list.append(r1)
 
 ###########################################################################################
 # Basic Optimization and Chain
@@ -364,7 +390,7 @@ s.set_scoring_function(sf)
 min_energy = 1000000000
 min_info = ''
 for i in range(0,10):
-	s.optimize(1000)
+	s.optimize(100)
 	
 	energy = sf.evaluate(False)
 	## can apply simulated annealing here
@@ -373,9 +399,11 @@ for i in range(0,10):
 		print("Epoch: ",i,": ",min_energy)
 		min_info = "Epoch: "+str(i)+": "+str(min_energy)
 		## add side-chain by rotamer
+		
+		### question: why output has side-chain atoms. Based on the visualization, the side-chain atoms don't conform to backbone atoms
 		IMP.atom.write_pdb(prot, '3BFO-B-init-after'+str(i)+'.pdb')
-		pulchra_cmd = '/data/jh7x3/multicom_github/multicom/tools/pulchra304/pulchra 3BFO-B-init-after'+str(i)+'.pdb'
-		os.system(pulchra_cmd)
+		#pulchra_cmd = '/data/jh7x3/multicom_github/multicom/tools/pulchra304/pulchra 3BFO-B-init-after'+str(i)+'.pdb'
+		#os.system(pulchra_cmd)
 	
 print(min_info)
 
