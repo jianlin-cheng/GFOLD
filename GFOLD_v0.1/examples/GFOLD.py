@@ -12,23 +12,17 @@
 ############################################################################
 
 from __future__ import print_function
-import modeller
-import IMP
-import IMP.modeller
-import IMP.atom
-import IMP.container
 import optparse
-import IMP.atom
-import IMP.example
-import IMP.statistics
-import IMP.display
 import numpy as np
 import sys
 import os
 import collections
+import IMP
+import IMP.atom
+import IMP.container
 import IMP.rotamer
-
-
+import warnings
+warnings.filterwarnings("ignore")
 #/home/jh7x3/fusion_hybrid/
 project_root = '/data/jh7x3/GFOLD_v0.1/'
 sys.path.insert(0, project_root)
@@ -58,7 +52,7 @@ print('')
 topology = IMP.atom.CHARMMTopology(IMP.atom.get_all_atom_CHARMM_parameters())
 # Create a single chain of amino acids and apply the standard C- and N-
 # termini patches
-f = open('3BFO-B.fasta', 'r')	
+f = open('3BFO-B.fasta', 'r')
 sequence = f.readlines()	
 f.close()	
 # removing the trailing "\n" and any header lines
@@ -87,19 +81,14 @@ IMP.atom.add_radii(h)
 IMP.atom.write_pdb(h, '3BFO-B-init.pdb')
 
 ###########################################################################################
-# Charmm forcefield
+# (3) Load initial model
 ###########################################################################################
 
 # Create an IMP model and add a heavy atom-only protein from a PDB file
 m = IMP.Model()
 # example_protein.pdb is assumed to be just extended chain structure obtained using structure_from_sequence example
-#prot = IMP.atom.read_pdb('3BFO-B-init.pdb',m,IMP.atom.BackbonePDBSelector())  #IMP.atom.NonWaterNonHydrogenPDBSelector()
-#prot = IMP.atom.read_pdb('3BFO-B-init.pdb', m,IMP.atom.CAlphaPDBSelector())  #IMP.atom.NonWaterNonHydrogenPDBSelector()
-#prot = IMP.atom.read_pdb('3BFO-B.chn', m,IMP.atom.CAlphaPDBSelector())  #IMP.atom.NonWaterNonHydrogenPDBSelector()
-#prot = IMP.atom.read_pdb('3BFO-B.chn', m,IMP.atom.BackbonePDBSelector())  #IMP.atom.NonWaterNonHydrogenPDBSelector()
-#prot = IMP.atom.read_pdb('3BFO-B.chn', m,IMP.atom.OrPDBSelector(IMP.atom.CBetaPDBSelector(),IMP.atom.BackbonePDBSelector()))  #IMP.atom.NonWaterNonHydrogenPDBSelector()
-prot = IMP.atom.read_pdb('3BFO-B-init.pdb', m,IMP.atom.OrPDBSelector(IMP.atom.CBetaPDBSelector(),IMP.atom.BackbonePDBSelector()))  #IMP.atom.NonWaterNonHydrogenPDBSelector()
-
+prot = IMP.atom.read_pdb('3BFO-B-init.pdb', m,IMP.atom.OrPDBSelector(IMP.atom.CBetaPDBSelector(),IMP.atom.BackbonePDBSelector()))
+#prot = IMP.atom.read_pdb('3BFO-B-init.pdb', m)  ## WARNING  Could not determine CHARMM atom type for atom "H" in residue #2 "LYS"
 '''
 79 :  Atom N of residue 79
 79 :  Atom CA of residue 79
@@ -110,7 +99,7 @@ prot = IMP.atom.read_pdb('3BFO-B-init.pdb', m,IMP.atom.OrPDBSelector(IMP.atom.CB
 res_model = IMP.atom.get_by_type(prot, IMP.atom.RESIDUE_TYPE)
 atoms_model = IMP.atom.get_by_type(prot, IMP.atom.ATOM_TYPE)
 chain_model = IMP.atom.get_by_type(prot, IMP.atom.CHAIN_TYPE)
-print("there are", len(chain_model), "chains in structure.pdb")
+print("there are", len(chain_model), "chains in structure")
 print("chain has", len(atoms_model), "atoms")
 
 # Get a list of all atoms in the model, and put it in a container
@@ -118,7 +107,10 @@ cont_model = IMP.container.ListSingletonContainer(atoms_model)
 
 ########################
 
-#### load the true structure and get restraints 
+###########################################################################################
+# (4) load the true structure and get information for all atoms
+###########################################################################################
+
 # Create an IMP model and add a heavy atom-only protein from a PDB file
 m_native = IMP.Model()
 # example_protein.pdb is assumed to be just extended chain structure obtained using structure_from_sequence example
@@ -131,7 +123,6 @@ cont_native = IMP.container.ListSingletonContainer(atoms_native)
 
 #### get information for N,CA,C,O,CB from native structure
 
-native_dist = {}
 index2ResidueName={}
 index2AtomCoord={}
 for i in range(0,len(cont_native.get_particles())):
@@ -149,8 +140,10 @@ for i in range(0,len(cont_native.get_particles())):
 	if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
 		index2ResidueName[p1_seq_id] = p1_resname
 	
+	print(p1_res)
 	index2AtomCoord[str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name] = IMP.core.XYZ(p1)
 
+print(len(cont_native.get_particles()))
 
 #for key in index2ResidueName:
 #	print(key," ",index2ResidueName[key])
@@ -159,11 +152,14 @@ for i in range(0,len(cont_native.get_particles())):
 #oindex2AtomCoord = collections.OrderedDict(sorted(index2AtomCoord.items()))
 #for key in sorted(oindex2AtomCoord):
 #	print(key,": ",oindex2AtomCoord[key])
-
+#sys.exit(-1)
 
 print("there are", len(index2ResidueName.keys()), "residues in native structure")
 
 
+###########################################################################################
+# (5) get distance restraints for N-CA, CA-C, C-O, CA-CB, CA-CA, CB-CB
+###########################################################################################
 
 #### get distance restraints for N-CA, CA-C, C-O, CA-CB, CA-CA, CB-CB
 model_residues = {}
@@ -185,10 +181,10 @@ for i in range(0,len(cont_model.get_particles())):
 		model_residues[p1_seq_id] = p1_resname
 	
 	info = str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name
-	model_particle_index[info] = i
-	if  info not in index2AtomCoord.keys():
-		print("The atom information in model not match in restraints: ",info)
-		sys.exit(-1)
+	model_particle_index[info] = i # get particle index of atom in chain 
+	#if  info not in index2AtomCoord.keys():
+	#	print("The atom information in model not match in restraints: ",info)
+		#sys.exit(-1)
 
 residue_array = sorted(model_residues.keys())
 restraints_list = []
@@ -281,6 +277,7 @@ for i in range(0,len(residue_array)):
 		res2_CA_atom = str(res2_indx)+'-'+res2_name+'-CA'
 		res2_CB_atom = str(res2_indx)+'-'+res2_name+'-CB'
 		res2_O_atom = str(res2_indx)+'-'+res2_name+'-O'
+		res2_N_atom = str(res2_indx)+'-'+res2_name+'-N'
 		# get CA-CA
 		if res1_CA_atom in index2AtomCoord.keys() and res2_CA_atom in index2AtomCoord.keys():
 			res1_CA_atom_coord = index2AtomCoord[res1_CA_atom]
@@ -314,7 +311,9 @@ for i in range(0,len(residue_array)):
 			restraints_list.append(r)
 		
 		
-		# this is very useful for secondary structure folding. get N-O to get hydrogen bond, check confold how to add all N-O. pulchar also does post-hydrogen bond optimization.  We don't need all N-O which will cause large energy, we only need small part N-O, check confold
+		# this is very useful for secondary structure folding. get N-O to get hydrogen bond, 
+		#check confold how to add all N-O. pulchar also does post-hydrogen bond optimization.  
+		#We don't need all N-O which will cause large energy, we only need small part N-O, check confold
 		if res1_N_atom in index2AtomCoord.keys() and res2_O_atom in index2AtomCoord.keys():
 			res1_N_atom_coord = index2AtomCoord[res1_N_atom]
 			res2_O_atom_coord = index2AtomCoord[res2_O_atom]
@@ -330,12 +329,29 @@ for i in range(0,len(residue_array)):
 			r = IMP.core.PairRestraint(m, s, (p1, p2))
 			restraints_list.append(r)
 			
-
+		if res1_O_atom in index2AtomCoord.keys() and res2_N_atom in index2AtomCoord.keys():
+			res1_O_atom_coord = index2AtomCoord[res1_O_atom]
+			res2_N_atom_coord = index2AtomCoord[res2_N_atom]
+			x1,y1,z1 = [res1_O_atom_coord.get_x(),res1_O_atom_coord.get_y(),res1_O_atom_coord.get_z()]
+			x2,y2,z2 = [res2_N_atom_coord.get_x(),res2_N_atom_coord.get_y(),res2_N_atom_coord.get_z()]
+			dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
+			
+			# get the particle index in model 
+			p1 = cont_model.get_particles()[model_particle_index[res1_O_atom]]
+			p2 = cont_model.get_particles()[model_particle_index[res2_N_atom]]
+			f = IMP.core.Harmonic(dist, 1.0)
+			s = IMP.core.DistancePairScore(f)
+			r = IMP.core.PairRestraint(m, s, (p1, p2))
+			restraints_list.append(r)
+		
 #### check using the predicted distance	
 #### use predicted CB-CB distance,  
 #### add secondary structure bond
 #### in future, we can add predicted dihedral angles, predicted CA-CA	
 
+###########################################################################################
+# (6) Charmm forcefield
+###########################################################################################
 
 
 # Read in the CHARMM heavy atom topology and parameter files
@@ -371,11 +387,11 @@ ff.add_radii(prot)
 ff.add_well_depths(prot)
 
 
-
+### add stereo can make CA and side-chain atoms optimized together, very important.
 restraints_list.append(r1)
 
 ###########################################################################################
-# Basic Optimization and Chain
+# (7) Basic Optimization and Chain
 ###########################################################################################
 
 # Optimize the x,y,z coordinates of both particles with conjugate gradients
@@ -386,6 +402,11 @@ sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
 # the box to perform everything
 s.set_scoring_function(sf)
 #IMP.set_log_level(IMP.TERSE)
+
+rotamer_lib='/data/commons/tools/IMP_tools/rotamer/ALL.bbdep.rotamers.lib'
+rl = IMP.rotamer.RotamerLibrary()
+rl.read_library_file(rotamer_lib)
+rc = IMP.rotamer.RotamerCalculator(rl)
 
 min_energy = 1000000000
 min_info = ''
@@ -398,11 +419,39 @@ for i in range(0,10):
 		min_energy = energy
 		print("Epoch: ",i,": ",min_energy)
 		min_info = "Epoch: "+str(i)+": "+str(min_energy)
-		## add side-chain by rotamer
 		
-		### question: why output has side-chain atoms. Based on the visualization, the side-chain atoms don't conform to backbone atoms
-		IMP.atom.write_pdb(prot, '3BFO-B-init-after'+str(i)+'.pdb')
-		#pulchra_cmd = '/data/jh7x3/multicom_github/multicom/tools/pulchra304/pulchra 3BFO-B-init-after'+str(i)+'.pdb'
+		'''
+		print("before rotamer: ",sf.evaluate(False))
+		IMP.atom.write_pdb(prot, '3BFO-B-epoch'+str(i)+'-noRotamer.pdb')
+		
+		## add backbone-dependent rotamer library
+		mh = IMP.atom.get_by_type(prot, IMP.atom.RESIDUE_TYPE)
+		# get the most probable rotamers
+		rotamers = list()
+		for h in mh:
+			rd = IMP.atom.Residue(h)
+			rr = rc.get_rotamer(rd, 0.01)
+			rotamers.append((rd, rr))
+		
+		# now set the coordinates of all atoms in the residues to the rotated
+		# coordinates
+		for rd, rr in rotamers:
+			for h in IMP.atom.get_by_type(rd, IMP.atom.ATOM_TYPE):
+				at = IMP.atom.Atom(h)
+				at_t = at.get_atom_type()
+				if rr.get_atom_exists(at_t):
+					# some atoms might not be rotated
+					idx = min(rr.get_number_of_cases(at_t) - 1, 1)
+					v = rr.get_coordinates(idx, at_t)
+					xyz = IMP.core.XYZ(at)
+					xyz.set_coordinates(v)
+		
+		print("after rotamer: ",sf.evaluate(False))
+		## question, why rotamer increase the energy?
+		IMP.atom.write_pdb(prot, '3BFO-B-epoch'+str(i)+'-withRotamer.pdb')
+		'''
+		IMP.atom.write_pdb(prot, '3BFO-B-epoch'+str(i)+'.pdb')
+		#pulchra_cmd = '/data/jh7x3/multicom_github/multicom/tools/pulchra304/pulchra 3BFO-B-epoch'+str(i)+'.pdb'
 		#os.system(pulchra_cmd)
 	
 print(min_info)
