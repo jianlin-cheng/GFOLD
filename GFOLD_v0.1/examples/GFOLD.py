@@ -1,4 +1,8 @@
 #!usr/bin/env python
+# python GFOLD.py  --target T0967  --fasta T0967.fasta --alignment T0967.pir  --atomdir ./  --dir  T0967
+# python GFOLD.py  --target 3BFO-B  --fasta 3BFO-B.fasta --alignment 3BFO-B.pir  --atomdir ./  --dir  3BFOB
+
+
 ############################################################################
 #
 #	 GFOLD : A Distance-based Protein Structure Folding
@@ -22,12 +26,16 @@ import IMP.atom
 import IMP.container
 import IMP.rotamer
 import warnings
+import string, re
 warnings.filterwarnings("ignore")
 #/home/jh7x3/fusion_hybrid/
 project_root = '/data/jh7x3/GFOLD_v0.1/'
 sys.path.insert(0, project_root)
 
 #from GFOLD_pylib import *
+aa_one2index = {'A':0, 'C':1, 'D':2, 'E':3, 'F':4, 'G':5, 'H':6, 'I':7, 'K':8, 'L':9, 'M':10, 'N':11, 'P':12, 'Q':13, 'R':14, 'S':15, 'T':16, 'V':17, 'W':18, 'Y':19}
+aa_three2index = {'ALA':0, 'CYS':1, 'ASP':2, 'GLU':3, 'PHE':4, 'GLY':5, 'HIS':6, 'ILE':7, 'LYS':8, 'LEU':9, 'MET':10, 'ASN':11, 'PRO':12, 'GLN':13, 'ARG':14, 'SER':15, 'THR':16, 'VAL':17, 'TRP':18, 'TYR':19}
+aa_index2three = {y:x for x,y in aa_three2index.iteritems()}
 
 print('')
 print('  ############################################################################')
@@ -44,306 +52,443 @@ print('  #######################################################################
 print('')
 
 
+parser = optparse.OptionParser()
+parser.add_option('--target', dest='target',
+	default = 'test',    # default target name is test
+	help = 'name of target protein')
+parser.add_option('--fasta', dest = 'fasta',
+	default = '',    # default empty!
+	help = 'FASTA file containing the protein to sequence to fold')
+parser.add_option('--alignment', dest = 'alignment',
+	default = '',    # default empty!
+	help = 'alignement file for the target <pir format>')
+parser.add_option('--atomdir', dest = 'atomdir',
+	default = '',    # default empty!
+	help = 'PDB structure for template protein in the pir alignment')
+parser.add_option('--restraints', dest = 'restraints',
+	default = '',    # default empty!
+	help = 'restraints for modeling')
+parser.add_option( '--dir', dest = 'dir',
+	default = '',    # default empty!
+	help = 'root directory for results')
+
+(options,args) = parser.parse_args()
+
+target = options.target
+# Sequence file option
+sequence = ''
+if options.fasta:	
+	f = open(options.fasta, 'r')	
+	sequence = f.readlines()	
+	f.close()	
+	# removing the trailing "\n" and any header lines
+	sequence = [line.strip() for line in sequence if not '>' in line]
+	sequence = ''.join( sequence )
+else:
+	print('Error ! target protein not defined. Exiting application...')
+	sys.exit(1)
+
+dir = options.dir
+if dir:
+	curr_dir = dir
+else:
+	curr_dir = os.getcwd()
+
+# Check alignment and atom
+
+if 	(options.alignment != '' and options.atomdir == '') or (options.alignment == '' and options.atomdir != ''):
+	print('Error ! alignment and atom are not provided together. Exiting application...')
+	sys.exit(1)
+
+custom_restraints = ''
+if options.restraints:
+	custom_restraints = options.restraints
+
+
+work_dir = curr_dir + '/' + target
+if not os.path.exists(work_dir):
+	os.makedirs(work_dir)
+
+
+init_dir = work_dir + '/init_structure'
+if not os.path.exists(init_dir):
+	os.makedirs(init_dir)
+
+sample_dir = work_dir + '/sampled_structure'
+if not os.path.exists(sample_dir):
+	os.makedirs(sample_dir)
+
 ###########################################################################################
 # (1) Build extended structure from sequence
 ###########################################################################################
-
-# Use the CHARMM all-atom (i.e. including hydrogens) topology and parameters
 topology = IMP.atom.CHARMMTopology(IMP.atom.get_all_atom_CHARMM_parameters())
-# Create a single chain of amino acids and apply the standard C- and N-
-# termini patches
-f = open('3BFO-B.fasta', 'r')
-sequence = f.readlines()	
-f.close()	
-# removing the trailing "\n" and any header lines
-sequence = [line.strip() for line in sequence if not '>' in line]
-sequence = ''.join( sequence )
-	
 topology.add_sequence(sequence)
 topology.apply_default_patches()
-
 
 
 ###########################################################################################
 # (2) Load the model into IMP Hierarchy
 ###########################################################################################
-
-# Make an IMP Hierarchy (atoms, residues, chains) that corresponds to
-# this topology
 m = IMP.Model()
 h = topology.create_hierarchy(m)   ##### can we add secondary structure information to build extend structure, or add secondary structure angle restraints later
 topology.add_atom_types(h)
 topology.add_coordinates(h)
-
-# Hierarchies in IMP must have radii
-IMP.atom.add_radii(h)
-# Write out the final structure to a PDB file
-IMP.atom.write_pdb(h, '3BFO-B-init.pdb')
+IMP.atom.add_radii(h) # Hierarchies in IMP must have radii
+init_pdb = init_dir+'/'+target+'-init.pdb'
+IMP.atom.write_pdb(h, init_pdb) # Write out the final structure to a PDB file
+print("Writng initial structure to ",init_pdb) 
 
 ###########################################################################################
 # (3) Load initial model
 ###########################################################################################
 
-# Create an IMP model and add a heavy atom-only protein from a PDB file
 m = IMP.Model()
-# example_protein.pdb is assumed to be just extended chain structure obtained using structure_from_sequence example
-prot = IMP.atom.read_pdb('3BFO-B-init.pdb', m,IMP.atom.OrPDBSelector(IMP.atom.CBetaPDBSelector(),IMP.atom.BackbonePDBSelector()))
-#prot = IMP.atom.read_pdb('3BFO-B-init.pdb', m)  ## WARNING  Could not determine CHARMM atom type for atom "H" in residue #2 "LYS"
-'''
-79 :  Atom N of residue 79
-79 :  Atom CA of residue 79
-79 :  Atom C of residue 79
-79 :  Atom O of residue 79
-79 :  Atom CB of residue 79
-'''
+prot = IMP.atom.read_pdb(init_pdb, m,IMP.atom.OrPDBSelector(IMP.atom.CBetaPDBSelector(),IMP.atom.BackbonePDBSelector()))
 res_model = IMP.atom.get_by_type(prot, IMP.atom.RESIDUE_TYPE)
 atoms_model = IMP.atom.get_by_type(prot, IMP.atom.ATOM_TYPE)
 chain_model = IMP.atom.get_by_type(prot, IMP.atom.CHAIN_TYPE)
-print("there are", len(chain_model), "chains in structure")
-print("chain has", len(atoms_model), "atoms")
+if len(chain_model) !=1:
+	print('Error ! More than one chain in the PDB structure. Exiting application...')
+	sys.exit(-1)
 
-# Get a list of all atoms in the model, and put it in a container
-cont_model = IMP.container.ListSingletonContainer(atoms_model)
-
-########################
-
-###########################################################################################
-# (4) load the true structure and get information for all atoms
-###########################################################################################
-
-# Create an IMP model and add a heavy atom-only protein from a PDB file
-m_native = IMP.Model()
-# example_protein.pdb is assumed to be just extended chain structure obtained using structure_from_sequence example
-prot_native = IMP.atom.read_pdb('3BFO-B.chn', m_native) 
-# Get a list of all atoms in the protein, and put it in a container
-atoms_native = IMP.atom.get_by_type(prot_native, IMP.atom.ATOM_TYPE)
-cont_native = IMP.container.ListSingletonContainer(atoms_native)
-
-
-
-#### get information for N,CA,C,O,CB from native structure
-
-index2ResidueName={}
-index2AtomCoord={}
-for i in range(0,len(cont_native.get_particles())):
-	p1 = cont_native.get_particles()[i]
-	#get atom information
-	p1_atom = IMP.atom.Atom(p1)
-	p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
-	p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
-	het = p1_atom_name.startswith('HET:')
-	if het:
-		p1_atom_name = p1_atom_name[4:]
-	p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
-	p1_resname = p1_res.get_name() #'SER'
-	p1_seq_id = p1_res.get_index() #1
-	if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
-		index2ResidueName[p1_seq_id] = p1_resname
-	
-	print(p1_res)
-	index2AtomCoord[str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name] = IMP.core.XYZ(p1)
-
-print(len(cont_native.get_particles()))
-
-#for key in index2ResidueName:
-#	print(key," ",index2ResidueName[key])
-
-
-#oindex2AtomCoord = collections.OrderedDict(sorted(index2AtomCoord.items()))
-#for key in sorted(oindex2AtomCoord):
-#	print(key,": ",oindex2AtomCoord[key])
-#sys.exit(-1)
-
-print("there are", len(index2ResidueName.keys()), "residues in native structure")
+print("Chain has", len(atoms_model), "atoms")
+cont_model = IMP.container.ListSingletonContainer(atoms_model) # Get a list of all atoms in the model, and put it in a container
 
 
 ###########################################################################################
-# (5) get distance restraints for N-CA, CA-C, C-O, CA-CB, CA-CA, CB-CB
+# (4) load the template structure and get information for all atoms
 ###########################################################################################
 
-#### get distance restraints for N-CA, CA-C, C-O, CA-CB, CA-CA, CB-CB
-model_residues = {}
-model_particle_index = {}
-for i in range(0,len(cont_model.get_particles())):
-	p1 = cont_model.get_particles()[i]
-	#get atom information
-	p1_atom = IMP.atom.Atom(p1)
-	p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
-	p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
-	het = p1_atom_name.startswith('HET:')
-	if het:
-		p1_atom_name = p1_atom_name[4:]
-	p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
-	p1_resname = p1_res.get_name() #'SER'
-	p1_seq_id = p1_res.get_index() #1
-	IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
-	if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
-		model_residues[p1_seq_id] = p1_resname
-	
-	info = str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name
-	model_particle_index[info] = i # get particle index of atom in chain 
-	#if  info not in index2AtomCoord.keys():
-	#	print("The atom information in model not match in restraints: ",info)
-		#sys.exit(-1)
+## load template information from alignments
+if options.alignment and options.atomdir:
 
-residue_array = sorted(model_residues.keys())
-restraints_list = []
-for i in range(0,len(residue_array)):
-	# get N-CA, CA-C, C-O, CA-CB
-	res1_indx = residue_array[i]
-	res1_name = model_residues[res1_indx]
-	
-	res1_N_atom = str(res1_indx)+'-'+res1_name+'-N'
-	res1_CA_atom = str(res1_indx)+'-'+res1_name+'-CA'
-	res1_C_atom = str(res1_indx)+'-'+res1_name+'-C'
-	res1_O_atom = str(res1_indx)+'-'+res1_name+'-O'
-	res1_CB_atom = str(res1_indx)+'-'+res1_name+'-CB'
-	
-	# get native coordinates, suppose the template structure is provided
-	'''
-	this part is not needed, which can be replaced by stereo restraints
-	# get N-CA
-	if res1_N_atom in index2AtomCoord.keys() and res1_CA_atom in index2AtomCoord.keys():
-		res1_N_atom_coord = index2AtomCoord[res1_N_atom]
-		res1_CA_atom_coord = index2AtomCoord[res1_CA_atom]
-		x1,y1,z1 = [res1_N_atom_coord.get_x(),res1_N_atom_coord.get_y(),res1_N_atom_coord.get_z()]
-		x2,y2,z2 = [res1_CA_atom_coord.get_x(),res1_CA_atom_coord.get_y(),res1_CA_atom_coord.get_z()]
-		dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-		
-		# get the particle index in model 
-		p1 = cont_model.get_particles()[model_particle_index[res1_N_atom]]
-		p2 = cont_model.get_particles()[model_particle_index[res1_CA_atom]]
-		f = IMP.core.Harmonic(dist, 1.0)
-		s = IMP.core.DistancePairScore(f)
-		r = IMP.core.PairRestraint(m, s, (p1, p2))
-		restraints_list.append(r)
-		
-	# get CA-C
-	if res1_CA_atom in index2AtomCoord.keys() and res1_C_atom in index2AtomCoord.keys():
-		res1_CA_atom_coord = index2AtomCoord[res1_CA_atom]
-		res1_C_atom_coord = index2AtomCoord[res1_C_atom]
-		x1,y1,z1 = [res1_CA_atom_coord.get_x(),res1_CA_atom_coord.get_y(),res1_CA_atom_coord.get_z()]
-		x2,y2,z2 = [res1_C_atom_coord.get_x(),res1_C_atom_coord.get_y(),res1_C_atom_coord.get_z()]
-		dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-		
-		# get the particle index in model 
-		p1 = cont_model.get_particles()[model_particle_index[res1_CA_atom]]
-		p2 = cont_model.get_particles()[model_particle_index[res1_C_atom]]
-		f = IMP.core.Harmonic(dist, 1.0)
-		s = IMP.core.DistancePairScore(f)
-		r = IMP.core.PairRestraint(m, s, (p1, p2))
-		restraints_list.append(r)
-	
-	# get C-O
-	if res1_C_atom in index2AtomCoord.keys() and res1_O_atom in index2AtomCoord.keys():
-		res1_C_atom_coord = index2AtomCoord[res1_C_atom]
-		res1_O_atom_coord = index2AtomCoord[res1_O_atom]
-		x1,y1,z1 = [res1_C_atom_coord.get_x(),res1_C_atom_coord.get_y(),res1_C_atom_coord.get_z()]
-		x2,y2,z2 = [res1_O_atom_coord.get_x(),res1_O_atom_coord.get_y(),res1_O_atom_coord.get_z()]
-		dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-		
-		# get the particle index in model 
-		p1 = cont_model.get_particles()[model_particle_index[res1_C_atom]]
-		p2 = cont_model.get_particles()[model_particle_index[res1_O_atom]]
-		f = IMP.core.Harmonic(dist, 1.0)
-		s = IMP.core.DistancePairScore(f)
-		r = IMP.core.PairRestraint(m, s, (p1, p2))
-		restraints_list.append(r)
-	
-	# get CA-CB, Glycine not have CB
-	if res1_CA_atom in index2AtomCoord.keys() and res1_CB_atom in index2AtomCoord.keys():
-		res1_CA_atom_coord = index2AtomCoord[res1_CA_atom]
-		res1_CB_atom_coord = index2AtomCoord[res1_CB_atom]
-		x1,y1,z1 = [res1_CA_atom_coord.get_x(),res1_CA_atom_coord.get_y(),res1_CA_atom_coord.get_z()]
-		x2,y2,z2 = [res1_CB_atom_coord.get_x(),res1_CB_atom_coord.get_y(),res1_CB_atom_coord.get_z()]
-		dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-		
-		# get the particle index in model 
-		p1 = cont_model.get_particles()[model_particle_index[res1_CA_atom]]
-		p2 = cont_model.get_particles()[model_particle_index[res1_CB_atom]]
-		f = IMP.core.Harmonic(dist, 1.0)
-		s = IMP.core.DistancePairScore(f)
-		r = IMP.core.PairRestraint(m, s, (p1, p2))
-		restraints_list.append(r)
-	
-	## Need add angle restraints
-	## https://integrativemodeling.org/2.4.0/doc/html/stereochemistry_8py_source.html
-	'''
-	
-	for j in range(i+1,len(residue_array)):
-		res2_indx = residue_array[j]
-		res2_name = model_residues[res2_indx]
-		
-		res2_CA_atom = str(res2_indx)+'-'+res2_name+'-CA'
-		res2_CB_atom = str(res2_indx)+'-'+res2_name+'-CB'
-		res2_O_atom = str(res2_indx)+'-'+res2_name+'-O'
-		res2_N_atom = str(res2_indx)+'-'+res2_name+'-N'
-		# get CA-CA
-		if res1_CA_atom in index2AtomCoord.keys() and res2_CA_atom in index2AtomCoord.keys():
-			res1_CA_atom_coord = index2AtomCoord[res1_CA_atom]
-			res2_CA_atom_coord = index2AtomCoord[res2_CA_atom]
-			x1,y1,z1 = [res1_CA_atom_coord.get_x(),res1_CA_atom_coord.get_y(),res1_CA_atom_coord.get_z()]
-			x2,y2,z2 = [res2_CA_atom_coord.get_x(),res2_CA_atom_coord.get_y(),res2_CA_atom_coord.get_z()]
-			dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
+	num = 0
+	template_name = {}
+	template_sequence = {}
+	template_region = {}
+	weight = {}
+	f = open(options.alignment, 'r')    # open the alignment file
+	while True:
+		line1 = f.readline()
+		if not line1:
+			break
+		line2 = f.readline()
+		line3 = f.readline()
+		line4 = f.readline()
+		line5 = f.readline()
+		if line3[:9] == "structure":
+			num += 1
+			info =  line1[line1.rindex('='):]
+			buff = re.split("\t+",info.strip())
+			if len(buff) == 1:
+				buff = re.split(" +",info.strip())
+				parent_rec = re.sub("[^0-9A-Za-z]", "",buff[1])
+				e_val = float(re.sub("[^0-9.e+-]", "",buff[4]))
+			else:
+				parent_rec = re.sub("[^0-9A-Za-z]", "",buff[0])
+				e_val = float(re.sub("[^0-9.e+-]", "",buff[3]))
 			
+			buff = re.split(":",line3.strip())
+			temp_start = buff[2].replace(' ', '')
+			temp_end = buff[4].replace(' ', '')
+			#parent_id = parent_rec.strip()[0:4]
+			#parent_chain = parent_rec.strip()[4:5]
+			#if parent_chain.strip() == '':
+			#	parent = str(parent_id.lower())
+			#else:
+			#	parent = str(parent_id.lower()) + '_' + str(parent_chain.upper())
+			#if e_val <=  self.e_val_threshold:
+			#self.parent.append(parent)
+			template_name[num] = parent_rec
+			template_sequence[num] = line4.strip()[:-1]
+			template_region[num] = str(temp_start)+'-'+str(temp_end)
+		else:
+			target_sequence = line4.strip()[:-1]
+	
+	## check alignment sequence is same as fasta sequence 
+	target_pir_seq = target_sequence;
+	target_pir_seq = target_pir_seq.replace('-', '') 
+	#print(target_sequence)
+	#print(target_pir_seq)
+	if target_pir_seq != sequence:
+		print('Error ! The sequence in alignment is not same as fasta sequence. Exiting application...')
+		sys.exit(-1)
+	
+
+	#### get distance restraints for N-CA, CA-C, C-O, CA-CB, CA-CA, CB-CB
+	model_residues = {}
+	model_particle_index = {}
+
+
+	## check each template 
+	m_native = IMP.Model()
+	target_index2AtomCoord = {}
+	for temp_indx in template_sequence:
+		temp_seq = template_sequence[temp_indx]
+		temp_name = template_name[temp_indx]
+		temp_region = template_region[temp_indx]
+		atomfile = options.atomdir + '/' +temp_name+'.atm'
+		#print(target_sequence)
+		#print(temp_seq)		
+
+		for i in range(0,len(cont_model.get_particles())):
+			p1 = cont_model.get_particles()[i]
+			#get atom information
+			p1_atom = IMP.atom.Atom(p1)
+			p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
+			p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
+			het = p1_atom_name.startswith('HET:')
+			if het:
+				p1_atom_name = p1_atom_name[4:]
+			p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
+			p1_resname = p1_res.get_name() #'SER'
+			p1_seq_id = p1_res.get_index() #1
+			IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
+			if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
+				model_residues[p1_seq_id] = p1_resname
+			
+			info = str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name+'-'+str(temp_indx)
+			model_particle_index[info] = i # get particle index of atom in chain 
+		
+		prot_native = IMP.atom.read_pdb(atomfile, m_native) 
+		atoms_native = IMP.atom.get_by_type(prot_native, IMP.atom.ATOM_TYPE)
+		cont_native = IMP.container.ListSingletonContainer(atoms_native)
+
+		
+		#### get information for N,CA,C,O,CB from native structure
+
+		index2ResidueName={}
+		residue2Atoms={}
+		index2AtomCoord={}
+		for i in range(0,len(cont_native.get_particles())):
+			p1 = cont_native.get_particles()[i]
+			#get atom information
+			p1_atom = IMP.atom.Atom(p1)
+			p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
+			p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
+			het = p1_atom_name.startswith('HET:')
+			if het:
+				p1_atom_name = p1_atom_name[4:]
+			p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
+			p1_resname = p1_res.get_name() #'SER'
+			p1_seq_id = p1_res.get_index() #1
+			if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
+				index2ResidueName[p1_seq_id] = p1_resname
+			
+			if str(p1_seq_id)+'-'+p1_resname in residue2Atoms.keys():
+				residue2Atoms[str(p1_seq_id)+'-'+p1_resname].append(p1_atom_name)
+			else:
+				residue2Atoms[str(p1_seq_id)+'-'+p1_resname]=[]
+				residue2Atoms[str(p1_seq_id)+'-'+p1_resname].append(p1_atom_name)
+			index2AtomCoord[str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name] = IMP.core.XYZ(p1)
+		
+		if len(target_sequence) != len(temp_seq):
+			#print(target_sequence)
+			#print(temp_seq)
+			print('Error ! The template seq size is not same as target sequence. Exiting application...')
+			sys.exit(-1)
+		
+		
+		
+		buff = re.split("-",temp_region.strip())
+		target_res_num = 0
+		temp_res_num = int(buff[0])-1
+		temp2target_align = {}
+		for i in range(0, len(target_sequence)):
+			target_char = target_sequence[i:i+1]
+			temp_char = temp_seq[i:i+1]
+			
+			if temp_char.strip() != "-":
+				temp_res_num += 1
+			if target_char.strip() != "-":
+				target_res_num += 1
+				if temp_char.strip() != "-":
+					## record to get coordinate from template
+					if temp_char not in aa_one2index.keys():
+						print('Error ! The amino acid ',temp_char,' not standard. Exiting application...')
+						sys.exit(-1)
+					
+					target_aa_3letter = aa_index2three[aa_one2index[target_char]]
+					temp_aa_3letter = aa_index2three[aa_one2index[temp_char]]
+					if temp_aa_3letter != index2ResidueName[temp_res_num]:
+						print('Error ! The template amino acid in alignmnet ',temp_aa_3letter,' not same as in pdb ',index2ResidueName[temp_res_num],' in position ',temp_res_num,'. Exiting application...')
+						sys.exit(-1)
+					
+					if target_aa_3letter != model_residues[target_res_num]:
+						print('Error ! The target amino acid in alignmnet ',target_aa_3letter,' not same as in pdb ',model_residues[target_res_num],' in position ',temp_res_num,'. Exiting application...')
+						sys.exit(-1)
+					#print(str(temp_res_num)+'-'+temp_aa_3letter + '-->' +str(target_res_num)+'-'+target_aa_3letter)
+					
+					if str(temp_res_num)+'-'+temp_aa_3letter not in residue2Atoms:
+						print('Error ! Failed to find atoms for ',str(temp_res_num),'-',temp_aa_3letter,' in template structures. Exiting application...')
+						sys.exit(-1)
+					atoms_array = residue2Atoms[str(temp_res_num)+'-'+temp_aa_3letter]
+					for atom in atoms_array:
+						if  str(temp_res_num)+'-'+temp_aa_3letter + '-'+atom not in index2AtomCoord:
+							print('Error ! Failed to find atoms for ',str(temp_res_num),'-',temp_aa_3letter,'-',atom,' in template structures. Exiting application...')
+							sys.exit(-1)
+						o_info = str(target_res_num)+'-'+target_aa_3letter+ '-'+atom+'-'+str(temp_indx)
+						#if target_res_num < 5:
+						#	print(o_info,'->',index2AtomCoord[str(temp_res_num)+'-'+temp_aa_3letter + '-'+atom])
+						if str(target_res_num)+'-'+target_aa_3letter+ '-'+atom+'-'+str(temp_indx) in model_particle_index:
+							target_index2AtomCoord[str(target_res_num)+'-'+target_aa_3letter+ '-'+atom+'-'+str(temp_indx)]=index2AtomCoord[str(temp_res_num)+'-'+temp_aa_3letter + '-'+atom]			
+	
+
+
+
+	###########################################################################################
+	# (5) get distance restraints for N-CA, CA-C, C-O, CA-CB, CA-CA, CB-CB
+	###########################################################################################
+
+
+	residue_array = sorted(model_residues.keys())
+	restraints_list = []
+	for temp_indx in template_sequence:
+		print("Processing restraints from template ",temp_indx)
+		for i in range(0,len(residue_array)):
+			# get N-CA, CA-C, C-O, CA-CB
+			res1_indx = residue_array[i]
+			res1_name = model_residues[res1_indx]
+			
+			res1_N_atom = str(res1_indx)+'-'+res1_name+'-N'+'-'+str(temp_indx)
+			res1_CA_atom = str(res1_indx)+'-'+res1_name+'-CA'+'-'+str(temp_indx)
+			res1_C_atom = str(res1_indx)+'-'+res1_name+'-C'+'-'+str(temp_indx)
+			res1_O_atom = str(res1_indx)+'-'+res1_name+'-O'+'-'+str(temp_indx)
+			res1_CB_atom = str(res1_indx)+'-'+res1_name+'-CB'+'-'+str(temp_indx)
+			
+			# get native coordinates, suppose the template structure is provided
+			
+			for j in range(i+1,len(residue_array)):
+				res2_indx = residue_array[j]
+				res2_name = model_residues[res2_indx]
+				
+				res2_CA_atom = str(res2_indx)+'-'+res2_name+'-CA'+'-'+str(temp_indx)
+				res2_CB_atom = str(res2_indx)+'-'+res2_name+'-CB'+'-'+str(temp_indx)
+				res2_O_atom = str(res2_indx)+'-'+res2_name+'-O'+'-'+str(temp_indx)
+				res2_N_atom = str(res2_indx)+'-'+res2_name+'-N'+'-'+str(temp_indx)
+				
+				
+				# get CA-CA
+				if res1_CA_atom in target_index2AtomCoord.keys() and res2_CA_atom in target_index2AtomCoord.keys():
+					#print('Adding information for ',res1_CA_atom,' and ',res2_CA_atom)
+					res1_CA_atom_coord = target_index2AtomCoord[res1_CA_atom]
+					res2_CA_atom_coord = target_index2AtomCoord[res2_CA_atom]
+					#print("res1_CA_atom_coord: ",res1_CA_atom_coord)
+					#print("res2_CA_atom_coord: ",res2_CA_atom_coord)
+					x1,y1,z1 = [res1_CA_atom_coord.get_x(),res1_CA_atom_coord.get_y(),res1_CA_atom_coord.get_z()]
+					x2,y2,z2 = [res2_CA_atom_coord.get_x(),res2_CA_atom_coord.get_y(),res2_CA_atom_coord.get_z()]
+					dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
+					
+					# get the particle index in model 
+					p1 = cont_model.get_particles()[model_particle_index[res1_CA_atom]]
+					p2 = cont_model.get_particles()[model_particle_index[res2_CA_atom]]
+					f = IMP.core.Harmonic(dist, 1.0)
+					s = IMP.core.DistancePairScore(f)
+					r = IMP.core.PairRestraint(m, s, (p1, p2))
+					restraints_list.append(r)
+				
+				# get CB-CB
+				if res1_CB_atom in target_index2AtomCoord.keys() and res2_CB_atom in target_index2AtomCoord.keys():
+					res1_CB_atom_coord = target_index2AtomCoord[res1_CB_atom]
+					res2_CB_atom_coord = target_index2AtomCoord[res2_CB_atom]
+					x1,y1,z1 = [res1_CB_atom_coord.get_x(),res1_CB_atom_coord.get_y(),res1_CB_atom_coord.get_z()]
+					x2,y2,z2 = [res2_CB_atom_coord.get_x(),res2_CB_atom_coord.get_y(),res2_CB_atom_coord.get_z()]
+					dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
+					
+					# get the particle index in model 
+					p1 = cont_model.get_particles()[model_particle_index[res1_CB_atom]]
+					p2 = cont_model.get_particles()[model_particle_index[res2_CB_atom]]
+					f = IMP.core.Harmonic(dist, 1.0)
+					s = IMP.core.DistancePairScore(f)
+					r = IMP.core.PairRestraint(m, s, (p1, p2))
+					restraints_list.append(r)
+				
+				
+				# this is very useful for secondary structure folding. get N-O to get hydrogen bond, 
+				#check confold how to add all N-O. pulchar also does post-hydrogen bond optimization.  
+				#We don't need all N-O which will cause large energy, we only need small part N-O, check confold
+				if res1_N_atom in target_index2AtomCoord.keys() and res2_O_atom in target_index2AtomCoord.keys():
+					res1_N_atom_coord = target_index2AtomCoord[res1_N_atom]
+					res2_O_atom_coord = target_index2AtomCoord[res2_O_atom]
+					x1,y1,z1 = [res1_N_atom_coord.get_x(),res1_N_atom_coord.get_y(),res1_N_atom_coord.get_z()]
+					x2,y2,z2 = [res2_O_atom_coord.get_x(),res2_O_atom_coord.get_y(),res2_O_atom_coord.get_z()]
+					dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
+					
+					# get the particle index in model 
+					p1 = cont_model.get_particles()[model_particle_index[res1_N_atom]]
+					p2 = cont_model.get_particles()[model_particle_index[res2_O_atom]]
+					f = IMP.core.Harmonic(dist, 1.0)
+					s = IMP.core.DistancePairScore(f)
+					r = IMP.core.PairRestraint(m, s, (p1, p2))
+					restraints_list.append(r)
+					
+				if res1_O_atom in target_index2AtomCoord.keys() and res2_N_atom in target_index2AtomCoord.keys():
+					res1_O_atom_coord = target_index2AtomCoord[res1_O_atom]
+					res2_N_atom_coord = target_index2AtomCoord[res2_N_atom]
+					x1,y1,z1 = [res1_O_atom_coord.get_x(),res1_O_atom_coord.get_y(),res1_O_atom_coord.get_z()]
+					x2,y2,z2 = [res2_N_atom_coord.get_x(),res2_N_atom_coord.get_y(),res2_N_atom_coord.get_z()]
+					dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
+					
+					# get the particle index in model 
+					p1 = cont_model.get_particles()[model_particle_index[res1_O_atom]]
+					p2 = cont_model.get_particles()[model_particle_index[res2_N_atom]]
+					f = IMP.core.Harmonic(dist, 1.0)
+					s = IMP.core.DistancePairScore(f)
+					r = IMP.core.PairRestraint(m, s, (p1, p2))
+					restraints_list.append(r)
+elif options.restraints:
+	print("Loading custom restraints")
+	# 2-LYS-CA-1 53-VAL-CA-1 distance 5.1234
+	f = open(options.restraints, 'r')	
+	restraints_contenst = f.readlines()	
+	f.close()	
+
+	model_residues = {}
+	model_particle_index = {}
+	for i in range(0,len(cont_model.get_particles())):
+		p1 = cont_model.get_particles()[i]
+		#get atom information
+		p1_atom = IMP.atom.Atom(p1)
+		p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
+		p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
+		het = p1_atom_name.startswith('HET:')
+		if het:
+			p1_atom_name = p1_atom_name[4:]
+		p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
+		p1_resname = p1_res.get_name() #'SER'
+		p1_seq_id = p1_res.get_index() #1
+		IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
+		if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
+			model_residues[p1_seq_id] = p1_resname
+		
+		info = str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name
+		model_particle_index[info] = i # get particle index of atom in chain 
+	
+	restraints_list = []
+	for line in restraints_contenst:
+		if '#' in line:
+			continue
+		buff = re.split("\t+",line.strip())
+		
+		res1 = buff[0]
+		res2 = buff[1]
+		re_type = buff[2]
+		re_value = float(buff[3])
+		
+		if res1 in model_particle_index and res2 in model_particle_index and re_type == 'distance':
 			# get the particle index in model 
-			p1 = cont_model.get_particles()[model_particle_index[res1_CA_atom]]
-			p2 = cont_model.get_particles()[model_particle_index[res2_CA_atom]]
-			f = IMP.core.Harmonic(dist, 1.0)
+			p1 = cont_model.get_particles()[model_particle_index[res1]]
+			p2 = cont_model.get_particles()[model_particle_index[res2]]
+			f = IMP.core.Harmonic(re_value, 1.0)
 			s = IMP.core.DistancePairScore(f)
 			r = IMP.core.PairRestraint(m, s, (p1, p2))
 			restraints_list.append(r)
-		
-		# get CB-CB
-		if res1_CB_atom in index2AtomCoord.keys() and res2_CB_atom in index2AtomCoord.keys():
-			res1_CB_atom_coord = index2AtomCoord[res1_CB_atom]
-			res2_CB_atom_coord = index2AtomCoord[res2_CB_atom]
-			x1,y1,z1 = [res1_CB_atom_coord.get_x(),res1_CB_atom_coord.get_y(),res1_CB_atom_coord.get_z()]
-			x2,y2,z2 = [res2_CB_atom_coord.get_x(),res2_CB_atom_coord.get_y(),res2_CB_atom_coord.get_z()]
-			dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-			
-			# get the particle index in model 
-			p1 = cont_model.get_particles()[model_particle_index[res1_CB_atom]]
-			p2 = cont_model.get_particles()[model_particle_index[res2_CB_atom]]
-			f = IMP.core.Harmonic(dist, 1.0)
-			s = IMP.core.DistancePairScore(f)
-			r = IMP.core.PairRestraint(m, s, (p1, p2))
-			restraints_list.append(r)
-		
-		
-		# this is very useful for secondary structure folding. get N-O to get hydrogen bond, 
-		#check confold how to add all N-O. pulchar also does post-hydrogen bond optimization.  
-		#We don't need all N-O which will cause large energy, we only need small part N-O, check confold
-		if res1_N_atom in index2AtomCoord.keys() and res2_O_atom in index2AtomCoord.keys():
-			res1_N_atom_coord = index2AtomCoord[res1_N_atom]
-			res2_O_atom_coord = index2AtomCoord[res2_O_atom]
-			x1,y1,z1 = [res1_N_atom_coord.get_x(),res1_N_atom_coord.get_y(),res1_N_atom_coord.get_z()]
-			x2,y2,z2 = [res2_O_atom_coord.get_x(),res2_O_atom_coord.get_y(),res2_O_atom_coord.get_z()]
-			dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-			
-			# get the particle index in model 
-			p1 = cont_model.get_particles()[model_particle_index[res1_N_atom]]
-			p2 = cont_model.get_particles()[model_particle_index[res2_O_atom]]
-			f = IMP.core.Harmonic(dist, 1.0)
-			s = IMP.core.DistancePairScore(f)
-			r = IMP.core.PairRestraint(m, s, (p1, p2))
-			restraints_list.append(r)
-			
-		if res1_O_atom in index2AtomCoord.keys() and res2_N_atom in index2AtomCoord.keys():
-			res1_O_atom_coord = index2AtomCoord[res1_O_atom]
-			res2_N_atom_coord = index2AtomCoord[res2_N_atom]
-			x1,y1,z1 = [res1_O_atom_coord.get_x(),res1_O_atom_coord.get_y(),res1_O_atom_coord.get_z()]
-			x2,y2,z2 = [res2_N_atom_coord.get_x(),res2_N_atom_coord.get_y(),res2_N_atom_coord.get_z()]
-			dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-			
-			# get the particle index in model 
-			p1 = cont_model.get_particles()[model_particle_index[res1_O_atom]]
-			p2 = cont_model.get_particles()[model_particle_index[res2_N_atom]]
-			f = IMP.core.Harmonic(dist, 1.0)
-			s = IMP.core.DistancePairScore(f)
-			r = IMP.core.PairRestraint(m, s, (p1, p2))
-			restraints_list.append(r)
-		
+		else:
+			print("The following restraint sources not in model: ",res1," and ",res2)
+else:
+	print('Error ! No restrains are provided. Exiting application...')
+	sys.exit(-1)
+	
 #### check using the predicted distance	
 #### use predicted CB-CB distance,  
 #### add secondary structure bond
@@ -390,9 +535,9 @@ ff.add_well_depths(prot)
 ### add stereo can make CA and side-chain atoms optimized together, very important.
 restraints_list.append(r1)
 
-###########################################################################################
-# (7) Basic Optimization and Chain
-###########################################################################################
+print('###########################################################################################')
+print('# (7) Basic Optimization and Chain')
+print('###########################################################################################')
 
 # Optimize the x,y,z coordinates of both particles with conjugate gradients
 s = IMP.core.ConjugateGradients(m)
@@ -450,7 +595,8 @@ for i in range(0,10):
 		## question, why rotamer increase the energy?
 		IMP.atom.write_pdb(prot, '3BFO-B-epoch'+str(i)+'-withRotamer.pdb')
 		'''
-		IMP.atom.write_pdb(prot, '3BFO-B-epoch'+str(i)+'.pdb')
+		out_pdb = sample_dir+'/'+target+'-epoch'+str(i)+'.pdb'
+		IMP.atom.write_pdb(prot, out_pdb)
 		#pulchra_cmd = '/data/jh7x3/multicom_github/multicom/tools/pulchra304/pulchra 3BFO-B-epoch'+str(i)+'.pdb'
 		#os.system(pulchra_cmd)
 	
