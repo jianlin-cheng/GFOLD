@@ -3,9 +3,6 @@
 # python GFOLD.py  --target 3BFO-B  --fasta 3BFO-B.fasta --alignment 3BFO-B.pir  --atomdir ./  --dir  3BFOB
 
 
-
-
-	
 ############################################################################
 #
 #	 GFOLD : A Distance-based Protein Structure Folding
@@ -31,14 +28,7 @@ import IMP.rotamer
 import warnings
 import string, re
 import math
-import modeller
-from modeller import *
-import IMP.modeller
 warnings.filterwarnings("ignore")
-modeller.log.none()
-#modeller.log.minimal()
-
-
 #/home/jh7x3/fusion_hybrid/
 project_root = '/data/jh7x3/GFOLD_v0.1/'
 sys.path.insert(0, project_root)
@@ -48,89 +38,48 @@ aa_one2index = {'A':0, 'C':1, 'D':2, 'E':3, 'F':4, 'G':5, 'H':6, 'I':7, 'K':8, '
 aa_three2index = {'ALA':0, 'CYS':1, 'ASP':2, 'GLU':3, 'PHE':4, 'GLY':5, 'HIS':6, 'ILE':7, 'LYS':8, 'LEU':9, 'MET':10, 'ASN':11, 'PRO':12, 'GLN':13, 'ARG':14, 'SER':15, 'THR':16, 'VAL':17, 'TRP':18, 'TYR':19}
 aa_index2three = {y:x for x,y in aa_three2index.iteritems()}
 
-def get_ss_range(integer_list):
-	integer_list = sorted(integer_list)
-	pstart = integer_list[0]
-	pend = integer_list[-1]
-
-	a = set(integer_list)  # Set a
-	b = range(pstart, pend+1)
-
-	# Pick items that are not in range.
-	c = set(b) - a  # Set operation b-a
-
-	li = []
-	start = 0
-	for i in sorted(c):
-		end = b.index(i)  # Get end point of the list slicing
-		li.append(b[start:end])  # Slice list using values
-		start = end + 1  # Increment the start point for next slicing
-	li.append(b[start:])  # Add the last series
-	range_list =  []
-	for sliced_list in li:
-		if not sliced_list:
-			# list is empty
-			continue
-		if len(sliced_list) == 1:
-			# If only one item found in list
-			range_list.append(sliced_list[0])
-		else:
-			range_list.append("{0}-{1}".format(sliced_list[0], sliced_list[-1]))
-	return range_list
-
-			
-
 print('')
 print('  ############################################################################')
-print('  #																		  #')
-print('  #	  GFOLD : A Distance-based Protein Structure Folding				  #')
-print('  #																		  #')
-print('  #   Copyright (C) 2019 -2029	Jie Hou and Jianlin Cheng				   #')
-print('  #																		  #')
+print('  #                                                                          #')
+print('  #      GFOLD : A Distance-based Protein Structure Folding                  #')
+print('  #                                                                          #')
+print('  #   Copyright (C) 2019 -2029	Jie Hou and Jianlin Cheng                   #')
+print('  #                                                                          #')
 print('  ############################################################################')
-print('  #																		  #')
-print('  #   Method to perform distance-based modeling (TS)						 #')
-print('  #																		  #')
+print('  #                                                                          #')
+print('  #   Method to perform distance-based modeling (TS)                         #')
+print('  #                                                                          #')
 print('  ############################################################################')
 print('')
 
 
 parser = optparse.OptionParser()
 parser.add_option('--target', dest='target',
-	default = 'test',	# default target name is test
+	default = 'test',    # default target name is test
 	help = 'name of target protein')
 parser.add_option('--fasta', dest = 'fasta',
-	default = '',	# default empty!
+	default = '',    # default empty!
 	help = 'FASTA file containing the protein to sequence to fold')
-parser.add_option('--ss', dest = 'ss',
-	default = '',	# default empty!
-	help = 'Secondary structure file containing the protein to sequence to 3-class secondary structure')
 parser.add_option('--alignment', dest = 'alignment',
-	default = '',	# default empty!
+	default = '',    # default empty!
 	help = 'alignement file for the target <pir format>')
 parser.add_option('--atomdir', dest = 'atomdir',
-	default = '',	# default empty!
+	default = '',    # default empty!
 	help = 'PDB structure for template protein in the pir alignment')
 parser.add_option('--restraints', dest = 'restraints',
-	default = '',	# default empty!
+	default = '',    # default empty!
 	help = 'restraints for modeling')
 parser.add_option('--hbond', dest = 'hbond',
-	default = '',	# default empty!
+	default = '',    # default empty!
 	help = 'hbond restraints for modeling')
 parser.add_option('--dihedral', dest = 'dihedral',
-	default = '',	# default empty!
+	default = '',    # default empty!
 	help = 'dihedral restraints for modeling')
 parser.add_option('--ssnoe', dest = 'ssnoe',
-	default = '',	# default empty!
+	default = '',    # default empty!
 	help = 'ssnoe restraints for modeling')
 parser.add_option( '--dir', dest = 'dir',
-	default = '',	# default empty!
-	help = 'root directory for results')
-parser.add_option( '--epoch', dest = 'epoch',
-	default = '10',	# default empty!
-	help = 'root directory for results')
-parser.add_option( '--cgstep', dest = 'cgstep',
-	default = '100',	# default empty!
+	default = '',    # default empty!
 	help = 'root directory for results')
 
 (options,args) = parser.parse_args()
@@ -148,30 +97,6 @@ if options.fasta:
 else:
 	print('Error ! target protein not defined. Exiting application...')
 	sys.exit(1)
-
-# SS sequence file option
-ss_sequence = ''
-
-if options.ss:	
-	f = open(options.ss, 'r')	
-	ss_sequence = f.readlines()	
-	f.close()	
-	# removing the trailing "\n" and any header lines
-	ss_sequence = [line.strip() for line in ss_sequence if not '>' in line]
-	ss_sequence = ''.join( ss_sequence )
-else:
-	print('Error ! secondary structure not defined. Exiting application...')
-	sys.exit(1)
-
-ss_file = options.ss
-
-epoch= 10
-if options.epoch:
-	epoch = int(options.epoch)
-
-cgstep = 100
-if options.cgstep:
-	cgstep = int(options.cgstep)
 
 dir = options.dir
 if dir:
@@ -203,39 +128,35 @@ sample_dir = work_dir + '/sampled_structure'
 if not os.path.exists(sample_dir):
 	os.makedirs(sample_dir)
 
-
 ###########################################################################################
 # (1) Build extended structure from sequence
 ###########################################################################################
-
-e = modeller.environ()
-e.edat.dynamic_sphere = False
-e.libs.topology.read('${LIB}/top_heav.lib')
-e.libs.parameters.read('${LIB}/par.lib')
-modmodel = modeller.model(e)
-modmodel.build_sequence(sequence)
+topology = IMP.atom.CHARMMTopology(IMP.atom.get_all_atom_CHARMM_parameters())
+topology.add_sequence(sequence)
+topology.apply_default_patches()
 
 
 ###########################################################################################
 # (2) Load the model into IMP Hierarchy
 ###########################################################################################
 m = IMP.Model()
-h = IMP.modeller.ModelLoader(modmodel).load_atoms(m)   ##### can we add secondary structure information to build extend structure, or add secondary structure angle restraints later
-IMP.atom.add_radii(h)
+h = topology.create_hierarchy(m)   ##### can we add secondary structure information to build extend structure, or add secondary structure angle restraints later
+topology.add_atom_types(h)
+topology.add_coordinates(h)
+IMP.atom.add_radii(h) # Hierarchies in IMP must have radii
 init_pdb = init_dir+'/'+target+'-init.pdb'
 IMP.atom.write_pdb(h, init_pdb) # Write out the final structure to a PDB file
 print("Writng initial structure to ",init_pdb) 
-clean_file = "sed -e \'s/\\x00//\' -i " + init_pdb
-os.system(clean_file)
 
 ###########################################################################################
 # (3) Load initial model
 ###########################################################################################
 
 m = IMP.Model()
-#select1 = IMP.atom.OrPDBSelector(IMP.atom.CBetaPDBSelector(),IMP.atom.BackbonePDBSelector())
-#select2 = IMP.atom.OrPDBSelector(select1,IMP.atom.HydrogenPDBSelector())
-prot = IMP.atom.read_pdb(init_pdb, m)
+select1 = IMP.atom.OrPDBSelector(IMP.atom.CBetaPDBSelector(),IMP.atom.BackbonePDBSelector())
+select2 = IMP.atom.OrPDBSelector(select1,IMP.atom.HydrogenPDBSelector())
+prot = IMP.atom.read_pdb(init_pdb, m,select1)
+#prot = IMP.atom.read_pdb(init_pdb, m)
 res_model = IMP.atom.get_by_type(prot, IMP.atom.RESIDUE_TYPE)
 atoms_model = IMP.atom.get_by_type(prot, IMP.atom.ATOM_TYPE)
 chain_model = IMP.atom.get_by_type(prot, IMP.atom.CHAIN_TYPE)
@@ -246,23 +167,8 @@ if len(chain_model) !=1:
 print("Chain has", len(atoms_model), "atoms")
 cont_model = IMP.container.ListSingletonContainer(atoms_model) # Get a list of all atoms in the model, and put it in a container
 
-#for atom in atoms_model:
-#	print(atom)
-
-
-rsr = modmodel.restraints
-atmsel = selection(modmodel)
-rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
-
-modeller_atoms = modmodel.chains[0].atoms
-modeller_res = modmodel.chains[0].residues
-
-
-print("modeller_atoms: ",len(modeller_atoms))
-print("modeller_res: ",len(modeller_res))
-print("atoms_model: ",len(atoms_model))
-print("res_model: ",len(res_model))
-
+for atom in atoms_model:
+	print(atom)
 
 model_residues = {}
 model_particle_index = {}
@@ -315,7 +221,7 @@ if options.alignment and options.atomdir:
 	template_sequence = {}
 	template_region = {}
 	weight = {}
-	f = open(options.alignment, 'r')	# open the alignment file
+	f = open(options.alignment, 'r')    # open the alignment file
 	while True:
 		line1 = f.readline()
 		if not line1:
@@ -527,22 +433,13 @@ if options.alignment and options.atomdir:
 					dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
 					
 					# get the particle index in model 
-					#p1 = cont_model.get_particles()[model_particle_index[res1_CA_atom]]
-					#p2 = cont_model.get_particles()[model_particle_index[res2_CA_atom]]
-					#f = IMP.core.Harmonic(dist, 1.0)
-					#s = IMP.core.DistancePairScore(f)
-					#r = IMP.core.PairRestraint(m, s, (p1, p2))
-					#restraints_list.append(r)
-					
+					p1 = cont_model.get_particles()[model_particle_index[res1_CA_atom]]
+					p2 = cont_model.get_particles()[model_particle_index[res2_CA_atom]]
+					f = IMP.core.Harmonic(dist, 1.0)
+					s = IMP.core.DistancePairScore(f)
+					r = IMP.core.PairRestraint(m, s, (p1, p2))
+					restraints_list.append(r)
 				
-					#use modeller's restraints is better
-					res1_pos = 'CA:'+str(res1_indx)
-					res2_pos = 'CA:'+str(res2_indx)
-					rsr.add(forms.gaussian(group=physical.xy_distance,
-					   feature=features.distance(modeller_atoms[res1_pos],
-												 modeller_atoms[res2_pos]),
-					   mean=dist, stdev=0.1))
-				'''
 				# get CB-CB
 				if res1_CB_atom in target_index2AtomCoord.keys() and res2_CB_atom in target_index2AtomCoord.keys():
 					res1_CB_atom_coord = target_index2AtomCoord[res1_CB_atom]
@@ -563,7 +460,7 @@ if options.alignment and options.atomdir:
 				# this is very useful for secondary structure folding. get N-O to get hydrogen bond, 
 				#check confold how to add all N-O. pulchar also does post-hydrogen bond optimization.  
 				#We don't need all N-O which will cause large energy, we only need small part N-O, check confold
-				
+				'''
 				if res1_N_atom in target_index2AtomCoord.keys() and res2_O_atom in target_index2AtomCoord.keys():
 					res1_N_atom_coord = target_index2AtomCoord[res1_N_atom]
 					res2_O_atom_coord = target_index2AtomCoord[res2_O_atom]
@@ -578,7 +475,7 @@ if options.alignment and options.atomdir:
 					s = IMP.core.DistancePairScore(f)
 					r = IMP.core.PairRestraint(m, s, (p1, p2))
 					restraints_list.append(r)
-				
+				'''
 				
 				if res1_O_atom in target_index2AtomCoord.keys() and res2_N_atom in target_index2AtomCoord.keys() and (res2_indx-res1_indx ==4):
 					res1_O_atom_coord = target_index2AtomCoord[res1_O_atom]
@@ -594,7 +491,7 @@ if options.alignment and options.atomdir:
 					s = IMP.core.DistancePairScore(f)
 					r = IMP.core.PairRestraint(m, s, (p1, p2))
 					restraints_list.append(r)
-				'''
+
 if options.restraints:
 	print("Loading custom restraints")
 	# 2-LYS-CA-1 53-VAL-CA-1 distance 5.1234
@@ -622,7 +519,6 @@ if options.restraints:
 		
 		info = str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name
 		model_particle_index[info] = i # get particle index of atom in chain 
-		#print("Adding ",info)
 	
 	for line in restraints_contenst:
 		if '#' in line:
@@ -638,26 +534,12 @@ if options.restraints:
 			# get the particle index in model 
 			p1 = cont_model.get_particles()[model_particle_index[res1]]
 			p2 = cont_model.get_particles()[model_particle_index[res2]]
-			
-			p1_buff = re.split("-",res1)
-			p2_buff = re.split("-",res2)
-			
-			if p1_buff[2] == 'CA' and p2_buff[2] == 'CA':
-				#print("Adding restraints for ",res1," and ", res2)
-				res1_pos = 'CA:'+str(p1_buff[0])
-				res2_pos = 'CA:'+str(p2_buff[0])
-				rsr.add(forms.gaussian(group=physical.xy_distance,
-				   feature=features.distance(modeller_atoms[res1_pos],
-											 modeller_atoms[res2_pos]),
-				   mean=re_value, stdev=0.1))
-			
-				
-				#f = IMP.core.Harmonic(re_value, 0.1)
-				#s = IMP.core.DistancePairScore(f)
-				#r = IMP.core.PairRestraint(m, s, (p1, p2))
-				#restraints_list.append(r)
-		#else:
-		#	print("The following restraint sources not in model: ",res1," and ",res2)
+			f = IMP.core.Harmonic(re_value, 1.0)
+			s = IMP.core.DistancePairScore(f)
+			r = IMP.core.PairRestraint(m, s, (p1, p2))
+			restraints_list.append(r)
+		else:
+			print("The following restraint sources not in model: ",res1," and ",res2)
 
 
 
@@ -811,11 +693,11 @@ if options.dihedral:
 			anglemin = re_value  - deviation
 			anglemax = re_value + deviation
 			ts = IMP.core.HarmonicWell(
-					 (math.pi * anglemin / 180.0,
-					  math.pi * anglemax / 180.0), 10)
+                     (math.pi * anglemin / 180.0,
+                      math.pi * anglemax / 180.0), 10)
 			#ts = IMP.core.HarmonicWell(
-			#		 (self.pi * anglemin / 180.0,
-			#		  self.pi * anglemax / 180.0), 10)
+            #         (self.pi * anglemin / 180.0,
+            #          self.pi * anglemax / 180.0), 10)
 			r = IMP.core.DihedralRestraint(m,ts,p1,p2,p3,p4)
 			
 			restraints_list.append(r)
@@ -837,48 +719,42 @@ if options.dihedral:
 # (6) Charmm forcefield
 ###########################################################################################
 
-### add secondary structure 
-f = open(ss_file, 'r')	
-ss_seq = f.readlines()	
-f.close()	
-# removing the trailing "\n" and any header lines
-ss_seq = [line.strip() for line in ss_seq if not '>' in line]
-ss_seq = ''.join( ss_seq )
-res_strand = {}
-res_helix = {}
-for i in range(0, len(ss_sequence)):
-	ss_char = ss_sequence[i:i+1]
-	if ss_char == 'H':
-		res_helix[i+1] = ss_char
-	if ss_char == 'E':
-		res_strand[i+1] = ss_char
 
-helix_range = get_ss_range(res_helix.keys())
-for item in helix_range:
-	if '-' in str(item):
-		print("Setting to helix in range ",item)
-		ss_buff = re.split("-",item)
-		rsr.add(secondary_structure.alpha(modmodel.residue_range(ss_buff[0], ss_buff[1])))
+# Read in the CHARMM heavy atom topology and parameter files
+ff = IMP.atom.get_heavy_atom_CHARMM_parameters()
 
-strand_range = get_ss_range(res_strand.keys())
-for item in get_ss_range(res_strand.keys()):
-	if '-' in str(item):
-		print("Setting to strand in range ",item)
-		ss_buff = re.split("-",item)
-		rsr.add(secondary_structure.strand(modmodel.residue_range(ss_buff[0], ss_buff[1])))
+# Using the CHARMM libraries, determine the ideal topology (atoms and their
+# connectivity) for the PDB file's primary sequence
+topology = ff.create_topology(prot)
 
-#	   An anti-parallel sheet composed of the two strands:
-#	   rsr.add(secondary_structure.sheet(at['N:1'], at['O:14'],
-#										  sheet_h_bonds=-5))
-#	   Use the following instead for a *parallel* sheet:
-#	   rsr.add(secondary_structure.sheet(at['N:1'], at['O:9'],
-#										 sheet_h_bonds=5))
+# Typically this modifies the C and N termini of each chain in the protein by
+# applying the CHARMM CTER and NTER patches. Patches can also be manually
+# applied at this point, e.g. to add disulfide bridges.
+topology.apply_default_patches()
 
+# Make the PDB file conform with the topology; i.e. if it contains extra
+# atoms that are not in the CHARMM topology file, remove them; if it is
+# missing atoms (e.g. sidechains, hydrogens) that are in the CHARMM topology,
+# add them and construct their Cartesian coordinates from internal coordinate
+# information.
+topology.setup_hierarchy(prot)
+
+# Set up and evaluate the stereochemical part (bonds, angles, dihedrals,
+# impropers) of the CHARMM forcefield
+# or check atom/charmm_forcefield_verbose.py for customization
+r1 = IMP.atom.CHARMMStereochemistryRestraint(prot, topology)
+#m.add_restraint(r)
+
+# Add non-bonded interaction (in this case, Lennard-Jones). This needs to
+# know the radii and well depths for each atom, so add them from the forcefield
+# (they can also be assigned manually using the XYZR or LennardJones
+# decorators):
+ff.add_radii(prot)
+ff.add_well_depths(prot)
 
 
 ### add stereo can make CA and side-chain atoms optimized together, very important.
-r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
-restraints_list.append(r)
+restraints_list.append(r1)
 
 print('###########################################################################################')
 print('# (7) Basic Optimization and Chain')
@@ -900,8 +776,8 @@ rc = IMP.rotamer.RotamerCalculator(rl)
 
 min_energy = 1000000000
 min_info = ''
-for i in range(0,epoch):
-	s.optimize(cgstep)
+for i in range(0,10):
+	s.optimize(100)
 	
 	energy = sf.evaluate(False)
 	## can apply simulated annealing here
@@ -942,8 +818,6 @@ for i in range(0,epoch):
 		'''
 		out_pdb = sample_dir+'/'+target+'-epoch'+str(i)+'.pdb'
 		IMP.atom.write_pdb(prot, out_pdb)
-		clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
-		os.system(clean_file)
 		#pulchra_cmd = '/data/jh7x3/multicom_github/multicom/tools/pulchra304/pulchra 3BFO-B-epoch'+str(i)+'.pdb'
 		#os.system(pulchra_cmd)
 	
