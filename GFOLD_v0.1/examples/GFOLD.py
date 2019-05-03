@@ -574,7 +574,7 @@ if options.alignment and options.atomdir:
 					# get the particle index in model 
 					p1 = cont_model.get_particles()[model_particle_index[res1_N_atom]]
 					p2 = cont_model.get_particles()[model_particle_index[res2_O_atom]]
-					f = IMP.core.Harmonic(dist, 1.0)
+					f = IMP.core.Harmonic(dist, 0.1)
 					s = IMP.core.DistancePairScore(f)
 					r = IMP.core.PairRestraint(m, s, (p1, p2))
 					restraints_list.append(r)
@@ -898,9 +898,27 @@ rl = IMP.rotamer.RotamerLibrary()
 rl.read_library_file(rotamer_lib)
 rc = IMP.rotamer.RotamerCalculator(rl)
 
-min_energy = 1000000000
+min_energy = 100000000000000
 min_info = ''
-for i in range(0,epoch):
+
+out_pdb = sample_dir+'/'+target+'-epoch'+str(0).zfill(5)+'.pdb'
+IMP.atom.write_pdb(prot, out_pdb)
+clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
+os.system(clean_file)
+
+
+energy = sf.evaluate(False)
+min_info = "Epoch: "+str(0)+": "+str(energy)+"\n"
+
+out_energy = work_dir+'/sampling.energy'
+with open(out_energy, 'w') as f1:
+	f1.write(min_info)
+
+out_eva = sample_dir+'/'+target+'-epoch'+str(0).zfill(5)+'.eva'
+with open(out_eva, 'w') as f1:
+	f1.write(min_info)
+
+for i in range(1,epoch+1):
 	s.optimize(cgstep)
 	
 	energy = sf.evaluate(False)
@@ -908,7 +926,10 @@ for i in range(0,epoch):
 	if energy < min_energy:
 		min_energy = energy
 		print("Epoch: ",i,": ",min_energy)
-		min_info = "Epoch: "+str(i)+": "+str(min_energy)
+		## 
+		min_info = "Epoch: "+str(i)+": "+str(min_energy)+"\n"
+		with open(out_energy, 'a') as f1:
+			f1.write(min_info)
 		
 		'''
 		print("before rotamer: ",sf.evaluate(False))
@@ -940,14 +961,18 @@ for i in range(0,epoch):
 		## question, why rotamer increase the energy?
 		IMP.atom.write_pdb(prot, '3BFO-B-epoch'+str(i)+'-withRotamer.pdb')
 		'''
-		out_pdb = sample_dir+'/'+target+'-epoch'+str(i)+'.pdb'
+		out_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'.pdb'
 		IMP.atom.write_pdb(prot, out_pdb)
 		clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
 		os.system(clean_file)
+		
+		out_eva = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'.eva'
+		with open(out_eva, 'w') as f1:
+			f1.write(min_info)
 		#pulchra_cmd = '/data/jh7x3/multicom_github/multicom/tools/pulchra304/pulchra 3BFO-B-epoch'+str(i)+'.pdb'
 		#os.system(pulchra_cmd)
 	
-print(min_info)
+print(min_info) 
 
 
 '''
