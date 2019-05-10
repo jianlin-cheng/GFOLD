@@ -36,6 +36,8 @@ from modeller import *
 import IMP.modeller
 warnings.filterwarnings("ignore")
 modeller.log.none()
+
+import random
 #modeller.log.minimal()
 
 
@@ -47,6 +49,24 @@ sys.path.insert(0, project_root)
 aa_one2index = {'A':0, 'C':1, 'D':2, 'E':3, 'F':4, 'G':5, 'H':6, 'I':7, 'K':8, 'L':9, 'M':10, 'N':11, 'P':12, 'Q':13, 'R':14, 'S':15, 'T':16, 'V':17, 'W':18, 'Y':19}
 aa_three2index = {'ALA':0, 'CYS':1, 'ASP':2, 'GLU':3, 'PHE':4, 'GLY':5, 'HIS':6, 'ILE':7, 'LYS':8, 'LEU':9, 'MET':10, 'ASN':11, 'PRO':12, 'GLN':13, 'ARG':14, 'SER':15, 'THR':16, 'VAL':17, 'TRP':18, 'TYR':19}
 aa_index2three = {y:x for x,y in aa_three2index.iteritems()}
+
+
+# Global variables for generating secondary structure restraints
+SS_ATOMTYPE = {}
+SS_ATOMTYPE['CA'] = 1
+SS_ATOMTYPE['N'] = 1
+SS_ATOMTYPE['C'] = 1
+SS_ATOMTYPE['O'] = 1
+
+SS_SHIFT = {}
+SS_SHIFT['0'] = 1
+SS_SHIFT['+1'] = 1
+SS_SHIFT['-1'] = 1
+res_dihe     = {};
+res_strnd_OO = {};
+res_dist     = {};
+res_hbnd     = {};
+
 
 def get_ss_range(integer_list):
 	integer_list = sorted(integer_list)
@@ -78,7 +98,163 @@ def get_ss_range(integer_list):
 			range_list.append("{0}-{1}".format(sliced_list[0], sliced_list[-1]))
 	return range_list
 
+
+def load_ss_restraints(lamda,log_reference):
+	# T      Helix or Parallel or anti-parallel or Unknown Strand Type
+	# A1_A2  Atom1-Atom2 pair
+	# Ref    Hydrogen bonding connector atom (reference hbond connector)
+	# N      Neighborhood residue shifting on the hbond connector of R2 side. For example, If R1:N and R2:O have hbond and S = +1, the restraint A1-A2 are for R1 and (R2+1)
+	# Note: hbond distances are the distances between Nitrogen and Oxygen
+	# Places to verify:
+	# http://www.beta-sheet.org/page29/page51/page53/index.html
+	# In this model, the HP sheet is composed of identical straight helical chains with phi = -122 degrees, psi = 135 degrees, and a slightly non-linear interchain H-bond angle delta of 170 degrees.
+	# http://en.wikipedia.org/wiki/Alpha_helix
+	# Residues in alpha-helices typically adopt backbone (phi, psi) dihedral angles around (-60, -45), as shown in the image at right
+	# the H to O distance is about 2 A (0.20 nm
+
+	# T A Mean Standard_deviation
+	res_dihe["A PSI"] = "136.91 "+str(lamda * 17.39);
+	res_dihe["A PHI"] = "-120.89 "+str(lamda * 21.98);
+	res_dihe["P PSI"] = "130.96 "+str(lamda * 16.66);
+	res_dihe["P PHI"] = "-115.00 "+str(lamda * 20.31);
+	res_dihe["U PSI"] = "134.95 "+str(lamda * 17.65);
+	res_dihe["U PHI"] = "-118.91 "+str(lamda * 21.73);
+	res_dihe["H PSI"] = "-41.51 "+str(lamda * 9.84);
+	res_dihe["H PHI"] = "-63.47 "+str(lamda * 9.20);
+
+	#T A1_A2 Ref N Mean Standard_deviation
+	res_dist["A O-O O +1"]   = get_dist_neg_pos(7.73, 0.59, lamda);
+	res_dist["A O-O O -1"]   = get_dist_neg_pos(4.84, 0.16, lamda);
+	res_dist["A O-O O 0"]    = get_dist_neg_pos(3.57, 0.28, lamda);
+	res_dist["A O-O H +1"]   = get_dist_neg_pos(7.76, 0.60, lamda);
+	res_dist["A O-O H -1"]   = get_dist_neg_pos(4.90, 0.45, lamda);
+	res_dist["A O-O H 0"]    = get_dist_neg_pos(3.58, 0.31, lamda);
+	res_dist["A C-C O +1"]   = get_dist_neg_pos(7.66, 0.52, lamda);
+	res_dist["A C-C O -1"]   = get_dist_neg_pos(4.80, 0.17, lamda);
+	res_dist["A C-C O 0"]    = get_dist_neg_pos(4.96, 0.21, lamda);
+	res_dist["A C-C H +1"]   = get_dist_neg_pos(7.65, 0.51, lamda);
+	res_dist["A C-C H -1"]   = get_dist_neg_pos(4.85, 0.34, lamda);
+	res_dist["A C-C H 0"]    = get_dist_neg_pos(4.96, 0.21, lamda);
+	res_dist["A N-N O +1"]   = get_dist_neg_pos(5.09, 0.34, lamda);
+	res_dist["A N-N O -1"]   = get_dist_neg_pos(6.86, 0.40, lamda);
+	res_dist["A N-N O 0"]    = get_dist_neg_pos(4.42, 0.24, lamda);
+	res_dist["A N-N H +1"]   = get_dist_neg_pos(5.04, 0.21, lamda);
+	res_dist["A N-N H -1"]   = get_dist_neg_pos(6.85, 0.45, lamda);
+	res_dist["A N-N H 0"]    = get_dist_neg_pos(4.43, 0.25, lamda);
+	res_dist["A CA-CA O +1"] = get_dist_neg_pos(6.43, 0.41, lamda);
+	res_dist["A CA-CA O -1"] = get_dist_neg_pos(5.67, 0.28, lamda);
+	res_dist["A CA-CA O 0"]  = get_dist_neg_pos(5.26, 0.24, lamda);
+	res_dist["A CA-CA H +1"] = get_dist_neg_pos(6.38, 0.36, lamda);
+	res_dist["A CA-CA H -1"] = get_dist_neg_pos(5.71, 0.40, lamda);
+	res_dist["A CA-CA H 0"]  = get_dist_neg_pos(5.27, 0.25, lamda);
+	res_dist["P O-O O +1"]   = get_dist_neg_pos(7.90, 0.61, lamda);
+	res_dist["P O-O O -1"]   = get_dist_neg_pos(4.86, 0.16, lamda);
+	res_dist["P O-O O 0"]    = get_dist_neg_pos(3.78, 0.34, lamda);
+	res_dist["P O-O H +1"]   = get_dist_neg_pos(4.92, 0.40, lamda);
+	res_dist["P O-O H -1"]   = get_dist_neg_pos(8.02, 0.60, lamda);
+	res_dist["P O-O H 0"]    = get_dist_neg_pos(3.78, 0.32, lamda);
+	res_dist["P C-C O +1"]   = get_dist_neg_pos(8.03, 0.51, lamda);
+	res_dist["P C-C O -1"]   = get_dist_neg_pos(4.82, 0.17, lamda);
+	res_dist["P C-C O 0"]    = get_dist_neg_pos(5.21, 0.25, lamda);
+	res_dist["P C-C H +1"]   = get_dist_neg_pos(4.88, 0.34, lamda);
+	res_dist["P C-C H -1"]   = get_dist_neg_pos(7.87, 0.44, lamda);
+	res_dist["P C-C H 0"]    = get_dist_neg_pos(5.22, 0.22, lamda);
+	res_dist["P N-N O +1"]   = get_dist_neg_pos(8.14, 0.35, lamda);
+	res_dist["P N-N O -1"]   = get_dist_neg_pos(4.86, 0.40, lamda);
+	res_dist["P N-N O 0"]    = get_dist_neg_pos(5.13, 0.32, lamda);
+	res_dist["P N-N H +1"]   = get_dist_neg_pos(4.80, 0.18, lamda);
+	res_dist["P N-N H -1"]   = get_dist_neg_pos(7.54, 0.69, lamda);
+	res_dist["P N-N H 0"]    = get_dist_neg_pos(5.10, 0.28, lamda);
+	res_dist["P CA-CA O +1"] = get_dist_neg_pos(8.55, 0.37, lamda);
+	res_dist["P CA-CA O -1"] = get_dist_neg_pos(4.90, 0.29, lamda);
+	res_dist["P CA-CA O 0"]  = get_dist_neg_pos(6.21, 0.26, lamda);
+	res_dist["P CA-CA H +1"] = get_dist_neg_pos(4.90, 0.28, lamda);
+	res_dist["P CA-CA H -1"] = get_dist_neg_pos(7.49, 0.60, lamda);
+	res_dist["P CA-CA H 0"]  = get_dist_neg_pos(6.24, 0.24, lamda);
+	res_dist["H O-O O +1"]   = get_dist_neg_pos(8.40, 0.27, lamda);
+	res_dist["H O-O O -1"]   = get_dist_neg_pos(4.99, 0.16, lamda);
+	res_dist["H O-O O 0"]    = get_dist_neg_pos(6.12, 0.26, lamda);
+	res_dist["H O-O H +1"]   = get_dist_neg_pos(5.03, 0.31, lamda);
+	res_dist["H O-O H -1"]   = get_dist_neg_pos(8.43, 0.32, lamda);
+	res_dist["H O-O H 0"]    = get_dist_neg_pos(6.12, 0.26, lamda);
+	res_dist["H C-C O +1"]   = get_dist_neg_pos(8.16, 0.24, lamda);
+	res_dist["H C-C O -1"]   = get_dist_neg_pos(4.87, 0.13, lamda);
+	res_dist["H C-C O 0"]    = get_dist_neg_pos(6.09, 0.23, lamda);
+	res_dist["H C-C H +1"]   = get_dist_neg_pos(4.89, 0.23, lamda);
+	res_dist["H C-C H -1"]   = get_dist_neg_pos(8.17, 0.25, lamda);
+	res_dist["H C-C H 0"]    = get_dist_neg_pos(6.09, 0.23, lamda);
+	res_dist["H N-N O +1"]   = get_dist_neg_pos(8.07, 0.23, lamda);
+	res_dist["H N-N O -1"]   = get_dist_neg_pos(4.84, 0.19, lamda);
+	res_dist["H N-N O 0"]    = get_dist_neg_pos(6.10, 0.20, lamda);
+	res_dist["H N-N H +1"]   = get_dist_neg_pos(4.81, 0.13, lamda);
+	res_dist["H N-N H -1"]   = get_dist_neg_pos(8.08, 0.21, lamda);
+	res_dist["H N-N H 0"]    = get_dist_neg_pos(6.10, 0.20, lamda);
+	res_dist["H CA-CA O +1"] = get_dist_neg_pos(8.63, 0.28, lamda);
+	res_dist["H CA-CA O -1"] = get_dist_neg_pos(5.13, 0.20, lamda);
+	res_dist["H CA-CA O 0"]  = get_dist_neg_pos(6.16, 0.26, lamda);
+	res_dist["H CA-CA H +1"] = get_dist_neg_pos(5.14, 0.21, lamda);
+	res_dist["H CA-CA H -1"] = get_dist_neg_pos(8.64, 0.26, lamda);
+	res_dist["H CA-CA H 0"]  = get_dist_neg_pos(6.16, 0.26, lamda);
+
+	# T Mean Standard_deviation
+	res_strnd_OO["A"] = get_dist_neg_pos(4.57, 0.30, lamda);
+	res_strnd_OO["P"] = get_dist_neg_pos(4.57, 0.29, lamda);
+	res_strnd_OO["U"] = get_dist_neg_pos(4.57, 0.30, lamda);
+
+	# T Mean Standard_deviation
+	res_hbnd["A"] = get_dist_neg_pos(2.92, 0.16, lamda);
+	res_hbnd["P"] = get_dist_neg_pos(2.93, 0.16, lamda);
+	res_hbnd["H"] = get_dist_neg_pos(2.99, 0.17, lamda);
+	
+	if not res_dihe:
+		print('Error ! dihe restraints could not be loaded. Exiting application...')
+		sys.exit(-1)
+	if not res_strnd_OO:
+		print('Error ! dstr restraints could not be loaded. Exiting application...')
+		sys.exit(-1)
+	if not res_dist:
+		print('Error ! dist restraints could not be loaded. Exiting application...')
+		sys.exit(-1)
+	if not res_hbnd:
+		print('Error ! hbnd restraints could not be loaded. Exiting application...')
+		sys.exit(-1)
+
+	content = "#load_ss_restraints\n";
+	with open(log_reference, 'w') as f1:
+		f1.write(content)
+	
+	for item in res_dihe:
+		content = item+"\t"+res_dihe[item]+"\n";
+		with open(log_reference, 'a') as f1:
+			f1.write(content)
+
+	for item in res_strnd_OO:
+		content = item+"\t"+res_strnd_OO[item]+"\n";
+		with open(log_reference, 'a') as f1:
+			f1.write(content)
+
+	for item in res_dist:
+		content = item+"\t"+res_dist[item]+"\n";
+		with open(log_reference, 'a') as f1:
+			f1.write(content)
+	
+	for item in res_hbnd:
+		content = item+"\t"+res_hbnd[item]+"\n";
+		with open(log_reference, 'a') as f1:
+			f1.write(content)
+
+def get_dist_neg_pos(mean, devi,lamda):
+	lamda_devi = round(lamda*devi, 2)
+	info = str(mean) + ' ' + str(lamda_devi) + ' ' + str(lamda_devi)
+	return info
 			
+def print2file(file,message):
+	if os.path.isfile(file):
+		with open(file, 'a') as f1:
+			f1.write(message+"\n")
+	else:
+		with open(file, 'w') as f1:
+			f1.write(message+"\n")
 
 print('')
 print('  ############################################################################')
@@ -105,33 +281,30 @@ parser.add_option('--fasta', dest = 'fasta',
 parser.add_option('--ss', dest = 'ss',
 	default = '',	# default empty!
 	help = 'Secondary structure file containing the protein to sequence to 3-class secondary structure')
-parser.add_option('--alignment', dest = 'alignment',
-	default = '',	# default empty!
-	help = 'alignement file for the target <pir format>')
-parser.add_option('--atomdir', dest = 'atomdir',
-	default = '',	# default empty!
-	help = 'PDB structure for template protein in the pir alignment')
 parser.add_option('--restraints', dest = 'restraints',
 	default = '',	# default empty!
 	help = 'restraints for modeling')
 parser.add_option('--hbond', dest = 'hbond',
 	default = '',	# default empty!
 	help = 'hbond restraints for modeling')
-parser.add_option('--dihedral', dest = 'dihedral',
-	default = '',	# default empty!
-	help = 'dihedral restraints for modeling')
-parser.add_option('--ssnoe', dest = 'ssnoe',
-	default = '',	# default empty!
-	help = 'ssnoe restraints for modeling')
 parser.add_option( '--dir', dest = 'dir',
 	default = '',	# default empty!
 	help = 'root directory for results')
 parser.add_option( '--epoch', dest = 'epoch',
 	default = '10',	# default empty!
-	help = 'root directory for results')
+	help = 'number of epochs')
 parser.add_option( '--cgstep', dest = 'cgstep',
 	default = '100',	# default empty!
-	help = 'root directory for results')
+	help = 'maximum step for conjugate gradient')
+parser.add_option( '--lamda', dest = 'lamda',
+	default = '0.4',    # default empty!
+	help = 'parameter for ss restraints')
+parser.add_option( '--distdev', dest = 'distdev',
+	default = '1.0',    # default empty!
+	help = 'standard deviation for CA-CA/CB-CB distance')
+parser.add_option( '--type', dest = 'type',
+	default = 'CB',    # CB/CA
+	help = 'atom type for distance restraints')
 
 (options,args) = parser.parse_args()
 
@@ -149,6 +322,11 @@ else:
 	print('Error ! target protein not defined. Exiting application...')
 	sys.exit(1)
 
+residues = {}
+for i in range(0, len(sequence)):
+	char = sequence[i:i+1]
+	residues[i+1] = char
+
 # SS sequence file option
 ss_sequence = ''
 
@@ -165,6 +343,23 @@ else:
 
 ss_file = options.ss
 
+atom_type_dist = 'CB'
+if options.type:
+	atom_type_dist = options.type
+	
+distdev = 1.0
+if options.distdev:
+	distdev = float(options.distdev)
+
+if atom_type_dist != 'CA' and atom_type_dist != 'CB':
+	print('Error ! Wrong type of atoms for distance restraints. Exiting application...')
+	sys.exit(1)
+
+
+lamda = 0.4
+if options.lamda:
+	lamda = float(options.lamda)
+
 epoch= 10
 if options.epoch:
 	epoch = int(options.epoch)
@@ -179,11 +374,6 @@ if dir:
 else:
 	curr_dir = os.getcwd()
 
-# Check alignment and atom
-
-if 	(options.alignment != '' and options.atomdir == '') or (options.alignment == '' and options.atomdir != ''):
-	print('Error ! alignment and atom are not provided together. Exiting application...')
-	sys.exit(1)
 
 custom_restraints = ''
 if options.restraints:
@@ -208,7 +398,9 @@ if not os.path.exists(sample_dir):
 # (1) Build extended structure from sequence
 ###########################################################################################
 
-e = modeller.environ()
+
+e = modeller.environ(rand_seed=-4000)
+#soft sphere potential
 e.edat.dynamic_sphere = False
 e.libs.topology.read('${LIB}/top_heav.lib')
 e.libs.parameters.read('${LIB}/par.lib')
@@ -299,6 +491,8 @@ for res_id in model_residues:
 
 # run confold to get helix restraints; start writing to the files hbond.tbl, ssnoe.tbl and dihedral.tbl
 
+load_ss_restraints(lamda, work_dir+"/ssrestraints.log");
+
 # run confold to get strand and/or sheet restraints
 
 
@@ -307,294 +501,6 @@ for res_id in model_residues:
 # (4) load the template structure and get information for all atoms
 ###########################################################################################
 restraints_list = []
-## load template information from alignments
-if options.alignment and options.atomdir:
-
-	num = 0
-	template_name = {}
-	template_sequence = {}
-	template_region = {}
-	weight = {}
-	f = open(options.alignment, 'r')	# open the alignment file
-	while True:
-		line1 = f.readline()
-		if not line1:
-			break
-		line2 = f.readline()
-		line3 = f.readline()
-		line4 = f.readline()
-		line5 = f.readline()
-		if line3[:9] == "structure":
-			num += 1
-			info =  line1[line1.rindex('='):]
-			buff = re.split("\t+",info.strip())
-			if len(buff) == 1:
-				buff = re.split(" +",info.strip())
-				parent_rec = re.sub("[^0-9A-Za-z]", "",buff[1])
-				e_val = float(re.sub("[^0-9.e+-]", "",buff[4]))
-			else:
-				parent_rec = re.sub("[^0-9A-Za-z]", "",buff[0])
-				e_val = float(re.sub("[^0-9.e+-]", "",buff[3]))
-			
-			buff = re.split(":",line3.strip())
-			temp_start = buff[2].replace(' ', '')
-			temp_end = buff[4].replace(' ', '')
-			#parent_id = parent_rec.strip()[0:4]
-			#parent_chain = parent_rec.strip()[4:5]
-			#if parent_chain.strip() == '':
-			#	parent = str(parent_id.lower())
-			#else:
-			#	parent = str(parent_id.lower()) + '_' + str(parent_chain.upper())
-			#if e_val <=  self.e_val_threshold:
-			#self.parent.append(parent)
-			template_name[num] = parent_rec
-			template_sequence[num] = line4.strip()[:-1]
-			template_region[num] = str(temp_start)+'-'+str(temp_end)
-		else:
-			target_sequence = line4.strip()[:-1]
-	
-	## check alignment sequence is same as fasta sequence 
-	target_pir_seq = target_sequence;
-	target_pir_seq = target_pir_seq.replace('-', '') 
-	#print(target_sequence)
-	#print(target_pir_seq)
-	if target_pir_seq != sequence:
-		print('Error ! The sequence in alignment is not same as fasta sequence. Exiting application...')
-		sys.exit(-1)
-	
-
-	#### get distance restraints for N-CA, CA-C, C-O, CA-CB, CA-CA, CB-CB
-	model_residues = {}
-	model_particle_index = {}
-
-
-	## check each template 
-	m_native = IMP.Model()
-	target_index2AtomCoord = {}
-	for temp_indx in template_sequence:
-		temp_seq = template_sequence[temp_indx]
-		temp_name = template_name[temp_indx]
-		temp_region = template_region[temp_indx]
-		atomfile = options.atomdir + '/' +temp_name+'.atm'
-		#print(target_sequence)
-		#print(temp_seq)		
-
-		for i in range(0,len(cont_model.get_particles())):
-			p1 = cont_model.get_particles()[i]
-			#get atom information
-			p1_atom = IMP.atom.Atom(p1)
-			p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
-			p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
-			het = p1_atom_name.startswith('HET:')
-			if het:
-				p1_atom_name = p1_atom_name[4:]
-			p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
-			p1_resname = p1_res.get_name() #'SER'
-			p1_seq_id = p1_res.get_index() #1
-			IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
-			if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
-				model_residues[p1_seq_id] = p1_resname
-			
-			info = str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name+'-'+str(temp_indx)
-			model_particle_index[info] = i # get particle index of atom in chain 
-		
-		prot_native = IMP.atom.read_pdb(atomfile, m_native) 
-		atoms_native = IMP.atom.get_by_type(prot_native, IMP.atom.ATOM_TYPE)
-		cont_native = IMP.container.ListSingletonContainer(atoms_native)
-
-		
-		#### get information for N,CA,C,O,CB from native structure
-
-		index2ResidueName={}
-		residue2Atoms={}
-		index2AtomCoord={}
-		for i in range(0,len(cont_native.get_particles())):
-			p1 = cont_native.get_particles()[i]
-			#get atom information
-			p1_atom = IMP.atom.Atom(p1)
-			p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
-			p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
-			het = p1_atom_name.startswith('HET:')
-			if het:
-				p1_atom_name = p1_atom_name[4:]
-			p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
-			p1_resname = p1_res.get_name() #'SER'
-			p1_seq_id = p1_res.get_index() #1
-			if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
-				index2ResidueName[p1_seq_id] = p1_resname
-			
-			if str(p1_seq_id)+'-'+p1_resname in residue2Atoms.keys():
-				residue2Atoms[str(p1_seq_id)+'-'+p1_resname].append(p1_atom_name)
-			else:
-				residue2Atoms[str(p1_seq_id)+'-'+p1_resname]=[]
-				residue2Atoms[str(p1_seq_id)+'-'+p1_resname].append(p1_atom_name)
-			index2AtomCoord[str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name] = IMP.core.XYZ(p1)
-		
-		if len(target_sequence) != len(temp_seq):
-			#print(target_sequence)
-			#print(temp_seq)
-			print('Error ! The template seq size is not same as target sequence. Exiting application...')
-			sys.exit(-1)
-		
-		
-		
-		buff = re.split("-",temp_region.strip())
-		target_res_num = 0
-		temp_res_num = int(buff[0])-1
-		temp2target_align = {}
-		for i in range(0, len(target_sequence)):
-			target_char = target_sequence[i:i+1]
-			temp_char = temp_seq[i:i+1]
-			
-			if temp_char.strip() != "-":
-				temp_res_num += 1
-			if target_char.strip() != "-":
-				target_res_num += 1
-				if temp_char.strip() != "-":
-					## record to get coordinate from template
-					if temp_char not in aa_one2index.keys():
-						print('Error ! The amino acid ',temp_char,' not standard. Exiting application...')
-						sys.exit(-1)
-					
-					target_aa_3letter = aa_index2three[aa_one2index[target_char]]
-					temp_aa_3letter = aa_index2three[aa_one2index[temp_char]]
-					if temp_aa_3letter != index2ResidueName[temp_res_num]:
-						print('Error ! The template amino acid in alignmnet ',temp_aa_3letter,' not same as in pdb ',index2ResidueName[temp_res_num],' in position ',temp_res_num,'. Exiting application...')
-						sys.exit(-1)
-					
-					if target_aa_3letter != model_residues[target_res_num]:
-						print('Error ! The target amino acid in alignmnet ',target_aa_3letter,' not same as in pdb ',model_residues[target_res_num],' in position ',temp_res_num,'. Exiting application...')
-						sys.exit(-1)
-					#print(str(temp_res_num)+'-'+temp_aa_3letter + '-->' +str(target_res_num)+'-'+target_aa_3letter)
-					
-					if str(temp_res_num)+'-'+temp_aa_3letter not in residue2Atoms:
-						print('Error ! Failed to find atoms for ',str(temp_res_num),'-',temp_aa_3letter,' in template structures. Exiting application...')
-						sys.exit(-1)
-					atoms_array = residue2Atoms[str(temp_res_num)+'-'+temp_aa_3letter]
-					for atom in atoms_array:
-						if  str(temp_res_num)+'-'+temp_aa_3letter + '-'+atom not in index2AtomCoord:
-							print('Error ! Failed to find atoms for ',str(temp_res_num),'-',temp_aa_3letter,'-',atom,' in template structures. Exiting application...')
-							sys.exit(-1)
-						o_info = str(target_res_num)+'-'+target_aa_3letter+ '-'+atom+'-'+str(temp_indx)
-						#if target_res_num < 5:
-						#	print(o_info,'->',index2AtomCoord[str(temp_res_num)+'-'+temp_aa_3letter + '-'+atom])
-						if str(target_res_num)+'-'+target_aa_3letter+ '-'+atom+'-'+str(temp_indx) in model_particle_index:
-							target_index2AtomCoord[str(target_res_num)+'-'+target_aa_3letter+ '-'+atom+'-'+str(temp_indx)]=index2AtomCoord[str(temp_res_num)+'-'+temp_aa_3letter + '-'+atom]			
-	
-
-
-
-	###########################################################################################
-	# (5) get distance restraints for N-CA, CA-C, C-O, CA-CB, CA-CA, CB-CB
-	###########################################################################################
-
-
-	residue_array = sorted(model_residues.keys())
-	for temp_indx in template_sequence:
-		print("Processing restraints from template ",temp_indx)
-		for i in range(0,len(residue_array)):
-			# get N-CA, CA-C, C-O, CA-CB
-			res1_indx = residue_array[i]
-			res1_name = model_residues[res1_indx]
-			
-			res1_N_atom = str(res1_indx)+'-'+res1_name+'-N'+'-'+str(temp_indx)
-			res1_CA_atom = str(res1_indx)+'-'+res1_name+'-CA'+'-'+str(temp_indx)
-			res1_C_atom = str(res1_indx)+'-'+res1_name+'-C'+'-'+str(temp_indx)
-			res1_O_atom = str(res1_indx)+'-'+res1_name+'-O'+'-'+str(temp_indx)
-			res1_CB_atom = str(res1_indx)+'-'+res1_name+'-CB'+'-'+str(temp_indx)
-			
-			# get native coordinates, suppose the template structure is provided
-			
-			for j in range(i+1,len(residue_array)):
-				res2_indx = residue_array[j]
-				res2_name = model_residues[res2_indx]
-				
-				res2_CA_atom = str(res2_indx)+'-'+res2_name+'-CA'+'-'+str(temp_indx)
-				res2_CB_atom = str(res2_indx)+'-'+res2_name+'-CB'+'-'+str(temp_indx)
-				res2_O_atom = str(res2_indx)+'-'+res2_name+'-O'+'-'+str(temp_indx)
-				res2_N_atom = str(res2_indx)+'-'+res2_name+'-N'+'-'+str(temp_indx)
-				
-				
-				# get CA-CA
-				if res1_CA_atom in target_index2AtomCoord.keys() and res2_CA_atom in target_index2AtomCoord.keys():
-					#print('Adding information for ',res1_CA_atom,' and ',res2_CA_atom)
-					res1_CA_atom_coord = target_index2AtomCoord[res1_CA_atom]
-					res2_CA_atom_coord = target_index2AtomCoord[res2_CA_atom]
-					#print("res1_CA_atom_coord: ",res1_CA_atom_coord)
-					#print("res2_CA_atom_coord: ",res2_CA_atom_coord)
-					x1,y1,z1 = [res1_CA_atom_coord.get_x(),res1_CA_atom_coord.get_y(),res1_CA_atom_coord.get_z()]
-					x2,y2,z2 = [res2_CA_atom_coord.get_x(),res2_CA_atom_coord.get_y(),res2_CA_atom_coord.get_z()]
-					dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-					
-					# get the particle index in model 
-					#p1 = cont_model.get_particles()[model_particle_index[res1_CA_atom]]
-					#p2 = cont_model.get_particles()[model_particle_index[res2_CA_atom]]
-					#f = IMP.core.Harmonic(dist, 1.0)
-					#s = IMP.core.DistancePairScore(f)
-					#r = IMP.core.PairRestraint(m, s, (p1, p2))
-					#restraints_list.append(r)
-					
-				
-					#use modeller's restraints is better
-					res1_pos = 'CA:'+str(res1_indx)
-					res2_pos = 'CA:'+str(res2_indx)
-					rsr.add(forms.gaussian(group=physical.xy_distance,
-					   feature=features.distance(modeller_atoms[res1_pos],
-												 modeller_atoms[res2_pos]),
-					   mean=dist, stdev=0.1))
-				'''
-				# get CB-CB
-				if res1_CB_atom in target_index2AtomCoord.keys() and res2_CB_atom in target_index2AtomCoord.keys():
-					res1_CB_atom_coord = target_index2AtomCoord[res1_CB_atom]
-					res2_CB_atom_coord = target_index2AtomCoord[res2_CB_atom]
-					x1,y1,z1 = [res1_CB_atom_coord.get_x(),res1_CB_atom_coord.get_y(),res1_CB_atom_coord.get_z()]
-					x2,y2,z2 = [res2_CB_atom_coord.get_x(),res2_CB_atom_coord.get_y(),res2_CB_atom_coord.get_z()]
-					dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-					
-					# get the particle index in model 
-					p1 = cont_model.get_particles()[model_particle_index[res1_CB_atom]]
-					p2 = cont_model.get_particles()[model_particle_index[res2_CB_atom]]
-					f = IMP.core.Harmonic(dist, 1.0)
-					s = IMP.core.DistancePairScore(f)
-					r = IMP.core.PairRestraint(m, s, (p1, p2))
-					restraints_list.append(r)
-				
-				
-				# this is very useful for secondary structure folding. get N-O to get hydrogen bond, 
-				#check confold how to add all N-O. pulchar also does post-hydrogen bond optimization.  
-				#We don't need all N-O which will cause large energy, we only need small part N-O, check confold
-				
-				if res1_N_atom in target_index2AtomCoord.keys() and res2_O_atom in target_index2AtomCoord.keys():
-					res1_N_atom_coord = target_index2AtomCoord[res1_N_atom]
-					res2_O_atom_coord = target_index2AtomCoord[res2_O_atom]
-					x1,y1,z1 = [res1_N_atom_coord.get_x(),res1_N_atom_coord.get_y(),res1_N_atom_coord.get_z()]
-					x2,y2,z2 = [res2_O_atom_coord.get_x(),res2_O_atom_coord.get_y(),res2_O_atom_coord.get_z()]
-					dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-					
-					# get the particle index in model 
-					p1 = cont_model.get_particles()[model_particle_index[res1_N_atom]]
-					p2 = cont_model.get_particles()[model_particle_index[res2_O_atom]]
-					f = IMP.core.Harmonic(dist, 0.1)
-					s = IMP.core.DistancePairScore(f)
-					r = IMP.core.PairRestraint(m, s, (p1, p2))
-					restraints_list.append(r)
-				
-				
-				if res1_O_atom in target_index2AtomCoord.keys() and res2_N_atom in target_index2AtomCoord.keys() and (res2_indx-res1_indx ==4):
-					res1_O_atom_coord = target_index2AtomCoord[res1_O_atom]
-					res2_N_atom_coord = target_index2AtomCoord[res2_N_atom]
-					x1,y1,z1 = [res1_O_atom_coord.get_x(),res1_O_atom_coord.get_y(),res1_O_atom_coord.get_z()]
-					x2,y2,z2 = [res2_N_atom_coord.get_x(),res2_N_atom_coord.get_y(),res2_N_atom_coord.get_z()]
-					dist = np.linalg.norm([x1-x2,y1-y2,z1-z2])
-					
-					# get the particle index in model 
-					p1 = cont_model.get_particles()[model_particle_index[res1_O_atom]]
-					p2 = cont_model.get_particles()[model_particle_index[res2_N_atom]]
-					f = IMP.core.Harmonic(dist, 1.0)
-					s = IMP.core.DistancePairScore(f)
-					r = IMP.core.PairRestraint(m, s, (p1, p2))
-					restraints_list.append(r)
-				'''
 if options.restraints:
 	print("Loading custom restraints")
 	# 2-LYS-CA-1 53-VAL-CA-1 distance 5.1234
@@ -642,15 +548,28 @@ if options.restraints:
 			p1_buff = re.split("-",res1)
 			p2_buff = re.split("-",res2)
 			
-			if p1_buff[2] == 'CA' and p2_buff[2] == 'CA':
+			#if p1_buff[2] == 'CA' and p2_buff[2] == 'CA':
+			if p1_buff[2] == atom_type_dist and p2_buff[2] == atom_type_dist and atom_type_dist == 'CA':
 				#print("Adding restraints for ",res1," and ", res2)
 				res1_pos = 'CA:'+str(p1_buff[0])
 				res2_pos = 'CA:'+str(p2_buff[0])
 				rsr.add(forms.gaussian(group=physical.xy_distance,
 				   feature=features.distance(modeller_atoms[res1_pos],
 											 modeller_atoms[res2_pos]),
-				   mean=re_value, stdev=0.1))
-			
+				   mean=re_value, stdev=distdev))
+				
+				#f = IMP.core.Harmonic(re_value, 0.1)
+				#s = IMP.core.DistancePairScore(f)
+				#r = IMP.core.PairRestraint(m, s, (p1, p2))
+				#restraints_list.append(r)
+			elif p1_buff[2] == atom_type_dist and p2_buff[2] == atom_type_dist and atom_type_dist == 'CB':
+				#print("Adding restraints for ",res1," and ", res2)
+				res1_pos = 'CB:'+str(p1_buff[0])
+				res2_pos = 'CB:'+str(p2_buff[0])
+				rsr.add(forms.gaussian(group=physical.xy_distance,
+				   feature=features.distance(modeller_atoms[res1_pos],
+											 modeller_atoms[res2_pos]),
+				   mean=re_value, stdev=distdev)) #Standard deviation depends on solvent accessibility, gaps of alignment, and sequence identity: https://salilab.org/modeller/manual/node213.html
 				
 				#f = IMP.core.Harmonic(re_value, 0.1)
 				#s = IMP.core.DistancePairScore(f)
@@ -659,64 +578,8 @@ if options.restraints:
 		#else:
 		#	print("The following restraint sources not in model: ",res1," and ",res2)
 
-
-
 if options.hbond:
 	print("Loading hbond restraints")
-	# 2-LYS-CA-1 53-VAL-CA-1 distance 5.1234
-	f = open(options.hbond, 'r')	
-	restraints_contenst = f.readlines()	
-	f.close()	
-
-	model_residues = {}
-	model_particle_index = {}
-	for i in range(0,len(cont_model.get_particles())):
-		p1 = cont_model.get_particles()[i]
-		#get atom information
-		p1_atom = IMP.atom.Atom(p1)
-		p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
-		p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
-		het = p1_atom_name.startswith('HET:')
-		if het:
-			p1_atom_name = p1_atom_name[4:]
-		p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
-		p1_resname = p1_res.get_name() #'SER'
-		p1_seq_id = p1_res.get_index() #1
-		IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
-		if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
-			model_residues[p1_seq_id] = p1_resname
-		
-		info = str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name
-		model_particle_index[info] = i # get particle index of atom in chain 
-	
-	for line in restraints_contenst:
-		if '#' in line:
-			continue
-		buff = re.split("\t+",line.strip())
-		
-		res1 = buff[0]
-		res2 = buff[1]
-		re_type = buff[2]
-		re_value = float(buff[3])
-		
-		if res1 in model_particle_index and res2 in model_particle_index and re_type == 'distance':
-			# get the particle index in model 
-			p1 = cont_model.get_particles()[model_particle_index[res1]]
-			p2 = cont_model.get_particles()[model_particle_index[res2]]
-			f = IMP.core.Harmonic(re_value, 1.0)
-			s = IMP.core.DistancePairScore(f)
-			r = IMP.core.PairRestraint(m, s, (p1, p2))
-			restraints_list.append(r)
-		else:
-			print("The following restraint sources not in model: ",res1," and ",res2)
-
-if options.ssnoe:
-	print("Loading ssnoe restraints")
-	# 2-LYS-CA-1 53-VAL-CA-1 distance 5.1234
-	f = open(options.ssnoe, 'r')	
-	restraints_contenst = f.readlines()	
-	f.close()	
-
 	model_residues = {}
 	model_particle_index = {}
 	for i in range(0,len(cont_model.get_particles())):
@@ -739,91 +602,168 @@ if options.ssnoe:
 		model_particle_index[info] = i # get particle index of atom in chain 
 	
 	
-	for line in restraints_contenst:
-		if '#' in line:
-			continue
-		buff = re.split("\t+",line.strip())
-		
-		res1 = buff[0]
-		res2 = buff[1]
-		re_type = buff[2]
-		re_value = float(buff[3])
-		
-		if res1 in model_particle_index and res2 in model_particle_index and re_type == 'distance':
-			# get the particle index in model 
-			p1 = cont_model.get_particles()[model_particle_index[res1]]
-			p2 = cont_model.get_particles()[model_particle_index[res2]]
-			f = IMP.core.Harmonic(re_value, 1.0)
-			s = IMP.core.DistancePairScore(f)
-			r = IMP.core.PairRestraint(m, s, (p1, p2))
-			restraints_list.append(r)
-		else:
-			print("The following restraint sources not in model: ",res1," and ",res2)
-
-if options.dihedral:
-	print("Loading dihedral restraints")
-	# 2-LYS-CA-1 53-VAL-CA-1 distance 5.1234
-	f = open(options.dihedral, 'r')	
-	restraints_contenst = f.readlines()	
-	f.close()	
-
-	model_residues = {}
-	model_particle_index = {}
-	for i in range(0,len(cont_model.get_particles())):
-		p1 = cont_model.get_particles()[i]
-		#get atom information
-		p1_atom = IMP.atom.Atom(p1)
-		p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
-		p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
-		het = p1_atom_name.startswith('HET:')
-		if het:
-			p1_atom_name = p1_atom_name[4:]
-		p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
-		p1_resname = p1_res.get_name() #'SER'
-		p1_seq_id = p1_res.get_index() #1
-		IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
-		if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
-			model_residues[p1_seq_id] = p1_resname
-		
-		info = str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name
-		model_particle_index[info] = i # get particle index of atom in chain 
+	#print_helix_restraints:
+	res_sec = {}
+	for i in range(0, len(ss_sequence)):
+		ss_char = ss_sequence[i:i+1]
+		if ss_char == 'H':
+			res_sec[i+1] = ss_char
 	
-	for line in restraints_contenst:
-		if '#' in line:
-			continue
-		buff = re.split("\t+",line.strip())
+	if res_sec:
+		print2file(work_dir+"/ssrestraints.log", "write helix tbl restraints");
+		''' haven't figure out how to add angle in IMP
+		for i in sorted(res_sec.keys()):
+			PHI_buff = re.split(" +",res_dihe["H PHI"])
+			PSI_buff = re.split(" +",res_dihe["H PSI"])
+			if len(PHI_buff) != 2:
+				print("The PHI_buff value is strange: ",PHI_buff)
+				sys.exit(-1)
+			if len(PSI_buff) != 2:
+				print("The PSI_buff value is strange: ",PSI_buff)
+				sys.exit(-1)
+			# 9/1/2014: If phi angle is removed from the pre-first residue, the first residue cannot form helix most of the times. Checked in 4/5 proteins and 2 dozen helices.
+			# So, adding the pre-first phi angle as well (by removing the condition for  res_sec{$i-1} to exist)
+			
+			if temp_char not in aa_one2index.keys():
+				print('Error ! The amino acid ',temp_char,' not standard. Exiting application...')
+				sys.exit(-1)
+			
+			target_aa_3letter = aa_index2three[aa_one2index[target_char]]
+			temp_aa_3letter = aa_index2three[aa_one2index[temp_char]]
+			
+			if (i-1) in residues:
+				C1 = str(i-1)+'-'+aa_index2three[aa_one2index[residues[i-1]]]+'-C'
+				N2 = str(i)+'-'+aa_index2three[aa_one2index[residues[i]]]+'-N'
+				CA2 = str(i)+'-'+aa_index2three[aa_one2index[residues[i]]]+'-CA'
+				C2 = str(i)+'-'+aa_index2three[aa_one2index[residues[i]]]+'-C'
+				content = C1 + "\t" + N2 + "\t" + CA2 + "\t" + C2  + str(5.0) + "\t" + str(PHI_buff[0]) + "\t" + str(PHI_buff[1]) + "\t" +  str(2) + "\t!helix phi"
+				print2file(work_dir+"/dihedral.tbl", content)
+			# 9/1/2014: Even if we don't have PSI for the last residue, the last residue form helix, almost in all cases.
+			# 9/2/2014: In some cases like target Tc767, only 106 helix residues were formed while the input is 111. And all of it is because of the psi angle at the end.
+			# So, adding the post-last psi angle as well (by removing the condition for res_sec{$i+1} to exist)
+			if (i+1) in residues:
+				N1 = str(i)+'-'+aa_index2three[aa_one2index[residues[i]]]+'-N'
+				CA1 = str(i)+'-'+aa_index2three[aa_one2index[residues[i]]]+'-CA'
+				C1 = str(i)+'-'+aa_index2three[aa_one2index[residues[i]]]+'-C'
+				N2 = str(i+1)+'-'+aa_index2three[aa_one2index[residues[i+1]]]+'-N'
+				content = N1 + "\t" + CA1 + "\t" + C1 + "\t" + N2  + str(5.0) + "\t" + str(PSI_buff[0]) + "\t" + str(PSI_buff[1]) + "\t" +  str(2) + "\t!helix psi"
+				print2file(work_dir+"/dihedral.tbl", content)				
+		'''
 		
-		res1 = buff[0]
-		res2 = buff[1]
-		res3 = buff[2]
-		res4 = buff[3]
-		re_type = buff[4]
-		re_value = float(buff[5])
-		deviation = float(buff[6])
 		
-		if res1 in model_particle_index and res2 in model_particle_index and res3 in model_particle_index and res4 in model_particle_index and re_type == 'dihedral':
-			# get the particle index in model 
-			p1 = cont_model.get_particles()[model_particle_index[res1]]
-			p2 = cont_model.get_particles()[model_particle_index[res2]]
-			p3 = cont_model.get_particles()[model_particle_index[res3]]
-			p4 = cont_model.get_particles()[model_particle_index[res4]]
+		## adding hbond will improve optimization, 
+		for i in sorted(res_sec.keys()):
+			if (i+1) not in res_sec:
+				continue
+			if (i+2) not in res_sec:
+				continue
+			if (i+3) not in res_sec:
+				continue
+			if (i+4) not in res_sec:
+				continue
+			HR_buff = re.split(" +",res_hbnd["H"])
+			HR_buff[0] = float(HR_buff[0])
+			if len(HR_buff) != 3:
+				print("The HR_buff value is strange: ",HR_buff)
+				sys.exit(-1)
+			# In case of Proline, use N atom instead of H
+			#HATOM = "H";
+			#HR_buff[0] -= 1.0
+			#if residues[i+4] == "P":
+			#	HR_buff[0] += 1.0;
+			#	HATOM  = "N";
+			HATOM  = "N" # set to N, the optimal distance between O and N in alpha helix is 2.72
+			# check https://www.nature.com/articles/srep38341, 
+			O1 = str(i)+'-'+aa_index2three[aa_one2index[residues[i]]]+'-O'
+			N4 = str(i+4)+'-'+aa_index2three[aa_one2index[residues[i+4]]]+'-' + HATOM
+			content = O1 + "\t" + N4 + "\t" + str(HR_buff[0]) + "\t" + str(HR_buff[1]) + "\t" + str(HR_buff[2]) + "\t!helix"
+			print2file(work_dir+"/hbond.tbl", (content))
 			
-			anglemin = re_value  - deviation
-			anglemax = re_value + deviation
-			ts = IMP.core.HarmonicWell(
-					 (math.pi * anglemin / 180.0,
-					  math.pi * anglemax / 180.0), 10)
-			#ts = IMP.core.HarmonicWell(
-			#		 (self.pi * anglemin / 180.0,
-			#		  self.pi * anglemax / 180.0), 10)
-			r = IMP.core.DihedralRestraint(m,ts,p1,p2,p3,p4)
+			buff = re.split("\t+",content.strip())
 			
-			restraints_list.append(r)
-		else:
-			print("The following restraint sources not in model: ",res1," and ",res2)
+			res1 = buff[0]
+			res2 = buff[1]
+			#re_value = float(buff[2]) # confold use 2.99, the optimization will stuck at 9 epoch with high energy, the reason might be the score function. If use harmoic, the number should be very accurate, which is different from the mean and deviation
+			re_value = 2.72 #if harmonic funciton, need use this. the optimal distance between O and N in alpha helix is 2.72, the number should be very accurate for optimization, can keep being optimzed until 100 epoch
+			
+			if res1 in model_particle_index and res2 in model_particle_index:
+				# get the particle index in model 
+				#p1 = cont_model.get_particles()[model_particle_index[res1]]
+				#p2 = cont_model.get_particles()[model_particle_index[res2]]
+				#print(res1,"-",res2,": ",re_value)
+				#f = IMP.core.Harmonic(re_value, 1)
+				#s = IMP.core.DistancePairScore(f)
+				#r = IMP.core.PairRestraint(m, s, (p1, p2))
+				#restraints_list.append(r)
+				
+				res1_pos = 'O:'+str(i)
+				res2_pos = 'N:'+str(i+4)
+				rsr.add(forms.gaussian(group=physical.xy_distance,
+				   feature=features.distance(modeller_atoms[res1_pos],
+											 modeller_atoms[res2_pos]),
+				   mean=float(HR_buff[0]), stdev=float(HR_buff[1])))
+			else:
+				print("The following restraint sources not in model: ",res1," and ",res2)
+		
+		'''
+		#conclusion: score function is important, if using harmonic, the optimal distance should be very correct, otherwise, the optimization will stuck.
+		#adding this won't improve optimization using harmonic function, will stuck at 19 epoch, i gutss the reason is that confold use mean and standard deviation, but here use harmoic, the number is not exact correct for optimization
+		# after using gaussian function, the optimization is great., but still worse than only hbond
+		print("Loading ssnoe restraints")
+		for i in sorted(res_sec.keys()):
+			if (i+1) not in res_sec:
+				continue
+			if (i+2) not in res_sec:
+				continue
+			if (i+3) not in res_sec:
+				continue
+			if (i+4) not in res_sec:
+				continue
+			for A in sorted(SS_ATOMTYPE.keys()):
+				for SH in sorted(SS_SHIFT.keys()):
+					AR_buff = re.split(" +",res_dist["H "+A+"-"+A+" O "+SH])
+					if len(AR_buff) != 3:
+						print("The AR_buff value is strange: ",AR_buff)
+						sys.exit(-1)
+					# found restraints even for non-helix SS
+					if (i+4+int(SH)) not in res_sec:
+						continue
+					#confess ":(" if not defined ($i and $A and ($i+4+$SH) and $AR[0] and $AR[1] and $AR[2]);
+					
+					A1 = str(i)+'-'+aa_index2three[aa_one2index[residues[i]]]+'-'+str(A)
+					A5 = str(i+4+int(SH))+'-'+aa_index2three[aa_one2index[residues[i+4+int(SH)]]]+'-'+str(A)
+					content = A1 + "\t" + A5 + "\t" + str(AR_buff[0]) + "\t" + str(AR_buff[1]) + "\t" + str(AR_buff[2]) + "\t!helix"
+					print2file(work_dir+"/ssnoe.tbl", (content))
+					
+					buff = re.split("\t+",content.strip())
+			
+					res1 = buff[0]
+					res2 = buff[1]
+					re_value = float(buff[2])
+					
+					if res1 in model_particle_index and res2 in model_particle_index:
+						# get the particle index in model 
+						#p1 = cont_model.get_particles()[model_particle_index[res1]]
+						#p2 = cont_model.get_particles()[model_particle_index[res2]]
+						#f = IMP.core.Harmonic(re_value, 1)
+						#s = IMP.core.DistancePairScore(f)
+						#r = IMP.core.PairRestraint(m, s, (p1, p2))
+						#restraints_list.append(r)
+				
+						res1_pos = str(A)+':'+str(i)
+						res2_pos = str(A)+':'+str(i+4+int(SH))
+						rsr.add(forms.gaussian(group=physical.xy_distance,
+						   feature=features.distance(modeller_atoms[res1_pos],
+													 modeller_atoms[res2_pos]),
+						   mean=float(AR_buff[0]), stdev=float(AR_buff[1])))
+					else:
+						print("The following restraint sources not in model: ",res1," and ",res2)
+		
+		'''
+	else:
+		print2file(work_dir+"/ssrestraints.log", "no helix predictions!");
+	
 
-
-			
 #else:
 #	print('Error ! No restrains are provided. Exiting application...')
 #	sys.exit(-1)
@@ -837,7 +777,12 @@ if options.dihedral:
 # (6) Charmm forcefield
 ###########################################################################################
 
-### add secondary structure 
+### add secondary structure, this is not enough to make perfect alpha helix, need custom hbond restraints above
+#The example on this page
+#http://www.salilab.org/modeller/wiki/Make%20alpha%20helix
+#will not give you a "perfect" or ideal helix, but the minimization
+#step should give you something reasonably stable to start from.
+
 f = open(ss_file, 'r')	
 ss_seq = f.readlines()	
 f.close()	
@@ -853,31 +798,39 @@ for i in range(0, len(ss_sequence)):
 	if ss_char == 'E':
 		res_strand[i+1] = ss_char
 
-helix_range = get_ss_range(res_helix.keys())
-for item in helix_range:
-	if '-' in str(item):
-		print("Setting to helix in range ",item)
-		ss_buff = re.split("-",item)
-		rsr.add(secondary_structure.alpha(modmodel.residue_range(ss_buff[0], ss_buff[1])))
+print("Loading modeller's secondary structure restraints")
+if res_helix:
+	helix_range = get_ss_range(res_helix.keys())
+	for item in helix_range:
+		if '-' in str(item):
+			print("Setting to helix in range ",item)
+			ss_buff = re.split("-",item)
+			rsr.add(secondary_structure.alpha(modmodel.residue_range(ss_buff[0], ss_buff[1])))
+else:
+	print("None helix information in structure")
+	
+if res_strand:
+	strand_range = get_ss_range(res_strand.keys())
+	for item in strand_range:
+		if '-' in str(item):
+			print("Setting to strand in range ",item)
+			ss_buff = re.split("-",item)
+			rsr.add(secondary_structure.strand(modmodel.residue_range(ss_buff[0], ss_buff[1])))
 
-strand_range = get_ss_range(res_strand.keys())
-for item in get_ss_range(res_strand.keys()):
-	if '-' in str(item):
-		print("Setting to strand in range ",item)
-		ss_buff = re.split("-",item)
-		rsr.add(secondary_structure.strand(modmodel.residue_range(ss_buff[0], ss_buff[1])))
-
-#	   An anti-parallel sheet composed of the two strands:
-#	   rsr.add(secondary_structure.sheet(at['N:1'], at['O:14'],
-#										  sheet_h_bonds=-5))
-#	   Use the following instead for a *parallel* sheet:
-#	   rsr.add(secondary_structure.sheet(at['N:1'], at['O:9'],
-#										 sheet_h_bonds=5))
-
+	#	   An anti-parallel sheet composed of the two strands:
+	#	   rsr.add(secondary_structure.sheet(at['N:1'], at['O:14'],
+	#										  sheet_h_bonds=-5))
+	#	   Use the following instead for a *parallel* sheet:
+	#	   rsr.add(secondary_structure.sheet(at['N:1'], at['O:9'],
+	#										 sheet_h_bonds=5))
+else:
+	print("None strand information in structure")
 
 
 ### add stereo can make CA and side-chain atoms optimized together, very important.
 r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+modeller_rsr = work_dir+'/modeller.rsr'
+rsr.write(modeller_rsr)
 restraints_list.append(r)
 
 print('###########################################################################################')
@@ -918,6 +871,7 @@ out_eva = sample_dir+'/'+target+'-epoch'+str(0).zfill(5)+'.eva'
 with open(out_eva, 'w') as f1:
 	f1.write(min_info)
 
+out_pdb=''
 for i in range(1,epoch+1):
 	s.optimize(cgstep)
 	
@@ -973,7 +927,8 @@ for i in range(1,epoch+1):
 		#os.system(pulchra_cmd)
 	
 print(min_info) 
-
+cmd = "cp "+out_pdb+" "+ work_dir+"/"+target+"_GFOLD.pdb"
+os.system(cmd)
 
 '''
 
