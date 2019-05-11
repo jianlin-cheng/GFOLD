@@ -418,6 +418,17 @@ if not os.path.exists(sample_dir):
 e = modeller.environ(rand_seed=-4000)
 #soft sphere potential
 e.edat.dynamic_sphere = False
+# To assign 0 weights to restraints whose numerical derivatives
+# code does not work (i.e., splines for angles and dihedrals):
+# https://salilab.org/modeller/9v8/manual/node251.html
+#23.07959        105.20986       363.30685       17.39790        0.19570 0.00000 0.00000 0.00000 39.04685
+
+e.schedule_scale = physical.values(bond= 1, angle= 1, dihedral= 1, improper= 1, xy_distance= 1,lennard_jones=0, coulomb=0, h_bond=1,
+                       phi_dihedral=0, psi_dihedral=0, omega_dihedral=0,
+                       chi1_dihedral=0, chi2_dihedral=0, chi3_dihedral=0,
+                       chi4_dihedral=0, disulfide_angle=0,
+                       disulfide_dihedral=0, chi5_dihedral=0)
+
 e.libs.topology.read('${LIB}/top_heav.lib')
 e.libs.parameters.read('${LIB}/par.lib')
 modmodel = modeller.model(e)
@@ -477,11 +488,7 @@ modmodel.read(file=init_pdb)
 modmodel.clear_topology()
 modmodel.generate_topology(ali[-1])
 '''
-rsr = modmodel.restraints
-atmsel = selection(modmodel)
-rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
-#rsr.make(atmsel, restraint_type='bond', spline_on_site=False)
-#rsr.make(atmsel, restraint_type='ANGLE', spline_on_site=False)
+
 
 modeller_atoms = modmodel.chains[0].atoms
 modeller_res = modmodel.chains[0].residues
@@ -491,6 +498,9 @@ print("modeller_atoms: ",len(modeller_atoms))
 print("modeller_res: ",len(modeller_res))
 print("atoms_model: ",len(atoms_model))
 print("res_model: ",len(res_model))
+
+
+
 
 
 model_residues = {}
@@ -532,155 +542,8 @@ load_ss_restraints(lamda, work_dir+"/ssrestraints.log");
 
 # run confold to get strand and/or sheet restraints
 
-
-
-###########################################################################################
-# (4) load the template structure and get information for all atoms
-###########################################################################################
-restraints_list = []
-if options.restraints:
-	print("Loading custom restraints")
-	# 2-LYS-CA-1 53-VAL-CA-1 distance 5.1234
-	f = open(options.restraints, 'r')	
-	restraints_contenst = f.readlines()	
-	f.close()	
-
-	model_residues = {}
-	model_particle_index = {}
-	for i in range(0,len(cont_model.get_particles())):
-		p1 = cont_model.get_particles()[i]
-		#get atom information
-		p1_atom = IMP.atom.Atom(p1)
-		p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
-		p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
-		het = p1_atom_name.startswith('HET:')
-		if het:
-			p1_atom_name = p1_atom_name[4:]
-		p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
-		p1_resname = p1_res.get_name() #'SER'
-		p1_seq_id = p1_res.get_index() #1
-		IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
-		if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
-			model_residues[p1_seq_id] = p1_resname
-		
-		info = str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name
-		model_particle_index[info] = i # get particle index of atom in chain 
-		#print("Adding ",info)
-	
-	for line in restraints_contenst:
-		if '#' in line:
-			continue
-		buff = re.split("\t+",line.strip())
-		
-		res1 = buff[0]
-		res2 = buff[1]
-		re_type = buff[2]
-		re_value = float(buff[3])
-		
-		if res1 in model_particle_index and res2 in model_particle_index and re_type == 'distance':
-			# get the particle index in model 
-			p1 = cont_model.get_particles()[model_particle_index[res1]]
-			p2 = cont_model.get_particles()[model_particle_index[res2]]
-			
-			p1_buff = re.split("-",res1)
-			p2_buff = re.split("-",res2)
-			
-			if int(p2_buff[0])-int(p1_buff[0])< separation:
-				continue
-			if atom_type_dist == 'all':
-				p1_atom_type_dist = p1_buff[2]
-				p2_atom_type_dist = p2_buff[2]
-				res1_pos = p1_atom_type_dist+':'+str(p1_buff[0])
-				res2_pos = p2_atom_type_dist+':'+str(p2_buff[0])
-				rsr.add(forms.gaussian(group=physical.xy_distance,
-				   feature=features.distance(modeller_atoms[res1_pos],
-											 modeller_atoms[res2_pos]),
-				   mean=re_value, stdev=distdev))
-				content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CA-CA"
-				print2file(work_dir+"/distance.tbl", (content))	
-			elif atom_type_dist == 'both':
-				p1_atom_type_dist = p1_buff[2]
-				p2_atom_type_dist = p2_buff[2]
-				if p1_buff[1] == 'GLY':
-					p1_atom_type_dist = 'CA'
-				if p2_buff[1] == 'GLY':
-					p2_atom_type_dist = 'CA'
-				res1_pos = p1_atom_type_dist+':'+str(p1_buff[0])
-				res2_pos = p2_atom_type_dist+':'+str(p2_buff[0])
-				rsr.add(forms.gaussian(group=physical.xy_distance,
-				   feature=features.distance(modeller_atoms[res1_pos],
-											 modeller_atoms[res2_pos]),
-				   mean=re_value, stdev=distdev))
-				content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CA-CA"
-				print2file(work_dir+"/distance.tbl", (content))
-			else:
-				#if p1_buff[2] == 'CA' and p2_buff[2] == 'CA':
-				if p1_buff[2] == 'CA' and p2_buff[2] == 'CA' and atom_type_dist == 'CA':
-					#print("Adding restraints for ",res1," and ", res2)
-					res1_pos = 'CA:'+str(p1_buff[0])
-					res2_pos = 'CA:'+str(p2_buff[0])
-					rsr.add(forms.gaussian(group=physical.xy_distance,
-					   feature=features.distance(modeller_atoms[res1_pos],
-												 modeller_atoms[res2_pos]),
-					   mean=re_value, stdev=distdev))
-					content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CA-CA"
-					print2file(work_dir+"/distance.tbl", (content))
-					#f = IMP.core.Harmonic(re_value, 0.1)
-					#s = IMP.core.DistancePairScore(f)
-					#r = IMP.core.PairRestraint(m, s, (p1, p2))
-					#restraints_list.append(r)
-				
-				if atom_type_dist == 'CB':
-					res1_pos = 'CB:'+str(p1_buff[0])
-					res2_pos = 'CB:'+str(p2_buff[0])
-					if p1_buff[1] == 'GLY' and p1_buff[2] == 'CA' and p2_buff[1] == 'GLY' and  p2_buff[2] == 'CA' :
-						#print("Adding restraints for ",res1," and ", res2)
-						res1_pos = 'CA:'+str(p1_buff[0])
-						res2_pos = 'CA:'+str(p2_buff[0])
-						rsr.add(forms.gaussian(group=physical.xy_distance,
-						   feature=features.distance(modeller_atoms[res1_pos],
-													 modeller_atoms[res2_pos]),
-						   mean=re_value, stdev=distdev)) #Standard deviation depends on solvent accessibility, gaps of alignment, and sequence identity: https://salilab.org/modeller/manual/node213.html
-						content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CB-CB"
-						print2file(work_dir+"/distance.tbl", (content))
-					if p1_buff[1] == 'GLY' and p1_buff[2] == 'CA' and p2_buff[1] != 'GLY' and  p2_buff[2] == 'CB' :
-						#print("Adding restraints for ",res1," and ", res2)
-						res1_pos = 'CA:'+str(p1_buff[0])
-						res2_pos = 'CB:'+str(p2_buff[0])
-						rsr.add(forms.gaussian(group=physical.xy_distance,
-						   feature=features.distance(modeller_atoms[res1_pos],
-													 modeller_atoms[res2_pos]),
-						   mean=re_value, stdev=distdev)) #Standard deviation depends on solvent accessibility, gaps of alignment, and sequence identity: https://salilab.org/modeller/manual/node213.html
-						content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CB-CB"
-						print2file(work_dir+"/distance.tbl", (content))
-					if p1_buff[1] != 'GLY' and p1_buff[2] == 'CB' and p2_buff[1] == 'GLY' and  p2_buff[2] == 'CA' :
-						#print("Adding restraints for ",res1," and ", res2)
-						res1_pos = 'CB:'+str(p1_buff[0])
-						res2_pos = 'CA:'+str(p2_buff[0])
-						rsr.add(forms.gaussian(group=physical.xy_distance,
-						   feature=features.distance(modeller_atoms[res1_pos],
-													 modeller_atoms[res2_pos]),
-						   mean=re_value, stdev=distdev)) #Standard deviation depends on solvent accessibility, gaps of alignment, and sequence identity: https://salilab.org/modeller/manual/node213.html
-						content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CB-CB"
-						print2file(work_dir+"/distance.tbl", (content))
-					if p1_buff[1] != 'GLY' and p1_buff[2] == 'CB' and p2_buff[1] != 'GLY' and  p2_buff[2] == 'CB' :
-						#print("Adding restraints for ",res1," and ", res2)
-						res1_pos = 'CB:'+str(p1_buff[0])
-						res2_pos = 'CB:'+str(p2_buff[0])
-						rsr.add(forms.gaussian(group=physical.xy_distance,
-						   feature=features.distance(modeller_atoms[res1_pos],
-													 modeller_atoms[res2_pos]),
-						   mean=re_value, stdev=distdev)) #Standard deviation depends on solvent accessibility, gaps of alignment, and sequence identity: https://salilab.org/modeller/manual/node213.html
-						content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CB-CB"
-						print2file(work_dir+"/distance.tbl", (content))
-				
-				#f = IMP.core.Harmonic(re_value, 0.1)
-				#s = IMP.core.DistancePairScore(f)
-				#r = IMP.core.PairRestraint(m, s, (p1, p2))
-				#restraints_list.append(r)
-		#else:
-		#	print("The following restraint sources not in model: ",res1," and ",res2)
-
+hbond_restraints = []
+ssnoe_restraints = []
 if options.hbond:
 	print("Loading hbond restraints")
 	model_residues = {}
@@ -818,14 +681,21 @@ if options.hbond:
 				
 				res1_pos = 'O:'+str(i)
 				res2_pos = 'N:'+str(i+4)
-				rsr.add(forms.gaussian(group=physical.xy_distance,
+				
+				
+				hbond_restraints.append(forms.gaussian(group=physical.xy_distance,
 				   feature=features.distance(modeller_atoms[res1_pos],
 											 modeller_atoms[res2_pos]),
 				   mean=float(HR_buff[0]), stdev=float(HR_buff[1])))
+				
+				#rsr.add(forms.gaussian(group=physical.xy_distance,
+				#   feature=features.distance(modeller_atoms[res1_pos],
+				#							 modeller_atoms[res2_pos]),
+				#   mean=float(HR_buff[0]), stdev=float(HR_buff[1])))
 			else:
 				print("The following restraint sources not in model: ",res1," and ",res2)
 		
-		'''
+		
 		#conclusion: score function is important, if using harmonic, the optimal distance should be very correct, otherwise, the optimization will stuck.
 		#adding this won't improve optimization using harmonic function, will stuck at 19 epoch, i gutss the reason is that confold use mean and standard deviation, but here use harmoic, the number is not exact correct for optimization
 		# after using gaussian function, the optimization is great., but still worse than only hbond
@@ -872,14 +742,18 @@ if options.hbond:
 				
 						res1_pos = str(A)+':'+str(i)
 						res2_pos = str(A)+':'+str(i+4+int(SH))
-						rsr.add(forms.gaussian(group=physical.xy_distance,
+						ssnoe_restraints.append(forms.gaussian(group=physical.xy_distance,
 						   feature=features.distance(modeller_atoms[res1_pos],
 													 modeller_atoms[res2_pos]),
 						   mean=float(AR_buff[0]), stdev=float(AR_buff[1])))
+						#rsr.add(forms.gaussian(group=physical.xy_distance,
+						#   feature=features.distance(modeller_atoms[res1_pos],
+						#							 modeller_atoms[res2_pos]),
+						#   mean=float(AR_buff[0]), stdev=float(AR_buff[1])))
 					else:
 						print("The following restraint sources not in model: ",res1," and ",res2)
 		
-		'''
+		
 	else:
 		print2file(work_dir+"/ssrestraints.log", "no helix predictions!");
 	
@@ -997,23 +871,28 @@ for i in range(0, len(ss_sequence)):
 		res_strand[i+1] = ss_char
 
 print("Loading modeller's secondary structure restraints")
+
+secondary_structure_restraints = []
 if res_helix:
 	helix_range = get_ss_range(res_helix.keys())
 	for item in helix_range:
 		if '-' in str(item):
 			print("Setting to helix in range ",item)
 			ss_buff = re.split("-",item)
-			rsr.add(secondary_structure.alpha(modmodel.residue_range(ss_buff[0], ss_buff[1])))
+			secondary_structure_restraints.append(secondary_structure.alpha(modmodel.residue_range(ss_buff[0], ss_buff[1])))
+			#rsr.add(secondary_structure.alpha(modmodel.residue_range(ss_buff[0], ss_buff[1])))
 else:
 	print("None helix information in structure")
-	
+
+
 if res_strand:
 	strand_range = get_ss_range(res_strand.keys())
 	for item in strand_range:
 		if '-' in str(item):
 			print("Setting to strand in range ",item)
 			ss_buff = re.split("-",item)
-			rsr.add(secondary_structure.strand(modmodel.residue_range(ss_buff[0], ss_buff[1])))
+			secondary_structure_restraints.append(secondary_structure.strand(modmodel.residue_range(ss_buff[0], ss_buff[1])))
+			#rsr.add(secondary_structure.strand(modmodel.residue_range(ss_buff[0], ss_buff[1])))
 
 	#	   An anti-parallel sheet composed of the two strands:
 	#	   rsr.add(secondary_structure.sheet(at['N:1'], at['O:14'],
@@ -1025,24 +904,296 @@ else:
 	print("None strand information in structure")
 
 
-### add stereo can make CA and side-chain atoms optimized together, very important.
-r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
-modeller_rsr = work_dir+'/modeller.rsr'
-rsr.write(modeller_rsr)
-restraints_list.append(r)
+
+
+
+###########################################################################################
+# (4) load the template structure and get information for all atoms
+###########################################################################################
+
+dist_short_restraints = []
+dist_medium_restraints = []
+dist_long_restraints = []
+if options.restraints:
+	print("Loading custom restraints")
+	# 2-LYS-CA-1 53-VAL-CA-1 distance 5.1234
+	f = open(options.restraints, 'r')	
+	restraints_contenst = f.readlines()	
+	f.close()	
+
+	model_residues = {}
+	model_particle_index = {}
+	for i in range(0,len(cont_model.get_particles())):
+		p1 = cont_model.get_particles()[i]
+		#get atom information
+		p1_atom = IMP.atom.Atom(p1)
+		p1_coord = IMP.core.XYZ(p1).get_coordinates() #(1.885, 68.105, 54.894)
+		p1_atom_name = p1_atom.get_atom_type().get_string() #'N'
+		het = p1_atom_name.startswith('HET:')
+		if het:
+			p1_atom_name = p1_atom_name[4:]
+		p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
+		p1_resname = p1_res.get_name() #'SER'
+		p1_seq_id = p1_res.get_index() #1
+		IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
+		if p1_atom.get_atom_type() == IMP.atom.AtomType("CA"):
+			model_residues[p1_seq_id] = p1_resname
+		
+		info = str(p1_seq_id)+'-'+p1_resname+'-'+p1_atom_name
+		model_particle_index[info] = i # get particle index of atom in chain 
+		#print("Adding ",info)
+	
+	for line in restraints_contenst:
+		if '#' in line:
+			continue
+		buff = re.split("\t+",line.strip())
+		
+		res1 = buff[0]
+		res2 = buff[1]
+		re_type = buff[2]
+		re_value = float(buff[3])
+		
+		if re_value > 24: 
+			continue
+		
+		if res1 in model_particle_index and res2 in model_particle_index and re_type == 'distance':
+			# get the particle index in model 
+			p1 = cont_model.get_particles()[model_particle_index[res1]]
+			p2 = cont_model.get_particles()[model_particle_index[res2]]
+			
+			p1_buff = re.split("-",res1)
+			p2_buff = re.split("-",res2)
+			
+			if int(p2_buff[0])-int(p1_buff[0])< separation:
+				continue
+			if atom_type_dist == 'all':
+				p1_atom_type_dist = p1_buff[2]
+				p2_atom_type_dist = p2_buff[2]
+				res1_pos = p1_atom_type_dist+':'+str(p1_buff[0])
+				res2_pos = p2_atom_type_dist+':'+str(p2_buff[0])
+				
+				if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+					dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
+					   feature=features.distance(modeller_atoms[res1_pos],
+												 modeller_atoms[res2_pos]),
+					   mean=re_value, stdev=distdev))
+				elif abs(int(p2_buff[0])-int(p1_buff[0])) >=12 and abs(int(p2_buff[0])-int(p1_buff[0])) <24:
+					dist_medium_restraints.append(forms.gaussian(group=physical.xy_distance,
+					   feature=features.distance(modeller_atoms[res1_pos],
+												 modeller_atoms[res2_pos]),
+					   mean=re_value, stdev=distdev))
+				elif abs(int(p2_buff[0])-int(p1_buff[0])) >=24:
+					dist_long_restraints.append(forms.gaussian(group=physical.xy_distance,
+					   feature=features.distance(modeller_atoms[res1_pos],
+												 modeller_atoms[res2_pos]),
+					   mean=re_value, stdev=distdev))
+				
+				#rsr.add(forms.gaussian(group=physical.xy_distance,
+				#   feature=features.distance(modeller_atoms[res1_pos],
+				#							 modeller_atoms[res2_pos]),
+				#   mean=re_value, stdev=distdev))
+				content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!"+p1_atom_type_dist+"-"+p2_atom_type_dist
+				print2file(work_dir+"/distance.tbl", (content))	
+			elif atom_type_dist == 'both':
+				p1_atom_type_dist = p1_buff[2]
+				p2_atom_type_dist = p2_buff[2]
+				if p1_buff[1] == 'GLY':
+					p1_atom_type_dist = 'CA'
+				if p2_buff[1] == 'GLY':
+					p2_atom_type_dist = 'CA'
+				res1_pos = p1_atom_type_dist+':'+str(p1_buff[0])
+				res2_pos = p2_atom_type_dist+':'+str(p2_buff[0])
+				
+				
+				if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+					dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
+					   feature=features.distance(modeller_atoms[res1_pos],
+												 modeller_atoms[res2_pos]),
+					   mean=re_value, stdev=distdev))
+				elif abs(int(p2_buff[0])-int(p1_buff[0])) >=12 and abs(int(p2_buff[0])-int(p1_buff[0])) <24:
+					dist_medium_restraints.append(forms.gaussian(group=physical.xy_distance,
+					   feature=features.distance(modeller_atoms[res1_pos],
+												 modeller_atoms[res2_pos]),
+					   mean=re_value, stdev=distdev))
+				elif abs(int(p2_buff[0])-int(p1_buff[0])) >=24:
+					dist_long_restraints.append(forms.gaussian(group=physical.xy_distance,
+					   feature=features.distance(modeller_atoms[res1_pos],
+												 modeller_atoms[res2_pos]),
+					   mean=re_value, stdev=distdev))
+				
+				
+				#rsr.add(forms.gaussian(group=physical.xy_distance,
+				#   feature=features.distance(modeller_atoms[res1_pos],
+				#							 modeller_atoms[res2_pos]),
+				#   mean=re_value, stdev=distdev))
+				
+				content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!"+p1_atom_type_dist+"-"+p2_atom_type_dist
+				print2file(work_dir+"/distance.tbl", (content))
+			else:
+				#if p1_buff[2] == 'CA' and p2_buff[2] == 'CA':
+				if p1_buff[2] == 'CA' and p2_buff[2] == 'CA' and atom_type_dist == 'CA':
+					#print("Adding restraints for ",res1," and ", res2)
+					res1_pos = 'CA:'+str(p1_buff[0])
+					res2_pos = 'CA:'+str(p2_buff[0])
+					
+					if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+						dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
+						   feature=features.distance(modeller_atoms[res1_pos],
+													 modeller_atoms[res2_pos]),
+						   mean=re_value, stdev=distdev))
+					elif abs(int(p2_buff[0])-int(p1_buff[0])) >=12 and abs(int(p2_buff[0])-int(p1_buff[0])) <24:
+						dist_medium_restraints.append(forms.gaussian(group=physical.xy_distance,
+						   feature=features.distance(modeller_atoms[res1_pos],
+													 modeller_atoms[res2_pos]),
+						   mean=re_value, stdev=distdev))
+					elif abs(int(p2_buff[0])-int(p1_buff[0])) >=24:
+						dist_long_restraints.append(forms.gaussian(group=physical.xy_distance,
+						   feature=features.distance(modeller_atoms[res1_pos],
+													 modeller_atoms[res2_pos]),
+						   mean=re_value, stdev=distdev))
+					
+					#rsr.add(forms.gaussian(group=physical.xy_distance,
+					#   feature=features.distance(modeller_atoms[res1_pos],
+					#							 modeller_atoms[res2_pos]),
+					#   mean=re_value, stdev=distdev))
+					
+					content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CA-CA"
+					print2file(work_dir+"/distance.tbl", (content))
+					#f = IMP.core.Harmonic(re_value, 0.1)
+					#s = IMP.core.DistancePairScore(f)
+					#r = IMP.core.PairRestraint(m, s, (p1, p2))
+					#restraints_list.append(r)
+				
+				if atom_type_dist == 'CB':
+					res1_pos = 'CB:'+str(p1_buff[0])
+					res2_pos = 'CB:'+str(p2_buff[0])
+					if p1_buff[1] == 'GLY' and p1_buff[2] == 'CA' and p2_buff[1] == 'GLY' and  p2_buff[2] == 'CA' :
+						#print("Adding restraints for ",res1," and ", res2)
+						res1_pos = 'CA:'+str(p1_buff[0])
+						res2_pos = 'CA:'+str(p2_buff[0])
+						
+						if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+							dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=12 and abs(int(p2_buff[0])-int(p1_buff[0])) <24:
+							dist_medium_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=24:
+							dist_long_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+							   
+						#rsr.add(forms.gaussian(group=physical.xy_distance,
+						#   feature=features.distance(modeller_atoms[res1_pos],
+						#							 modeller_atoms[res2_pos]),
+						#   mean=re_value, stdev=distdev)) #Standard deviation depends on solvent accessibility, gaps of alignment, and sequence identity: https://salilab.org/modeller/manual/node213.html
+						
+						content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CB-CB"
+						print2file(work_dir+"/distance.tbl", (content))
+					if p1_buff[1] == 'GLY' and p1_buff[2] == 'CA' and p2_buff[1] != 'GLY' and  p2_buff[2] == 'CB' :
+						#print("Adding restraints for ",res1," and ", res2)
+						res1_pos = 'CA:'+str(p1_buff[0])
+						res2_pos = 'CB:'+str(p2_buff[0])
+						
+						
+						if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+							dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=12 and abs(int(p2_buff[0])-int(p1_buff[0])) <24:
+							dist_medium_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=24:
+							dist_long_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						
+						#rsr.add(forms.gaussian(group=physical.xy_distance,
+						#   feature=features.distance(modeller_atoms[res1_pos],
+						#							 modeller_atoms[res2_pos]),
+						#   mean=re_value, stdev=distdev)) #Standard deviation depends on solvent accessibility, gaps of alignment, and sequence identity: https://salilab.org/modeller/manual/node213.html
+						
+						content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CB-CB"
+						print2file(work_dir+"/distance.tbl", (content))
+					if p1_buff[1] != 'GLY' and p1_buff[2] == 'CB' and p2_buff[1] == 'GLY' and  p2_buff[2] == 'CA' :
+						#print("Adding restraints for ",res1," and ", res2)
+						res1_pos = 'CB:'+str(p1_buff[0])
+						res2_pos = 'CA:'+str(p2_buff[0])
+						
+						if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+							dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=12 and abs(int(p2_buff[0])-int(p1_buff[0])) <24:
+							dist_medium_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=24:
+							dist_long_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						
+						#rsr.add(forms.gaussian(group=physical.xy_distance,
+						#   feature=features.distance(modeller_atoms[res1_pos],
+						#							 modeller_atoms[res2_pos]),
+						#   mean=re_value, stdev=distdev)) #Standard deviation depends on solvent accessibility, gaps of alignment, and sequence identity: https://salilab.org/modeller/manual/node213.html
+						
+						content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CB-CB"
+						print2file(work_dir+"/distance.tbl", (content))
+					if p1_buff[1] != 'GLY' and p1_buff[2] == 'CB' and p2_buff[1] != 'GLY' and  p2_buff[2] == 'CB' :
+						#print("Adding restraints for ",res1," and ", res2)
+						res1_pos = 'CB:'+str(p1_buff[0])
+						res2_pos = 'CB:'+str(p2_buff[0])
+						
+						if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+							dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=12 and abs(int(p2_buff[0])-int(p1_buff[0])) <24:
+							dist_medium_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=24:
+							dist_long_restraints.append(forms.gaussian(group=physical.xy_distance,
+							   feature=features.distance(modeller_atoms[res1_pos],
+														 modeller_atoms[res2_pos]),
+							   mean=re_value, stdev=distdev))
+						
+						#rsr.add(forms.gaussian(group=physical.xy_distance,
+						#   feature=features.distance(modeller_atoms[res1_pos],
+						#							 modeller_atoms[res2_pos]),
+						#   mean=re_value, stdev=distdev)) #Standard deviation depends on solvent accessibility, gaps of alignment, and sequence identity: https://salilab.org/modeller/manual/node213.html
+						
+						content = res1_pos + "\t" + res2_pos + "\t" + str(re_value) + "\t" + str(distdev) + "\t" + str(distdev) + "\t!CB-CB"
+						print2file(work_dir+"/distance.tbl", (content))
+				
+				#f = IMP.core.Harmonic(re_value, 0.1)
+				#s = IMP.core.DistancePairScore(f)
+				#r = IMP.core.PairRestraint(m, s, (p1, p2))
+				#restraints_list.append(r)
+		#else:
+		#	print("The following restraint sources not in model: ",res1," and ",res2)
+
+
 
 print('###########################################################################################')
 print('# (7) Basic Optimization and Chain')
 print('###########################################################################################')
 
-# Optimize the x,y,z coordinates of both particles with conjugate gradients
-s = IMP.core.ConjugateGradients(m)
-#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
-sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
-
-# the box to perform everything
-s.set_scoring_function(sf)
-#IMP.set_log_level(IMP.TERSE)
 
 rotamer_lib='/data/commons/tools/IMP_tools/rotamer/ALL.bbdep.rotamers.lib'
 rl = IMP.rotamer.RotamerLibrary()
@@ -1058,94 +1209,165 @@ clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
 os.system(clean_file)
 
 
-energy = sf.evaluate(False)
-min_info = "Epoch: "+str(0)+": "+str(energy)+"\n"
-
-out_energy = work_dir+'/sampling.energy'
-with open(out_energy, 'w') as f1:
-	f1.write(min_info)
-
-out_eva = sample_dir+'/'+target+'-epoch'+str(0).zfill(5)+'.eva'
-with open(out_eva, 'w') as f1:
-	f1.write(min_info)
-
-
-(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))
-
-# molpdf is the total 'energy', and terms contains the contributions from
-# each physical type. Here we print out the bond length contribution:
-# https://salilab.org/modeller/9.12/manual/node260.html
-print('initial energy')
-print("Bond\tAngle\tdihedral\timproper\th_bond\tca_distance\tphi_dihedral\tpsi_dihedral\txy_distance\n")
-
-print("%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\n\n" %(terms[physical.bond],terms[physical.angle],terms[physical.dihedral],terms[physical.improper],terms[physical.h_bond],terms[physical.ca_distance],terms[physical.phi_dihedral],terms[physical.psi_dihedral],terms[physical.xy_distance]))
 
 if options.eva:
 	exit(-1)
 out_pdb=''
+best_pdb=''
 for i in range(1,epoch+1):
-	s.optimize(cgstep)
-	
-	energy = sf.evaluate(False)
-	## can apply simulated annealing here
-	if energy < min_energy:
-		min_energy = energy
-		print("Epoch: ",i,": ",min_energy)
-		## 
-		min_info = "Epoch: "+str(i)+": "+str(min_energy)+"\n"
-		with open(out_energy, 'a') as f1:
+
+	''' can change energy here
+	# To assign 0 weights to restraints whose numerical derivatives
+	# code does not work (i.e., splines for angles and dihedrals):
+	scal = physical.values(default=1.0, lennard_jones=0, coulomb=0, h_bond=0,
+						   phi_dihedral=0, psi_dihedral=0, omega_dihedral=0,
+						   chi1_dihedral=0, chi2_dihedral=0, chi3_dihedral=0,
+						   chi4_dihedral=0, disulfide_angle=0,
+						   disulfide_dihedral=0, chi5_dihedral=0)
+	atmsel.energy(output='SHORT', schedule_scale=scal)
+	'''
+	if i == 1:
+		min_info = "## GFOLD modeling\n"
+
+		out_energy = work_dir+'/sampling.energy'
+		with open(out_energy, 'w') as f1:
 			f1.write(min_info)
-		# Actually calculate the energy
+	
+	rsr = modmodel.restraints
+	atmsel = selection(modmodel)
+	rsr.clear()
+	for j in range(0,4):
+		if j == 0:
+			### step 1, use stereo, secondary structure, and hbond for modelling
+			print("\t### Epoch ",str(i),", step 1, use stereo, secondary structure, and hbond for modelling")
+			rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
+			
+			for item in hbond_restraints:
+				rsr.add(item)
+			
+			#for item in ssnoe_restraints:
+			#	rsr.add(item)
+			
+			for item in secondary_structure_restraints:
+				rsr.add(item)
+			
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
+
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(500)
+			
+			
+		elif j == 1:
+			### step 2, adding short-range distance for modelling
+			print("\t### Epoch ",str(i),", step 2, adding short-range distance for modelling")
+	
+			for item in dist_short_restraints:
+				rsr.add(item)
+			
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
+
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(cgstep)
+			
+		elif j == 2:
+			### step 3, adding medium-range distance for modelling
+			print("\t### Epoch ",str(i),", step 3, adding medium-range distance for modelling")
+	
+			for item in dist_medium_restraints:
+				rsr.add(item)
+			
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
+
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(cgstep)
+			
+		elif j == 3:
+			### step 4, adding long-range distance for modelling
+			print("\t### Epoch ",str(i),", step 4, adding long-range distance for modelling")
+	
+			for item in dist_long_restraints:
+				rsr.add(item)
+		
+		
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
+
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(cgstep)
+		
 		(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))
 
 		# molpdf is the total 'energy', and terms contains the contributions from
 		# each physical type. Here we print out the bond length contribution:
 		# https://salilab.org/modeller/9.12/manual/node260.html
-		print("%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\n" %(terms[physical.bond],terms[physical.angle],terms[physical.dihedral],terms[physical.improper],terms[physical.h_bond],terms[physical.ca_distance],terms[physical.phi_dihedral],terms[physical.psi_dihedral],terms[physical.xy_distance]))
-
-		'''
-		print("before rotamer: ",sf.evaluate(False))
-		IMP.atom.write_pdb(prot, '3BFO-B-epoch'+str(i)+'-noRotamer.pdb')
-		
-		## add backbone-dependent rotamer library
-		mh = IMP.atom.get_by_type(prot, IMP.atom.RESIDUE_TYPE)
-		# get the most probable rotamers
-		rotamers = list()
-		for h in mh:
-			rd = IMP.atom.Residue(h)
-			rr = rc.get_rotamer(rd, 0.01)
-			rotamers.append((rd, rr))
-		
-		# now set the coordinates of all atoms in the residues to the rotated
-		# coordinates
-		for rd, rr in rotamers:
-			for h in IMP.atom.get_by_type(rd, IMP.atom.ATOM_TYPE):
-				at = IMP.atom.Atom(h)
-				at_t = at.get_atom_type()
-				if rr.get_atom_exists(at_t):
-					# some atoms might not be rotated
-					idx = min(rr.get_number_of_cases(at_t) - 1, 1)
-					v = rr.get_coordinates(idx, at_t)
-					xyz = IMP.core.XYZ(at)
-					xyz.set_coordinates(v)
-		
-		print("after rotamer: ",sf.evaluate(False))
-		## question, why rotamer increase the energy?
-		IMP.atom.write_pdb(prot, '3BFO-B-epoch'+str(i)+'-withRotamer.pdb')
-		'''
-		out_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'.pdb'
-		IMP.atom.write_pdb(prot, out_pdb)
-		clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
-		os.system(clean_file)
-		
-		out_eva = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'.eva'
-		with open(out_eva, 'w') as f1:
-			f1.write(min_info)
-		#pulchra_cmd = '/data/jh7x3/multicom_github/multicom/tools/pulchra304/pulchra 3BFO-B-epoch'+str(i)+'.pdb'
-		#os.system(pulchra_cmd)
+		print("\tBond\tAngle\tdihedral\timproper\th_bond\tca_distance\tphi_dihedral\tpsi_dihedral\txy_distance")
+		print("\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\n" %(terms[physical.bond],terms[physical.angle],terms[physical.dihedral],terms[physical.improper],terms[physical.h_bond],terms[physical.ca_distance],terms[physical.phi_dihedral],terms[physical.psi_dihedral],terms[physical.xy_distance]))
 	
-print(min_info) 
-cmd = "cp "+out_pdb+" "+ work_dir+"/"+target+"_GFOLD.pdb"
+		if j ==0:
+			out_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'_onlyhbondss.pdb'
+			IMP.atom.write_pdb(prot, out_pdb)
+			clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
+			os.system(clean_file)
+		
+	energy = sf.evaluate(False)
+	print("Epoch: ",i,": ",energy)
+	energy_info = "Epoch: "+str(i)+": "+str(energy)+"\n"
+	with open(out_energy, 'a') as f1:
+		f1.write(energy_info)
+	
+	
+	out_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'.pdb'
+	IMP.atom.write_pdb(prot, out_pdb)
+	clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
+	os.system(clean_file)
+	out_eva = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'.eva'
+	with open(out_eva, 'w') as f1:
+		f1.write(min_info)
+	# Actually calculate the energy
+	## can apply simulated annealing here
+	if energy < min_energy:
+		min_energy = energy
+		best_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'.pdb'
+		min_info = "Epoch: "+str(i)+": "+str(min_energy)+"\n"
+
+
+print("The best model is found in ",min_info) 
+cmd = "cp "+best_pdb+" "+ work_dir+"/"+target+"_GFOLD.pdb"
 os.system(cmd)
 
 
