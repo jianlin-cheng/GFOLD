@@ -29,6 +29,12 @@ python simple.py
 
 
 
+### example
+
+python /data/jh7x3/GFOLD_v0.1/examples/Sucessed_cases_codes_backup/GFOLD_v0.9_1BYR-A.py.20190519_V2  --target 1G5T-A  --fasta /data/jh7x3/GFOLD_v0.1/examples/Cullpdb_distance_prediction/results/P1_distance_error_20190504/original_seq//1G5T-A.fasta --ss /data/jh7x3/GFOLD_v0.1/examples/Cullpdb_distance_prediction/results/P1_distance_error_20190504/test_seq_ss//1G5T-A.ss  --hbond 1 --restraints /data/jh7x3/GFOLD_v0.1/examples/Cullpdb_distance_prediction/results/P1_distance_error_20190504/true_restraints//1G5T-A.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  /data/jh7x3/GFOLD_v0.1/examples/Cullpdb_distance_prediction/results/P1_distance_error_20190519/GFOLD_trueRes_folding/1G5T-A --sep 1
+
+/data/jh7x3/multicom_github/multicom/tools/tm_score/TMscore_32 ./1B0B-A/1B0B-A_GFOLD.pdb  ../../../../results/P1_distance_error_20190504/native_structure/1B0B-A.pdb
+
 
 
 
