@@ -1,0 +1,49 @@
+
+# The GFOLD protein structure system using gradient descent and residue-residue distance. 
+
+
+
+
+
+#### develop under this environment
+cd /data/jh7x3/GFOLD_v0.1
+export LD_LIBRARY_PATH=/data/commons/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
+/data/commons/tools/cmake-2.8.12.2/bin/cmake -DBOOST_ROOT='/data/commons/tools/boost_1_55_0/' -DLAPACK_LIBRARY:FILEPATH='/data/commons/tools/IMP_tools/lapack-3.4.1/liblapack.a' .
+make
+cd examples
+export LD_LIBRARY_PATH=/data/commons/tools/IMP_tools/IMP2.6/lib:/data/commons/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
+./simple
+
+
+export LD_LIBRARY_PATH=/data/MULTICOM_V1.1/tools/modeller-9.16/lib/x86_64-intel8/:/data/commons/tools/IMP_tools/IMP2.6/lib:/data/commons/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
+PYTHONPATH="/data/commons/tools/IMP_tools/IMP2.6/lib:/data/MULTICOM_V1.1/tools/modeller-9.16/lib/x86_64-intel8/python2.5/:/data/MULTICOM_V1.1/tools/modeller-9.16/modlib/:$PYTHONPATH"
+export PYTHONPATH
+python simple.py
+
+
+
+#### imp 2.8.0 (the installation is incomplete, currently use imp 2.6 first)
+
+
+export LD_LIBRARY_PATH=/data/MULTICOM_V1.1/tools/modeller-9.16/lib/x86_64-intel8/:/data/commons/tools/IMP_tools/IMP2.8/lib:/data/commons/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
+PYTHONPATH="/data/commons/tools/IMP_tools/IMP2.8/lib:/data/MULTICOM_V1.1/tools/modeller-9.16/lib/x86_64-intel8/python2.5/:/data/MULTICOM_V1.1/tools/modeller-9.16/modlib/:$PYTHONPATH"
+export PYTHONPATH
+python simple.py
+
+
+
+
+### example
+
+python /data/jh7x3/GFOLD_v0.1/examples/Sucessed_cases_codes_backup/GFOLD_v0.9_1BYR-A.py.20190519_V2  --target 1G5T-A  --fasta /data/jh7x3/GFOLD_v0.1/examples/Cullpdb_distance_prediction/results/P1_distance_error_20190504/original_seq//1G5T-A.fasta --ss /data/jh7x3/GFOLD_v0.1/examples/Cullpdb_distance_prediction/results/P1_distance_error_20190504/test_seq_ss//1G5T-A.ss  --hbond 1 --restraints /data/jh7x3/GFOLD_v0.1/examples/Cullpdb_distance_prediction/results/P1_distance_error_20190504/true_restraints//1G5T-A.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  /data/jh7x3/GFOLD_v0.1/examples/Cullpdb_distance_prediction/results/P1_distance_error_20190519/GFOLD_trueRes_folding/1G5T-A --sep 1
+
+cd /data/jh7x3/GFOLD_v0.1/examples/Cullpdb_distance_prediction/results/P1_distance_error_20190519/GFOLD_trueRes_folding/1G5T-A
+
+/data/MULTICOM_V1.1/tools/tm_score/TMscore_32 ./1G5T-A/1G5T-A_GFOLD.pdb  ../../../../results/P1_distance_error_20190504/native_structure/1G5T-A.pdb 
+
+
+
+
+
+
+

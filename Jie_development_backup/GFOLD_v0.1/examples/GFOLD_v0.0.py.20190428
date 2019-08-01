@@ -1,0 +1,149 @@
+import IMP.atom
+import IMP.container
+import IMP.example
+import IMP.statistics
+import IMP.display
+import sys
+
+###########################################################################################
+# Structure from sequence
+###########################################################################################
+
+# Use the CHARMM all-atom (i.e. including hydrogens) topology and parameters
+topology = IMP.atom.CHARMMTopology(IMP.atom.get_all_atom_CHARMM_parameters())
+# Create a single chain of amino acids and apply the standard C- and N-
+# termini patches
+topology.add_sequence('IACGACKPECPVNIIQGS')
+topology.apply_default_patches()
+
+# Make an IMP Hierarchy (atoms, residues, chains) that corresponds to
+# this topology
+m = IMP.Model()
+h = topology.create_hierarchy(m)
+# Generate coordinates for all atoms in the Hierarchy, using CHARMM internal
+# coordinate information (an extended chain conformation will be produced).
+# Since in some cases this information can be incomplete, better results will
+# be obtained if the atom types are assigned first and the CHARMM parameters
+# file is loaded, as we do here, so missing information can be filled in.
+# It will still work without that information, but will approximate the
+# coordinates.
+topology.add_atom_types(h)
+topology.add_coordinates(h)
+
+# Hierarchies in IMP must have radii
+IMP.atom.add_radii(h)
+
+# Write out the final structure to a PDB file
+IMP.atom.write_pdb(h, 'structure.pdb')
+
+###########################################################################################
+# Charmm forcefield
+###########################################################################################
+
+# Create an IMP model and add a heavy atom-only protein from a PDB file
+m = IMP.Model()
+# example_protein.pdb is assumed to be just extended chain structure obtained using structure_from_sequence example
+prot = IMP.atom.read_pdb('structure.pdb', m) 
+
+res = IMP.atom.get_by_type(prot, IMP.atom.RESIDUE_TYPE)
+atoms = IMP.atom.get_by_type(prot, IMP.atom.ATOM_TYPE)
+pr = IMP.core.ChildrenRefiner(IMP.atom.Hierarchy.get_traits())
+
+for r in atoms:
+	print(type(r)) #<class 'IMP.atom.Hierarchy'>
+	print(type(r.get_particle())) #<class 'IMP.Particle'>
+	print(r.get_particle())
+	IMP.core.XYZ(r.get_particle()).set_coordinates_are_optimized(True)
+	print(type(IMP.core.XYZ(r.get_particle()).get_coordinates()))
+	print(IMP.core.XYZ(r.get_particle()).get_coordinates()) #<class 'IMP.algebra.Vector3D'>
+
+# update the coordinates of the residue particles so that they cover the atoms
+m.update()
+
+chain = IMP.atom.get_by_type(prot, IMP.atom.CHAIN_TYPE)
+print("there are", len(chain), "chains in structure.pdb")
+print("chain has", len(atoms), "atoms")
+		
+
+IMP.atom.show_molecular_hierarchy(prot)
+
+# Read in the CHARMM heavy atom topology and parameter files
+ff = IMP.atom.get_heavy_atom_CHARMM_parameters()
+
+# Using the CHARMM libraries, determine the ideal topology (atoms and their
+# connectivity) for the PDB file's primary sequence
+topology = ff.create_topology(prot)
+
+# Typically this modifies the C and N termini of each chain in the protein by
+# applying the CHARMM CTER and NTER patches. Patches can also be manually
+# applied at this point, e.g. to add disulfide bridges.
+topology.apply_default_patches()
+
+# Make the PDB file conform with the topology; i.e. if it contains extra
+# atoms that are not in the CHARMM topology file, remove them; if it is
+# missing atoms (e.g. sidechains, hydrogens) that are in the CHARMM topology,
+# add them and construct their Cartesian coordinates from internal coordinate
+# information.
+topology.setup_hierarchy(prot)
+
+# Set up and evaluate the stereochemical part (bonds, angles, dihedrals,
+# impropers) of the CHARMM forcefield
+r1 = IMP.atom.CHARMMStereochemistryRestraint(prot, topology)
+#m.add_restraint(r)
+
+# Add non-bonded interaction (in this case, Lennard-Jones). This needs to
+# know the radii and well depths for each atom, so add them from the forcefield
+# (they can also be assigned manually using the XYZR or LennardJones
+# decorators):
+ff.add_radii(prot)
+ff.add_well_depths(prot)
+
+# Get a list of all atoms in the protein, and put it in a container
+atoms = IMP.atom.get_by_type(prot, IMP.atom.ATOM_TYPE)
+cont = IMP.container.ListSingletonContainer(atoms)
+
+
+# Add a restraint for the Lennard-Jones interaction. This is built from
+# a collection of building blocks. First, a ClosePairContainer maintains a list
+# of all pairs of Particles that are close. Next, all 1-2, 1-3 and 1-4 pairs
+# from the stereochemistry created above are filtered out.
+# Then, a LennardJonesPairScore scores a pair of atoms with the Lennard-Jones
+# potential. Finally, a PairsRestraint is used which simply applies the
+# LennardJonesPairScore to each pair in the ClosePairContainer.
+nbl = IMP.container.ClosePairContainer(cont, 4.0)
+nbl.add_pair_filter(r1.get_pair_filter())
+
+sf = IMP.atom.ForceSwitch(6.0, 7.0)
+ps = IMP.atom.LennardJonesPairScore(sf)
+r2 = IMP.container.PairsRestraint(ps, nbl)
+#m.add_restraint(IMP.container.PairsRestraint(ps, nbl))
+
+
+
+###########################################################################################
+# Basic Optimization and Chain
+###########################################################################################
+
+s= IMP.core.MCCGSampler(m)
+sf = IMP.core.RestraintsScoringFunction([r1, r2], "scoring function")
+s.set_scoring_function(sf)
+s.set_number_of_attempts(100)
+# but we do want something to watch
+s.set_log_level(IMP.TERSE)
+s.set_number_of_monte_carlo_steps(100)
+
+# find some configurations which move the particles far apart
+configs = s.create_sample()
+
+print "Found ", configs.get_number_of_configurations(), " configurations"
+
+for i in range(configs.get_number_of_configurations()-1, configs.get_number_of_configurations()):
+	configs.load_configuration(i)
+	#d=IMP.display.PymolWriter("solution"+str(i)+".py")
+	print("check particles ",cont.get_particles())
+	IMP.atom.write_pdb(prot, "solution"+str(i)+".pdb")
+	#for p in cont.get_particles():
+		#print(type(p))
+		#print(p)
+		#print(IMP.core.XYZ(p).get_coordinates())
+
