@@ -158,7 +158,7 @@ or better install Boost_1_55_0
 
 	tar -zxvf hdf5-1.8.16.tar.gz
 	cd hdf5-1.8.16
-	./configure --with-zlib=/data/commons/tools/IMP_tools/zlib-1.2.8/
+	./configure --with-zlib=/data/commons/tools/IMP_tools/hdf5-1.8.16/
 	make 
 	make install
 ```
