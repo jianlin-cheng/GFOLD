@@ -1,0 +1,66 @@
+SET(BUILD_RELEASE ON)
+SET(BUILD_DEBUG OFF)
+SET(BUILD_PROFILE OFF)
+SET(BUILD_DUMMYRANDOM OFF)
+
+SET(Boost_USE_MULTITHREAD OFF)
+       
+FIND_PACKAGE(Boost 1.39)
+
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
+
+SET(GFOLD_src
+utils/LogFactorial.cpp
+)
+
+
+SET(LIBRARY_OUTPUT_PATH ${GFOLD_SOURCE_DIR}/libs)
+
+# build release library
+IF(BUILD_RELEASE)
+add_library (GFOLD STATIC
+        ${GFOLD_src}
+        )
+
+SET_TARGET_PROPERTIES(GFOLD PROPERTIES COMPILE_FLAGS " -O3 -fPIC -c -fmessage-length=0 -I${GFOLD_SOURCE_DIR}/src")
+ENDIF(BUILD_RELEASE)
+
+#IF(BUILD_RELEASE)
+#add_library (GFOLD SHARED
+#        ${GFOLD_src}
+#        )
+
+#SET_TARGET_PROPERTIES(GFOLD PROPERTIES COMPILE_FLAGS " -O3 -fPIC -c -fmessage-length=0 -I${GFOLD_SOURCE_DIR}/src")
+#ENDIF(BUILD_RELEASE)
+
+
+IF(BUILD_DEBUG)
+add_library (GFOLDD 
+        ${GFOLD_src}
+        )
+SET_TARGET_PROPERTIES(GFOLDD PROPERTIES COMPILE_FLAGS "-O0 -fPIC -g -Wall -c -fmessage-length=0")
+ENDIF(BUILD_DEBUG)
+
+IF(BUILD_PROFILE)
+add_library (GFOLDP 
+        ${GFOLD_src}
+        )
+SET_TARGET_PROPERTIES(GFOLDP PROPERTIES COMPILE_FLAGS "-pg -fPIC -O3 -Wall -c -fmessage-length=0")
+ENDIF(BUILD_PROFILE)
+
+IF(BUILD_DUMMYRANDOM)
+add_library (GFOLDDR 
+        ${GFOLD_src}
+        ${Integrate_src}
+        ${Functions_src}
+        )
+SET_TARGET_PROPERTIES(GFOLDDR PROPERTIES COMPILE_FLAGS "-DRANDDUMMY  -O3 -fPIC -Wall -c -fmessage-length=0")
+ENDIF(BUILD_DUMMYRANDOM)
+
+
+# install commands
+#INSTALL(TARGETS GFOLD 
+#        LIBRARY DESTINATION lib
+#        ARCHIVE DESTINATION lib
+#        )

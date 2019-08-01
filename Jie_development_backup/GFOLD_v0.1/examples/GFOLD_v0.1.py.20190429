@@ -1,0 +1,322 @@
+#!usr/bin/env python
+############################################################################
+#
+#	 GFOLD : A Distance-based Protein Structure Folding
+#
+#	 Copyright (C) 2019 -2029	Jie Hou and Jianlin Cheng
+#
+############################################################################
+#
+#	 Method to perform distance-based modeling (TS)
+#
+############################################################################
+
+from __future__ import print_function
+import modeller
+import IMP
+import IMP.modeller
+import IMP.atom
+import IMP.container
+import sys
+import os
+import optparse
+
+#/home/jh7x3/fusion_hybrid/
+project_root = '/data/jh7x3/GFOLD_v0.1/'
+sys.path.insert(0, project_root)
+
+#from GFOLD_pylib import *
+
+print('')
+print('  ############################################################################')
+print('  #                                                                          #')
+print('  #      GFOLD : A Distance-based Protein Structure Folding                  #')
+print('  #                                                                          #')
+print('  #   Copyright (C) 2019 -2029	Jie Hou and Jianlin Cheng                   #')
+print('  #                                                                          #')
+print('  ############################################################################')
+print('  #                                                                          #')
+print('  #   Method to perform distance-based modeling (TS)                         #')
+print('  #                                                                          #')
+print('  ############################################################################')
+print('')
+
+
+def make_structure_from_sequence_by_CHARMM(sequence, outfile='null', name='CHARMM model'):
+	
+	# Use the CHARMM all-atom (i.e. including hydrogens) topology and parameters
+	topology = IMP.atom.CHARMMTopology(IMP.atom.get_all_atom_CHARMM_parameters())
+	# Create a single chain of amino acids and apply the standard C- and N-
+	# termini patches
+	topology.add_sequence(sequence)
+	topology.apply_default_patches()
+
+	# Make an IMP Hierarchy (atoms, residues, chains) that corresponds to
+	# this topology
+	m = IMP.Model()
+	h = topology.create_hierarchy(m)
+
+	# Generate coordinates for all atoms in the Hierarchy, using CHARMM internal
+	# coordinate information (an extended chain conformation will be produced).
+	# Since in some cases this information can be incomplete, better results will
+	# be obtained if the atom types are assigned first and the CHARMM parameters
+	# file is loaded, as we do here, so missing information can be filled in.
+	# It will still work without that information, but will approximate the
+	# coordinates.
+	topology.add_atom_types(h)
+	topology.add_coordinates(h)
+
+	# Hierarchies in IMP must have radii
+	IMP.atom.add_radii(h)
+	
+	if outfile != 'null':
+		# Write out the final structure to a PDB file
+		IMP.atom.write_pdb(h, outfile)
+
+def make_structure_from_sequence_by_modeller(sequence, outfile='null', name='MODELLER model'):
+	# Set up Modeller and build a model from the GGCC primary sequence
+	e = modeller.environ()
+	e.edat.dynamic_sphere = True
+	e.libs.topology.read('${LIB}/top_heav.lib')
+	e.libs.parameters.read('${LIB}/par.lib')
+	modmodel = modeller.model(e)
+	modmodel.build_sequence(sequence)
+	# Generate Modeller stereochemistry
+	sel = modeller.selection(modmodel)
+	modmodel.restraints.make(sel, restraint_type='STEREO', spline_on_site=False)
+
+	# Set up IMP and use the ModelLoader class to load the atom coordinates
+	# from Modeller into IMP as a new Hierarchy
+	m = IMP.Model()
+	loader = IMP.modeller.ModelLoader(modmodel)
+	protein = loader.load_atoms(m)
+
+	# Hierarchies in IMP must have radii
+	IMP.atom.add_radii(protein)
+	#atoms = IMP.atom.get_by_type(protein, IMP.atom.ATOM_TYPE)
+	#residues = IMP.atom.get_by_type(protein, IMP.atom.RESIDUE_TYPE)
+	#print(atoms)
+	#print(residues)
+	if outfile != 'null':
+		# Write out the final structure to a PDB file
+		IMP.atom.write_pdb(protein, outfile)
+		clean_file = "sed -e \'s/\\x00//\' -i " + outfile
+		os.system(clean_file)
+
+parser = optparse.OptionParser()
+parser.add_option('-t','--target', dest='target',
+	default = 'test',    # default target name is test
+	help = 'name of target protein')
+parser.add_option('-p','--pdb', dest = 'pdb',
+	default = '',    # default empty!
+	help = 'PDB file containing random structure for the target protein')
+parser.add_option('-f','--fasta', dest = 'fasta',
+	default = '',    # default empty!
+	help = 'FASTA file containing the protein to sequence to fold')
+parser.add_option('-s','--sequence', dest = 'sequence',
+	default = '',    # default empty!
+	help = 'protein sequence to fold')
+parser.add_option('-d','--dir', dest = 'dir',
+	default = '',    # default empty!
+	help = 'root directory for results')
+parser.add_option('-n','--native', dest = 'native',
+	default = '',    # default empty!
+	help = 'native PDB file used for benchmarking')
+
+(options,args) = parser.parse_args()
+
+target = options.target
+# the user may input a PDB file, fasta file, or sequence directly
+
+dir = options.dir
+if dir:
+	curr_dir = dir
+else:
+	curr_dir = os.getcwd()
+
+native = options.native
+if native:
+	m = IMP.Model()
+	print("Loading ",pdb)
+	native_pose = IMP.atom.read_pdb(IMP.atom.get_example_path(native), m)
+	IMP.atom.add_bonds(native_pose)
+
+work_dir = curr_dir + '/' + target
+if not os.path.exists(work_dir):
+	os.makedirs(work_dir)
+
+
+# Sequence file option
+if options.fasta:	
+	f = open(options.fasta, 'r')	
+	sequence = f.readlines()	
+	f.close()	
+	# removing the trailing "\n" and any header lines
+	sequence = [line.strip() for line in sequence if not '>' in line]
+	sequence = ''.join( sequence )
+	
+	##### (1) build extend structure from sequence
+	out1 = work_dir+'/charmm_model_init.pdb'
+	out2 = work_dir+'/modeller_model_init.pdb'
+	make_structure_from_sequence_by_CHARMM(sequence, outfile = out1, name='CHARMM model')
+	make_structure_from_sequence_by_modeller(sequence, outfile = out2, name='MODELLER model')
+	
+	# Load a protein from a PDB file and then restrain all the bonds to have their current length.
+	m = IMP.Model()
+	charmm_init_model = IMP.atom.read_pdb(out1, m, IMP.atom.ATOMPDBSelector())
+	IMP.atom.add_radii(charmm_init_model)
+	IMP.atom.add_bonds(charmm_init_model)
+	
+	# get the chains
+	chain = IMP.atom.get_by_type(charmm_init_model, IMP.atom.CHAIN_TYPE)
+	print("there are", len(chain), "chains in ",out1)
+
+	# set the chains as rigid bodies
+	native_chain_centers = []
+	rigid_bodies = []
+	
+	if len(chain)> 1:
+		print("More than one chain is loaded, only first chain is used")
+		
+	
+	for c in chain:
+		print(c)
+		atoms = IMP.core.get_leaves(c)
+		rbd = IMP.atom.Atom.setup_particle(c, atoms)
+		rbd.set_coordinates_are_optimized(True)
+		rigid_bodies.append(rbd)
+		print("chain has", rbd.get_number_of_members(), \
+			"atoms", "coordinates: ", rbd.get_coordinates())
+		native_chain_centers.append(rbd.get_coordinates())
+		
+	'''
+	bds = IMP.atom.get_internal_bonds(charmm_init_model)
+	bl = IMP.container.ListSingletonContainer(m, bds)
+	h1 = IMP.core.Harmonic(0, 1)
+	bs = IMP.atom.BondSingletonScore(h1)
+	br = IMP.container.SingletonsRestraint(bs, bl)
+	print(br.evaluate(False))
+
+	# Optimize the x,y,z coordinates of both particles with conjugate gradients
+	sf = IMP.core.RestraintsScoringFunction([br], "scoring function")
+	prb = IMP.core.RigidBody.setup_particle(IMP.Particle(m), IMP.algebra.ReferenceFrame3D())
+	prb.set_coordinates_are_optimized(True)
+	#charmm_init_model.set_coordinates_are_optimized(True)
+	##o = IMP.core.ConjugateGradients(m)
+	#o.set_scoring_function(sf)
+	#o.optimize(50)
+
+	#IMP.atom.write_pdb(prot, 'structurenew.pdb')
+	'''
+	'''
+	# get the 16th residue of the first chain
+	h1chain = IMP.atom.get_by_type(charmm_init_model, IMP.atom.CHAIN_TYPE)[0]
+	# decorate the chain particle with an IMP.atom.Chain decorator.
+	# unfortunately, our python wrapper does not handle converseions properly
+	# as a result you have to manually get the particle for that chain
+	print(h1chain)
+	chain = IMP.atom.Chain(h1chain.get_particle())
+	print(chain)
+	r16 = IMP.atom.get_residue(chain, 16)
+	r16.show()
+	
+	# get all the atoms
+	atoms = IMP.atom.get_by_type(charmm_init_model, IMP.atom.ATOM_TYPE)
+	# I didn't really have anything interesting to do with them...
+
+	# create a new version of the protein that is coarsened (one particle per
+	# residue)
+	smp0 = IMP.atom.create_simplified_along_backbone(chain, 1)
+	print("smp0: ",smp0)
+	print(type(smp0))
+	# we don't need mp0 any more
+	IMP.atom.destroy(charmm_init_model)
+
+	# load another copy
+	mp1 = IMP.atom.read_pdb(out1, m1)
+
+	# create a graph from the hierarchy
+	mp1t = IMP.atom.get_hierarchy_tree(mp1)
+	# process the file with dot like
+	# dot -Tpdf hierarchy.dot > hierarchy.pdf
+	mp1t.show_graphviz(open("hierarchy.dot", "w"))
+	# try to display it graphically, assuming altgraph is installed
+	try:
+		mp1t.show_with_altgraph()
+	except:
+		pass
+
+	# make this one rigid
+	IMP.atom.create_rigid_body(mp1)
+
+	# create a hierarchy which contains the two proteins
+	p = IMP.Particle(m1)
+	rmp = IMP.atom.Hierarchy.setup_particle(p)
+	rmp.add_child(smp0)
+	rmp.add_child(mp1)
+	print(type(rmp))
+	print(rmp.get_children())
+	#m2 = IMP.Model()
+	#modeller_init_model = IMP.atom.read_pdb(out2, m2)
+	'''
+else:
+	print('Error ! target protein not defined. Exiting application...')
+	sys.exit(1)
+
+
+
+'''
+
+
+m = IMP.Model()
+
+#prot = IMP.atom.read_pdb(IMP.atom.get_example_path("example_protein.pdb"), m)
+
+#####  build extend structure 
+
+
+##### load true bond length, angle, residue distance 
+
+##### load modeller restarints, steric, van der waasls, refer to /data/commons/tools/IMP_tools/IMP2.6/doc/examples/modeller/load_modeller_model.py 
+
+
+##### add modeller restrants into imp 
+
+##### add our dihedral, angular and distance restraints into imp
+#modmodel.restraints.make(sel, restraint_type='STEREO', spline_on_site=False)
+#https://salilab.org/modeller/9v7/manual/node196.html
+#https://salilab.org/modeller/9.21/examples/automodel/model-addrsr.py
+
+
+## the idea to convert secondary structure to dihedral constraints 
+## (1) first load secodnary structure into dihedral  using https://salilab.org/modeller/9.21/examples/automodel/model-addrsr.py
+## (2) get dihedral constratins using  modmodel.restraints.make(sel, restraint_type='dehidral', spline_on_site=False)
+
+
+##### optimize 
+
+
+##### write pdb
+'''
+
+'''
+IMP.atom.add_bonds(prot)
+bds = IMP.atom.get_internal_bonds(prot)
+bl = IMP.container.ListSingletonContainer(m, bds)
+h = IMP.core.Harmonic(0, 1)
+bs = IMP.atom.BondSingletonScore(h)
+br = IMP.container.SingletonsRestraint(bs, bl)
+print(br.evaluate(False))
+
+
+
+# Optimize the x,y,z coordinates of both particles with conjugate gradients
+sf = IMP.core.RestraintsScoringFunction([br], "scoring function")
+prot.set_coordinates_are_optimized(True)
+o = IMP.core.ConjugateGradients(m)
+o.set_scoring_function(sf)
+o.optimize(50)
+
+IMP.atom.write_pdb(prot, 'structurenew.pdb')
+'''
+

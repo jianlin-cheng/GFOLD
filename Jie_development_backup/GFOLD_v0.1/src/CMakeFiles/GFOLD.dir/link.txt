@@ -1,0 +1,2 @@
+/usr/bin/ar cr ../libs/libGFOLD.a  CMakeFiles/GFOLD.dir/utils/LogFactorial.cpp.o
+/usr/bin/ranlib ../libs/libGFOLD.a
