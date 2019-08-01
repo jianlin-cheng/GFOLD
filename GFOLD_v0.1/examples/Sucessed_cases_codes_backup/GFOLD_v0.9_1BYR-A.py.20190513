@@ -3,6 +3,9 @@
 # python GFOLD.py  --target 3BFO-B  --fasta 3BFO-B.fasta --alignment 3BFO-B.pir  --atomdir ./  --dir  3BFOB
 
 
+
+
+	
 ############################################################################
 #
 #	 GFOLD : A Distance-based Protein Structure Folding
@@ -28,7 +31,6 @@ import IMP.rotamer
 import warnings
 import string, re
 import math
-import time
 import modeller
 from modeller import *
 import IMP.modeller
@@ -38,23 +40,233 @@ modeller.log.none()
 import random
 #modeller.log.minimal()
 
+
 #/home/jh7x3/fusion_hybrid/
-project_root = '/data/jh7x3/GFOLD_v0.1/examples/GFOLD_pylib'
+project_root = '/data/jh7x3/GFOLD_v0.1/'
 sys.path.insert(0, project_root)
 
-from GFOLD_lib import *
+#from GFOLD_pylib import *
+aa_one2index = {'A':0, 'C':1, 'D':2, 'E':3, 'F':4, 'G':5, 'H':6, 'I':7, 'K':8, 'L':9, 'M':10, 'N':11, 'P':12, 'Q':13, 'R':14, 'S':15, 'T':16, 'V':17, 'W':18, 'Y':19}
+aa_three2index = {'ALA':0, 'CYS':1, 'ASP':2, 'GLU':3, 'PHE':4, 'GLY':5, 'HIS':6, 'ILE':7, 'LYS':8, 'LEU':9, 'MET':10, 'ASN':11, 'PRO':12, 'GLN':13, 'ARG':14, 'SER':15, 'THR':16, 'VAL':17, 'TRP':18, 'TYR':19}
+aa_index2three = {y:x for x,y in aa_three2index.iteritems()}
+
+
+# Global variables for generating secondary structure restraints
+SS_ATOMTYPE = {}
+SS_ATOMTYPE['CA'] = 1
+SS_ATOMTYPE['N'] = 1
+SS_ATOMTYPE['C'] = 1
+SS_ATOMTYPE['O'] = 1
+
+SS_SHIFT = {}
+SS_SHIFT['0'] = 1
+SS_SHIFT['+1'] = 1
+SS_SHIFT['-1'] = 1
+res_dihe     = {};
+res_strnd_OO = {};
+res_dist     = {};
+res_hbnd     = {};
+
+
+def get_ss_range(integer_list):
+	integer_list = sorted(integer_list)
+	pstart = integer_list[0]
+	pend = integer_list[-1]
+
+	a = set(integer_list)  # Set a
+	b = range(pstart, pend+1)
+
+	# Pick items that are not in range.
+	c = set(b) - a  # Set operation b-a
+
+	li = []
+	start = 0
+	for i in sorted(c):
+		end = b.index(i)  # Get end point of the list slicing
+		li.append(b[start:end])  # Slice list using values
+		start = end + 1  # Increment the start point for next slicing
+	li.append(b[start:])  # Add the last series
+	range_list =  []
+	for sliced_list in li:
+		if not sliced_list:
+			# list is empty
+			continue
+		if len(sliced_list) == 1:
+			# If only one item found in list
+			range_list.append(sliced_list[0])
+		else:
+			range_list.append("{0}-{1}".format(sliced_list[0], sliced_list[-1]))
+	return range_list
+
+
+def load_ss_restraints(lamda,log_reference):
+	# T      Helix or Parallel or anti-parallel or Unknown Strand Type
+	# A1_A2  Atom1-Atom2 pair
+	# Ref    Hydrogen bonding connector atom (reference hbond connector)
+	# N      Neighborhood residue shifting on the hbond connector of R2 side. For example, If R1:N and R2:O have hbond and S = +1, the restraint A1-A2 are for R1 and (R2+1)
+	# Note: hbond distances are the distances between Nitrogen and Oxygen
+	# Places to verify:
+	# http://www.beta-sheet.org/page29/page51/page53/index.html
+	# In this model, the HP sheet is composed of identical straight helical chains with phi = -122 degrees, psi = 135 degrees, and a slightly non-linear interchain H-bond angle delta of 170 degrees.
+	# http://en.wikipedia.org/wiki/Alpha_helix
+	# Residues in alpha-helices typically adopt backbone (phi, psi) dihedral angles around (-60, -45), as shown in the image at right
+	# the H to O distance is about 2 A (0.20 nm
+
+	# T A Mean Standard_deviation
+	res_dihe["A PSI"] = "136.91 "+str(lamda * 17.39);
+	res_dihe["A PHI"] = "-120.89 "+str(lamda * 21.98);
+	res_dihe["P PSI"] = "130.96 "+str(lamda * 16.66);
+	res_dihe["P PHI"] = "-115.00 "+str(lamda * 20.31);
+	res_dihe["U PSI"] = "134.95 "+str(lamda * 17.65);
+	res_dihe["U PHI"] = "-118.91 "+str(lamda * 21.73);
+	res_dihe["H PSI"] = "-41.51 "+str(lamda * 9.84);
+	res_dihe["H PHI"] = "-63.47 "+str(lamda * 9.20);
+
+	#T A1_A2 Ref N Mean Standard_deviation
+	res_dist["A O-O O +1"]   = get_dist_neg_pos(7.73, 0.59, lamda);
+	res_dist["A O-O O -1"]   = get_dist_neg_pos(4.84, 0.16, lamda);
+	res_dist["A O-O O 0"]    = get_dist_neg_pos(3.57, 0.28, lamda);
+	res_dist["A O-O H +1"]   = get_dist_neg_pos(7.76, 0.60, lamda);
+	res_dist["A O-O H -1"]   = get_dist_neg_pos(4.90, 0.45, lamda);
+	res_dist["A O-O H 0"]    = get_dist_neg_pos(3.58, 0.31, lamda);
+	res_dist["A C-C O +1"]   = get_dist_neg_pos(7.66, 0.52, lamda);
+	res_dist["A C-C O -1"]   = get_dist_neg_pos(4.80, 0.17, lamda);
+	res_dist["A C-C O 0"]    = get_dist_neg_pos(4.96, 0.21, lamda);
+	res_dist["A C-C H +1"]   = get_dist_neg_pos(7.65, 0.51, lamda);
+	res_dist["A C-C H -1"]   = get_dist_neg_pos(4.85, 0.34, lamda);
+	res_dist["A C-C H 0"]    = get_dist_neg_pos(4.96, 0.21, lamda);
+	res_dist["A N-N O +1"]   = get_dist_neg_pos(5.09, 0.34, lamda);
+	res_dist["A N-N O -1"]   = get_dist_neg_pos(6.86, 0.40, lamda);
+	res_dist["A N-N O 0"]    = get_dist_neg_pos(4.42, 0.24, lamda);
+	res_dist["A N-N H +1"]   = get_dist_neg_pos(5.04, 0.21, lamda);
+	res_dist["A N-N H -1"]   = get_dist_neg_pos(6.85, 0.45, lamda);
+	res_dist["A N-N H 0"]    = get_dist_neg_pos(4.43, 0.25, lamda);
+	res_dist["A CA-CA O +1"] = get_dist_neg_pos(6.43, 0.41, lamda);
+	res_dist["A CA-CA O -1"] = get_dist_neg_pos(5.67, 0.28, lamda);
+	res_dist["A CA-CA O 0"]  = get_dist_neg_pos(5.26, 0.24, lamda);
+	res_dist["A CA-CA H +1"] = get_dist_neg_pos(6.38, 0.36, lamda);
+	res_dist["A CA-CA H -1"] = get_dist_neg_pos(5.71, 0.40, lamda);
+	res_dist["A CA-CA H 0"]  = get_dist_neg_pos(5.27, 0.25, lamda);
+	res_dist["P O-O O +1"]   = get_dist_neg_pos(7.90, 0.61, lamda);
+	res_dist["P O-O O -1"]   = get_dist_neg_pos(4.86, 0.16, lamda);
+	res_dist["P O-O O 0"]    = get_dist_neg_pos(3.78, 0.34, lamda);
+	res_dist["P O-O H +1"]   = get_dist_neg_pos(4.92, 0.40, lamda);
+	res_dist["P O-O H -1"]   = get_dist_neg_pos(8.02, 0.60, lamda);
+	res_dist["P O-O H 0"]    = get_dist_neg_pos(3.78, 0.32, lamda);
+	res_dist["P C-C O +1"]   = get_dist_neg_pos(8.03, 0.51, lamda);
+	res_dist["P C-C O -1"]   = get_dist_neg_pos(4.82, 0.17, lamda);
+	res_dist["P C-C O 0"]    = get_dist_neg_pos(5.21, 0.25, lamda);
+	res_dist["P C-C H +1"]   = get_dist_neg_pos(4.88, 0.34, lamda);
+	res_dist["P C-C H -1"]   = get_dist_neg_pos(7.87, 0.44, lamda);
+	res_dist["P C-C H 0"]    = get_dist_neg_pos(5.22, 0.22, lamda);
+	res_dist["P N-N O +1"]   = get_dist_neg_pos(8.14, 0.35, lamda);
+	res_dist["P N-N O -1"]   = get_dist_neg_pos(4.86, 0.40, lamda);
+	res_dist["P N-N O 0"]    = get_dist_neg_pos(5.13, 0.32, lamda);
+	res_dist["P N-N H +1"]   = get_dist_neg_pos(4.80, 0.18, lamda);
+	res_dist["P N-N H -1"]   = get_dist_neg_pos(7.54, 0.69, lamda);
+	res_dist["P N-N H 0"]    = get_dist_neg_pos(5.10, 0.28, lamda);
+	res_dist["P CA-CA O +1"] = get_dist_neg_pos(8.55, 0.37, lamda);
+	res_dist["P CA-CA O -1"] = get_dist_neg_pos(4.90, 0.29, lamda);
+	res_dist["P CA-CA O 0"]  = get_dist_neg_pos(6.21, 0.26, lamda);
+	res_dist["P CA-CA H +1"] = get_dist_neg_pos(4.90, 0.28, lamda);
+	res_dist["P CA-CA H -1"] = get_dist_neg_pos(7.49, 0.60, lamda);
+	res_dist["P CA-CA H 0"]  = get_dist_neg_pos(6.24, 0.24, lamda);
+	res_dist["H O-O O +1"]   = get_dist_neg_pos(8.40, 0.27, lamda);
+	res_dist["H O-O O -1"]   = get_dist_neg_pos(4.99, 0.16, lamda);
+	res_dist["H O-O O 0"]    = get_dist_neg_pos(6.12, 0.26, lamda);
+	res_dist["H O-O H +1"]   = get_dist_neg_pos(5.03, 0.31, lamda);
+	res_dist["H O-O H -1"]   = get_dist_neg_pos(8.43, 0.32, lamda);
+	res_dist["H O-O H 0"]    = get_dist_neg_pos(6.12, 0.26, lamda);
+	res_dist["H C-C O +1"]   = get_dist_neg_pos(8.16, 0.24, lamda);
+	res_dist["H C-C O -1"]   = get_dist_neg_pos(4.87, 0.13, lamda);
+	res_dist["H C-C O 0"]    = get_dist_neg_pos(6.09, 0.23, lamda);
+	res_dist["H C-C H +1"]   = get_dist_neg_pos(4.89, 0.23, lamda);
+	res_dist["H C-C H -1"]   = get_dist_neg_pos(8.17, 0.25, lamda);
+	res_dist["H C-C H 0"]    = get_dist_neg_pos(6.09, 0.23, lamda);
+	res_dist["H N-N O +1"]   = get_dist_neg_pos(8.07, 0.23, lamda);
+	res_dist["H N-N O -1"]   = get_dist_neg_pos(4.84, 0.19, lamda);
+	res_dist["H N-N O 0"]    = get_dist_neg_pos(6.10, 0.20, lamda);
+	res_dist["H N-N H +1"]   = get_dist_neg_pos(4.81, 0.13, lamda);
+	res_dist["H N-N H -1"]   = get_dist_neg_pos(8.08, 0.21, lamda);
+	res_dist["H N-N H 0"]    = get_dist_neg_pos(6.10, 0.20, lamda);
+	res_dist["H CA-CA O +1"] = get_dist_neg_pos(8.63, 0.28, lamda);
+	res_dist["H CA-CA O -1"] = get_dist_neg_pos(5.13, 0.20, lamda);
+	res_dist["H CA-CA O 0"]  = get_dist_neg_pos(6.16, 0.26, lamda);
+	res_dist["H CA-CA H +1"] = get_dist_neg_pos(5.14, 0.21, lamda);
+	res_dist["H CA-CA H -1"] = get_dist_neg_pos(8.64, 0.26, lamda);
+	res_dist["H CA-CA H 0"]  = get_dist_neg_pos(6.16, 0.26, lamda);
+
+	# T Mean Standard_deviation
+	res_strnd_OO["A"] = get_dist_neg_pos(4.57, 0.30, lamda);
+	res_strnd_OO["P"] = get_dist_neg_pos(4.57, 0.29, lamda);
+	res_strnd_OO["U"] = get_dist_neg_pos(4.57, 0.30, lamda);
+
+	# T Mean Standard_deviation
+	res_hbnd["A"] = get_dist_neg_pos(2.92, 0.16, lamda);
+	res_hbnd["P"] = get_dist_neg_pos(2.93, 0.16, lamda);
+	res_hbnd["H"] = get_dist_neg_pos(2.99, 0.17, lamda);
+	
+	if not res_dihe:
+		print('Error ! dihe restraints could not be loaded. Exiting application...')
+		sys.exit(-1)
+	if not res_strnd_OO:
+		print('Error ! dstr restraints could not be loaded. Exiting application...')
+		sys.exit(-1)
+	if not res_dist:
+		print('Error ! dist restraints could not be loaded. Exiting application...')
+		sys.exit(-1)
+	if not res_hbnd:
+		print('Error ! hbnd restraints could not be loaded. Exiting application...')
+		sys.exit(-1)
+
+	content = "#load_ss_restraints\n";
+	with open(log_reference, 'w') as f1:
+		f1.write(content)
+	
+	for item in res_dihe:
+		content = item+"\t"+res_dihe[item]+"\n";
+		with open(log_reference, 'a') as f1:
+			f1.write(content)
+
+	for item in res_strnd_OO:
+		content = item+"\t"+res_strnd_OO[item]+"\n";
+		with open(log_reference, 'a') as f1:
+			f1.write(content)
+
+	for item in res_dist:
+		content = item+"\t"+res_dist[item]+"\n";
+		with open(log_reference, 'a') as f1:
+			f1.write(content)
+	
+	for item in res_hbnd:
+		content = item+"\t"+res_hbnd[item]+"\n";
+		with open(log_reference, 'a') as f1:
+			f1.write(content)
+
+def get_dist_neg_pos(mean, devi,lamda):
+	lamda_devi = round(lamda*devi, 2)
+	info = str(mean) + ' ' + str(lamda_devi) + ' ' + str(lamda_devi)
+	return info
+			
+def print2file(file,message):
+	if os.path.isfile(file):
+		with open(file, 'a') as f1:
+			f1.write(message+"\n")
+	else:
+		with open(file, 'w') as f1:
+			f1.write(message+"\n")
 
 print('')
 print('  ############################################################################')
-print('  #																			#')
-print('  #		GFOLD : A Distance-based Protein Structure Folding					#')
-print('  #																			#')
-print('  #	Copyright (C) 2019 -2029	Jie Hou and Jianlin Cheng					#')
-print('  #																			#')
+print('  #																		  #')
+print('  #	  GFOLD : A Distance-based Protein Structure Folding				  #')
+print('  #																		  #')
+print('  #   Copyright (C) 2019 -2029	Jie Hou and Jianlin Cheng				   #')
+print('  #																		  #')
 print('  ############################################################################')
-print('  #																			#')
-print('  #	Method to perform distance-based modeling (TS)							#')
-print('  #																			#')
+print('  #																		  #')
+print('  #   Method to perform distance-based modeling (TS)						 #')
+print('  #																		  #')
 print('  ############################################################################')
 print('')
 
@@ -205,16 +417,7 @@ if not os.path.exists(sample_dir):
 
 e = modeller.environ(rand_seed=-4000)
 #soft sphere potential
-####################### new added
-e.io.hetatm = True
-#soft sphere potential
-e.edat.dynamic_sphere=False
-#lennard-jones potential (more accurate)
-e.edat.dynamic_lennard=True
-e.edat.contact_shell = 4.0
-e.edat.update_dynamic = 0.39
-#######################
-
+e.edat.dynamic_sphere = False
 # To assign 0 weights to restraints whose numerical derivatives
 # code does not work (i.e., splines for angles and dihedrals):
 # https://salilab.org/modeller/9v8/manual/node251.html
@@ -483,12 +686,7 @@ if options.hbond:
 				hbond_restraints.append(forms.gaussian(group=physical.xy_distance,
 				   feature=features.distance(modeller_atoms[res1_pos],
 											 modeller_atoms[res2_pos]),
-				   mean=2.72, stdev=0.1))
-				
-				#hbond_restraints.append(forms.gaussian(group=physical.xy_distance,
-				#   feature=features.distance(modeller_atoms[res1_pos],
-				#							 modeller_atoms[res2_pos]),
-				#   mean=float(HR_buff[0]), stdev=float(HR_buff[1])))
+				   mean=float(HR_buff[0]), stdev=float(HR_buff[1])))
 				
 				#rsr.add(forms.gaussian(group=physical.xy_distance,
 				#   feature=features.distance(modeller_atoms[res1_pos],
@@ -674,26 +872,26 @@ for i in range(0, len(ss_sequence)):
 
 print("Loading modeller's secondary structure restraints")
 
-alphahelix_restraints = []
+secondary_structure_restraints = []
 if res_helix:
 	helix_range = get_ss_range(res_helix.keys())
 	for item in helix_range:
 		if '-' in str(item):
 			print("Setting to helix in range ",item)
 			ss_buff = re.split("-",item)
-			alphahelix_restraints.append(secondary_structure.alpha(modmodel.residue_range(ss_buff[0], ss_buff[1])))
+			secondary_structure_restraints.append(secondary_structure.alpha(modmodel.residue_range(ss_buff[0], ss_buff[1])))
 			#rsr.add(secondary_structure.alpha(modmodel.residue_range(ss_buff[0], ss_buff[1])))
 else:
 	print("None helix information in structure")
 
-betastrand_restraints = []
+
 if res_strand:
 	strand_range = get_ss_range(res_strand.keys())
 	for item in strand_range:
 		if '-' in str(item):
 			print("Setting to strand in range ",item)
 			ss_buff = re.split("-",item)
-			betastrand_restraints.append(secondary_structure.strand(modmodel.residue_range(ss_buff[0], ss_buff[1])))
+			secondary_structure_restraints.append(secondary_structure.strand(modmodel.residue_range(ss_buff[0], ss_buff[1])))
 			#rsr.add(secondary_structure.strand(modmodel.residue_range(ss_buff[0], ss_buff[1])))
 
 	#	   An anti-parallel sheet composed of the two strands:
@@ -713,7 +911,6 @@ else:
 # (4) load the template structure and get information for all atoms
 ###########################################################################################
 
-dist_close_restraints = []
 dist_short_restraints = []
 dist_medium_restraints = []
 dist_long_restraints = []
@@ -767,9 +964,6 @@ if options.restraints:
 			p1_buff = re.split("-",res1)
 			p2_buff = re.split("-",res2)
 			
-			#if p1_buff[1] == 'GLY' or p2_buff[1] == 'GLY' :
-			#	continue
-			
 			if int(p2_buff[0])-int(p1_buff[0])< separation:
 				continue
 			if atom_type_dist == 'all':
@@ -778,12 +972,7 @@ if options.restraints:
 				res1_pos = p1_atom_type_dist+':'+str(p1_buff[0])
 				res2_pos = p2_atom_type_dist+':'+str(p2_buff[0])
 				
-				if abs(int(p2_buff[0])-int(p1_buff[0])) <6:
-					dist_close_restraints.append(forms.gaussian(group=physical.xy_distance,
-					   feature=features.distance(modeller_atoms[res1_pos],
-												 modeller_atoms[res2_pos]),
-					   mean=re_value, stdev=distdev))
-				elif abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+				if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
 					dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
 					   feature=features.distance(modeller_atoms[res1_pos],
 												 modeller_atoms[res2_pos]),
@@ -816,12 +1005,7 @@ if options.restraints:
 				res2_pos = p2_atom_type_dist+':'+str(p2_buff[0])
 				
 				
-				if abs(int(p2_buff[0])-int(p1_buff[0])) <6:
-					dist_close_restraints.append(forms.gaussian(group=physical.xy_distance,
-					   feature=features.distance(modeller_atoms[res1_pos],
-												 modeller_atoms[res2_pos]),
-					   mean=re_value, stdev=distdev))
-				elif abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+				if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
 					dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
 					   feature=features.distance(modeller_atoms[res1_pos],
 												 modeller_atoms[res2_pos]),
@@ -852,12 +1036,7 @@ if options.restraints:
 					res1_pos = 'CA:'+str(p1_buff[0])
 					res2_pos = 'CA:'+str(p2_buff[0])
 					
-					if abs(int(p2_buff[0])-int(p1_buff[0])) <6:
-						dist_close_restraints.append(forms.gaussian(group=physical.xy_distance,
-						   feature=features.distance(modeller_atoms[res1_pos],
-													 modeller_atoms[res2_pos]),
-						   mean=re_value, stdev=distdev))
-					elif abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+					if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
 						dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
 						   feature=features.distance(modeller_atoms[res1_pos],
 													 modeller_atoms[res2_pos]),
@@ -893,12 +1072,7 @@ if options.restraints:
 						res1_pos = 'CA:'+str(p1_buff[0])
 						res2_pos = 'CA:'+str(p2_buff[0])
 						
-						if abs(int(p2_buff[0])-int(p1_buff[0])) <6:
-							dist_close_restraints.append(forms.gaussian(group=physical.xy_distance,
-							   feature=features.distance(modeller_atoms[res1_pos],
-														 modeller_atoms[res2_pos]),
-							   mean=re_value, stdev=distdev))
-						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+						if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
 							dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
 							   feature=features.distance(modeller_atoms[res1_pos],
 														 modeller_atoms[res2_pos]),
@@ -927,12 +1101,7 @@ if options.restraints:
 						res2_pos = 'CB:'+str(p2_buff[0])
 						
 						
-						if abs(int(p2_buff[0])-int(p1_buff[0])) <6:
-							dist_close_restraints.append(forms.gaussian(group=physical.xy_distance,
-							   feature=features.distance(modeller_atoms[res1_pos],
-														 modeller_atoms[res2_pos]),
-							   mean=re_value, stdev=distdev))
-						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+						if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
 							dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
 							   feature=features.distance(modeller_atoms[res1_pos],
 														 modeller_atoms[res2_pos]),
@@ -960,12 +1129,7 @@ if options.restraints:
 						res1_pos = 'CB:'+str(p1_buff[0])
 						res2_pos = 'CA:'+str(p2_buff[0])
 						
-						if abs(int(p2_buff[0])-int(p1_buff[0])) <6:
-							dist_close_restraints.append(forms.gaussian(group=physical.xy_distance,
-							   feature=features.distance(modeller_atoms[res1_pos],
-														 modeller_atoms[res2_pos]),
-							   mean=re_value, stdev=distdev))
-						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+						if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
 							dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
 							   feature=features.distance(modeller_atoms[res1_pos],
 														 modeller_atoms[res2_pos]),
@@ -993,12 +1157,7 @@ if options.restraints:
 						res1_pos = 'CB:'+str(p1_buff[0])
 						res2_pos = 'CB:'+str(p2_buff[0])
 						
-						if abs(int(p2_buff[0])-int(p1_buff[0])) <6:
-							dist_close_restraints.append(forms.gaussian(group=physical.xy_distance,
-							   feature=features.distance(modeller_atoms[res1_pos],
-														 modeller_atoms[res2_pos]),
-							   mean=re_value, stdev=distdev))
-						elif abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
+						if abs(int(p2_buff[0])-int(p1_buff[0])) >=6 and abs(int(p2_buff[0])-int(p1_buff[0])) <12:
 							dist_short_restraints.append(forms.gaussian(group=physical.xy_distance,
 							   feature=features.distance(modeller_atoms[res1_pos],
 														 modeller_atoms[res2_pos]),
@@ -1055,36 +1214,18 @@ if options.eva:
 	exit(-1)
 out_pdb=''
 best_pdb=''
-
-
-rsr = modmodel.restraints
-atmsel = selection(modmodel)
-rsr.clear()
-rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
-for item in alphahelix_restraints:
-	rsr.add(item)
-for item in betastrand_restraints:
-	rsr.add(item)
-
-for item in dist_short_restraints:
-	rsr.add(item)
-for item in dist_medium_restraints:
-	rsr.add(item)
-for item in dist_long_restraints:
-	rsr.add(item)
-
-### add stereo can make CA and side-chain atoms optimized together, very important.
-r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
-restraints_list = []
-restraints_list.append(r)
-# Optimize the x,y,z coordinates of both particles with conjugate gradients
-s = IMP.core.ConjugateGradients(m)
-#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
-sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
-s.set_scoring_function(sf)
-s.optimize(300)
-
 for i in range(1,epoch+1):
+
+	''' can change energy here
+	# To assign 0 weights to restraints whose numerical derivatives
+	# code does not work (i.e., splines for angles and dihedrals):
+	scal = physical.values(default=1.0, lennard_jones=0, coulomb=0, h_bond=0,
+						   phi_dihedral=0, psi_dihedral=0, omega_dihedral=0,
+						   chi1_dihedral=0, chi2_dihedral=0, chi3_dihedral=0,
+						   chi4_dihedral=0, disulfide_angle=0,
+						   disulfide_dihedral=0, chi5_dihedral=0)
+	atmsel.energy(output='SHORT', schedule_scale=scal)
+	'''
 	if i == 1:
 		min_info = "## GFOLD modeling\n"
 
@@ -1095,90 +1236,113 @@ for i in range(1,epoch+1):
 	rsr = modmodel.restraints
 	atmsel = selection(modmodel)
 	rsr.clear()
+	for j in range(0,4):
+		if j == 0:
+			### step 1, use stereo, secondary structure, and hbond for modelling
+			print("\t### Epoch ",str(i),", step 1, use stereo, secondary structure, and hbond for modelling")
+			rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
+			
+			for item in hbond_restraints:
+				rsr.add(item)
+			
+			#for item in ssnoe_restraints:
+			#	rsr.add(item)
+			
+			for item in secondary_structure_restraints:
+				rsr.add(item)
+			
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
 
-
-	## randomize the helix for refinement
-	for mn in range(0,len(cont_model.get_particles())):
-		p1 = cont_model.get_particles()[mn]
-		#get atom information 
-		p1_atom = IMP.atom.Atom(p1)
-		p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
-		p1_resname = p1_res.get_name() #'SER'
-		p1_seq_id = p1_res.get_index() #1
-		if int(p1_seq_id) in res_helix.keys():
-			### randomized the helix for optimization
-			p1_coord=IMP.core.XYZ(p1).get_coordinates()
-			dx=(2*random.random()-1)*10
-			dy=(2*random.random()-1)*10
-			dz=(2*random.random()-1)*10 
-			p1_coord_new = p1_coord
-			p1_coord_new[0] += dx
-			p1_coord_new[1] += dy
-			p1_coord_new[2] += dz
-			IMP.core.XYZ(p1).set_coordinates(p1_coord_new) #placed nearby cen
-
-		
-	rsr.clear()
-	rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
-	for item in alphahelix_restraints:
-		rsr.add(item)
-	for item in betastrand_restraints:
-		rsr.add(item)
-
-	for item in dist_short_restraints:
-		rsr.add(item)
-	for item in dist_medium_restraints:
-		rsr.add(item)
-	for item in dist_long_restraints:
-		rsr.add(item)
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(500)
+			
+			
+		elif j == 1:
+			### step 2, adding short-range distance for modelling
+			print("\t### Epoch ",str(i),", step 2, adding short-range distance for modelling")
 	
-	### add stereo can make CA and side-chain atoms optimized together, very important.
-	r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
-	restraints_list = []
-	restraints_list.append(r)
+			for item in dist_short_restraints:
+				rsr.add(item)
+			
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
 
-	### simulated annealing using Molecular Dynamics
-	t0 = time.time()
-	hot = 1000
-	cold = 100
-	nc = 4
-	dt = (hot-cold)/nc
-	for san in range(nc+1):
-		t1 = time.time()
-		t = hot-dt*san
-		s    = IMP.atom.MolecularDynamics(m)
-		sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
-		s.set_scoring_function(sf)
-		xyzr = cont_model.get_particles()
-		md   = IMP.atom.LangevinThermostatOptimizerState(m,xyzr,t,0.1)
-		s.add_optimizer_state(md)
-		score = s.optimize(100)
-		s.remove_optimizer_state(md)
-		print("\tMD ",str(cgstep),' steps ',str(san),' done ',str(t1),' score = ',str(score))
-		(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))		
-
-	# Optimize the x,y,z coordinates of both particles with conjugate gradients
-	s = IMP.core.ConjugateGradients(m)
-	#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
-	sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
-	s.set_scoring_function(sf)
-	s.optimize(300)
-		
-		
-	(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))
-
-	# molpdf is the total 'energy', and terms contains the contributions from
-	# each physical type. Here we print out the bond length contribution:
-	# https://salilab.org/modeller/9.12/manual/node260.html
-	print("\n\tBond\tAngle\tdihedral\timproper\th_bond\tca_distance\tphi_dihedral\tpsi_dihedral\txy_distance")
-	print("\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\n" %(terms[physical.bond],terms[physical.angle],terms[physical.dihedral],terms[physical.improper],terms[physical.h_bond],terms[physical.ca_distance],terms[physical.phi_dihedral],terms[physical.psi_dihedral],terms[physical.xy_distance]))
-
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(cgstep)
+			
+		elif j == 2:
+			### step 3, adding medium-range distance for modelling
+			print("\t### Epoch ",str(i),", step 3, adding medium-range distance for modelling")
 	
-	out_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'_beforerefine.pdb'
-	modmodel.write(file=out_pdb)
-	clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
-	os.system(clean_file)	
+			for item in dist_medium_restraints:
+				rsr.add(item)
+			
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
 
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(cgstep)
+			
+		elif j == 3:
+			### step 4, adding long-range distance for modelling
+			print("\t### Epoch ",str(i),", step 4, adding long-range distance for modelling")
+	
+			for item in dist_long_restraints:
+				rsr.add(item)
+		
+		
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
+
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(cgstep)
+		
+		(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))
+
+		# molpdf is the total 'energy', and terms contains the contributions from
+		# each physical type. Here we print out the bond length contribution:
+		# https://salilab.org/modeller/9.12/manual/node260.html
+		print("\tBond\tAngle\tdihedral\timproper\th_bond\tca_distance\tphi_dihedral\tpsi_dihedral\txy_distance")
+		print("\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\n" %(terms[physical.bond],terms[physical.angle],terms[physical.dihedral],terms[physical.improper],terms[physical.h_bond],terms[physical.ca_distance],terms[physical.phi_dihedral],terms[physical.psi_dihedral],terms[physical.xy_distance]))
+	
+		if j ==0:
+			out_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'_onlyhbondss.pdb'
+			IMP.atom.write_pdb(prot, out_pdb)
+			clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
+			os.system(clean_file)
 		
 	energy = sf.evaluate(False)
 	print("Epoch: ",i,": ",energy)
@@ -1188,7 +1352,7 @@ for i in range(1,epoch+1):
 	
 	
 	out_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'.pdb'
-	modmodel.write(file=out_pdb)
+	IMP.atom.write_pdb(prot, out_pdb)
 	clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
 	os.system(clean_file)
 	out_eva = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'.eva'

@@ -47,13 +47,13 @@ from GFOLD_lib import *
 print('')
 print('  ############################################################################')
 print('  #																			#')
-print('  #		GFOLD : A Distance-based Protein Structure Folding					#')
+print('  #	  GFOLD : A Distance-based Protein Structure Folding					#')
 print('  #																			#')
-print('  #	Copyright (C) 2019 -2029	Jie Hou and Jianlin Cheng					#')
+print('  #   Copyright (C) 2019 -2029	Jie Hou and Jianlin Cheng					#')
 print('  #																			#')
 print('  ############################################################################')
 print('  #																			#')
-print('  #	Method to perform distance-based modeling (TS)							#')
+print('  #   Method to perform distance-based modeling (TS)							#')
 print('  #																			#')
 print('  ############################################################################')
 print('')
@@ -205,16 +205,7 @@ if not os.path.exists(sample_dir):
 
 e = modeller.environ(rand_seed=-4000)
 #soft sphere potential
-####################### new added
-e.io.hetatm = True
-#soft sphere potential
-e.edat.dynamic_sphere=False
-#lennard-jones potential (more accurate)
-e.edat.dynamic_lennard=True
-e.edat.contact_shell = 4.0
-e.edat.update_dynamic = 0.39
-#######################
-
+e.edat.dynamic_sphere = False
 # To assign 0 weights to restraints whose numerical derivatives
 # code does not work (i.e., splines for angles and dihedrals):
 # https://salilab.org/modeller/9v8/manual/node251.html
@@ -1055,35 +1046,6 @@ if options.eva:
 	exit(-1)
 out_pdb=''
 best_pdb=''
-
-
-rsr = modmodel.restraints
-atmsel = selection(modmodel)
-rsr.clear()
-rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
-for item in alphahelix_restraints:
-	rsr.add(item)
-for item in betastrand_restraints:
-	rsr.add(item)
-
-for item in dist_short_restraints:
-	rsr.add(item)
-for item in dist_medium_restraints:
-	rsr.add(item)
-for item in dist_long_restraints:
-	rsr.add(item)
-
-### add stereo can make CA and side-chain atoms optimized together, very important.
-r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
-restraints_list = []
-restraints_list.append(r)
-# Optimize the x,y,z coordinates of both particles with conjugate gradients
-s = IMP.core.ConjugateGradients(m)
-#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
-sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
-s.set_scoring_function(sf)
-s.optimize(300)
-
 for i in range(1,epoch+1):
 	if i == 1:
 		min_info = "## GFOLD modeling\n"
@@ -1095,9 +1057,411 @@ for i in range(1,epoch+1):
 	rsr = modmodel.restraints
 	atmsel = selection(modmodel)
 	rsr.clear()
+	for j in range(1,5):
+		if j ==1 and len(dist_close_restraints)==0:
+			continue
+		if j ==2 and len(dist_short_restraints)==0:
+			continue
+		if j ==3 and len(dist_medium_restraints)==0:
+			continue
+		if j ==4 and len(dist_long_restraints)==0:
+			continue
+		
+		print("\n\t### Epoch ",str(i),", step ",str(j),", Start secondary structure refinemnet\n")
+		for ss_refine in range(0,2):
+			if ss_refine == 0 and len(res_helix.keys())==0:
+				continue
+			if ss_refine == 1 and len(res_strand.keys())==0:
+				continue
+			rsr.clear()
+			rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
+			
+			if ss_refine == 0:
+				for item in alphahelix_restraints:
+					rsr.add(item)
+			if ss_refine == 1:
+				for item in betastrand_restraints:
+					rsr.add(item)
 
+			## randomize the helix for refinement
+			for mn in range(0,len(cont_model.get_particles())):
+				p1 = cont_model.get_particles()[mn]
+				#get atom information 
+				p1_atom = IMP.atom.Atom(p1)
+				p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
+				p1_resname = p1_res.get_name() #'SER'
+				p1_seq_id = p1_res.get_index() #1
+				if ss_refine == 0:
+					if int(p1_seq_id) in res_helix.keys():
+						### randomized the helix for optimization
+						p1_coord=IMP.core.XYZ(p1).get_coordinates()
+						dx=(2*random.random()-1)*25
+						dy=(2*random.random()-1)*25
+						dz=(2*random.random()-1)*25 
+						p1_coord_new = p1_coord
+						p1_coord_new[0] += dx
+						p1_coord_new[1] += dy
+						p1_coord_new[2] += dz
+						IMP.core.XYZ(p1).set_coordinates(p1_coord_new) #placed nearby cen
+						IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
+					else:
+						IMP.core.XYZ(p1).set_coordinates_are_optimized(False)
+				else:
+					if int(p1_seq_id) in res_strand.keys():
+						IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
+					else:
+						IMP.core.XYZ(p1).set_coordinates_are_optimized(False)
+			
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(10) ## can be small, make helix relaxing, abd will be optimized by the following molecular dynamics
+		
+		### apply MD to improve
+		rsr.clear()
+		rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
+		for item in alphahelix_restraints:
+			rsr.add(item)
+		for item in betastrand_restraints:
+			rsr.add(item)
+		
+		for item in dist_short_restraints:
+			rsr.add(item)
+		for item in dist_medium_restraints:
+			rsr.add(item)
+		for item in dist_long_restraints:
+			rsr.add(item)
+		r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+		restraints_list = []
+		restraints_list.append(r)
+		for mn in range(0,len(cont_model.get_particles())):
+			p1 = cont_model.get_particles()[mn]
+			#get atom information 
+			p1_atom = IMP.atom.Atom(p1)
+			p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
+			p1_resname = p1_res.get_name() #'SER'
+			p1_seq_id = p1_res.get_index() #1
+			IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
+			
+		
+		
+		# Optimize the x,y,z coordinates of both particles with conjugate gradients
+		s = IMP.core.ConjugateGradients(m)
+		#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+		sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+		s.set_scoring_function(sf)
+		s.optimize(10)
+		
+		### simulated annealing using Molecular Dynamics
+		t0 = time.time()
+		hot = 1000
+		cold = 100
+		nc = 2
+		dt = (hot-cold)/nc
+		for san in range(nc+1):
+			t1 = time.time()
+			t = hot-dt*san
+			s    = IMP.atom.MolecularDynamics(m)
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			xyzr = cont_model.get_particles()
+			md   = IMP.atom.VelocityScalingOptimizerState(m,xyzr,t)
+			s.add_optimizer_state(md)
+			score = s.optimize(50)
+			s.remove_optimizer_state(md)
+			print("\tMD ",str(cgstep),' steps ',str(san),' done ',str(t1),' score = ',str(score))
+			(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))
+			# molpdf is the total 'energy', and terms contains the contributions from
+			# each physical type. Here we print out the bond length contribution:
+			# https://salilab.org/modeller/9.12/manual/node260.html
+		
+		# Optimize the x,y,z coordinates of both particles with conjugate gradients
+		s = IMP.core.ConjugateGradients(m)
+		#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+		sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+		s.set_scoring_function(sf)
+		s.optimize(50)
+		
+		
+		for mn in range(0,len(cont_model.get_particles())):
+			p1 = cont_model.get_particles()[mn]
+			#get atom information
+			p1_atom = IMP.atom.Atom(p1)
+			p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
+			p1_resname = p1_res.get_name() #'SER'
+			p1_seq_id = p1_res.get_index() #1
+			IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
+	
+		if j == 1:
+			rsr.clear()
+			rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
+			for item in alphahelix_restraints:
+				rsr.add(item)
+			for item in betastrand_restraints:
+				rsr.add(item)
+			### step 2, adding short-range distance for modelling
+			print("\n\t### Epoch ",str(i),", step ",str(j),", adding close-range distance for modelling\n")
+	
+			for item in dist_close_restraints:
+				rsr.add(item)
+			
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
 
-	## randomize the helix for refinement
+			### simulated annealing using Molecular Dynamics
+			t0 = time.time()
+			hot = 1000
+			cold = 100
+			nc = 2
+			dt = (hot-cold)/nc
+			for san in range(nc+1):
+				t1 = time.time()
+				t = hot-dt*san
+				s    = IMP.atom.MolecularDynamics(m)
+				sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+				s.set_scoring_function(sf)
+				xyzr = cont_model.get_particles()
+				md   = IMP.atom.VelocityScalingOptimizerState(m,xyzr,t)
+				s.add_optimizer_state(md)
+				score = s.optimize(50)
+				s.remove_optimizer_state(md)
+				print("\tMD ",str(cgstep),' steps ',str(san),' done ',str(t1),' score = ',str(score))
+				(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))			
+
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(20)
+		
+		if j == 2:
+			rsr.clear()
+			rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
+			for item in alphahelix_restraints:
+				rsr.add(item)
+			for item in betastrand_restraints:
+				rsr.add(item)
+			### step 2, adding short-range distance for modelling
+			print("\n\t### Epoch ",str(i),", step ",str(j),", adding short-range distance for modelling\n")
+	
+			for item in dist_short_restraints:
+				rsr.add(item)
+			
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			restraints_list = []
+			restraints_list.append(r)
+
+			### simulated annealing using Molecular Dynamics
+			t0 = time.time()
+			hot = 1000
+			cold = 100
+			nc = 2
+			dt = (hot-cold)/nc
+			for san in range(nc+1):
+				t1 = time.time()
+				t = hot-dt*san
+				s    = IMP.atom.MolecularDynamics(m)
+				sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+				s.set_scoring_function(sf)
+				xyzr = cont_model.get_particles()
+				md   = IMP.atom.VelocityScalingOptimizerState(m,xyzr,t)
+				s.add_optimizer_state(md)
+				score = s.optimize(50)
+				s.remove_optimizer_state(md)
+				print("\tMD ",str(cgstep),' steps ',str(san),' done ',str(t1),' score = ',str(score))
+				(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))		
+
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(50)
+			
+		elif j == 3:
+			rsr.clear()
+			rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
+			for item in alphahelix_restraints:
+				rsr.add(item)
+			for item in betastrand_restraints:
+				rsr.add(item)
+			### step 3, adding medium-range distance for modelling
+			print("\n\t### Epoch ",str(i),", step ",str(j),", adding medium-range distance for modelling\n")
+			
+			for item in dist_short_restraints:
+				rsr.add(item)
+			for item in dist_medium_restraints:
+				rsr.add(item)
+			
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
+
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(100)
+			
+		elif j == 4:
+			rsr.clear()
+			rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
+			for item in alphahelix_restraints:
+				rsr.add(item)
+			for item in betastrand_restraints:
+				rsr.add(item)
+			### step 4, adding long-range distance for modelling
+			print("\n\t### Epoch ",str(i),", step ",str(j),", adding long-range distance for modelling\n")
+	
+			for item in dist_short_restraints:
+				rsr.add(item)
+			for item in dist_medium_restraints:
+				rsr.add(item)
+			for item in dist_long_restraints:
+				rsr.add(item)
+	
+			### add stereo can make CA and side-chain atoms optimized together, very important.
+			r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+			modeller_rsr = work_dir+'/modeller.rsr'
+			rsr.write(modeller_rsr)
+			restraints_list = []
+			restraints_list.append(r)
+
+			### simulated annealing using Molecular Dynamics
+			t0 = time.time()
+			hot = 1000
+			cold = 100
+			nc = 2
+			dt = (hot-cold)/nc
+			for san in range(nc+1):
+				t1 = time.time()
+				t = hot-dt*san
+				s    = IMP.atom.MolecularDynamics(m)
+				sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+				s.set_scoring_function(sf)
+				xyzr = cont_model.get_particles()
+				md   = IMP.atom.VelocityScalingOptimizerState(m,xyzr,t)
+				s.add_optimizer_state(md)
+				score = s.optimize(50)
+				s.remove_optimizer_state(md)
+				print("\tMD ",str(cgstep),' steps ',str(san),' done ',str(t1),' score = ',str(score))
+				(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))		
+
+			# Optimize the x,y,z coordinates of both particles with conjugate gradients
+			s = IMP.core.ConjugateGradients(m)
+			#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+			sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+			s.set_scoring_function(sf)
+			s.optimize(100)
+		
+		
+		(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))
+
+		# molpdf is the total 'energy', and terms contains the contributions from
+		# each physical type. Here we print out the bond length contribution:
+		# https://salilab.org/modeller/9.12/manual/node260.html
+		print("\n\tBond\tAngle\tdihedral\timproper\th_bond\tca_distance\tphi_dihedral\tpsi_dihedral\txy_distance")
+		print("\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\n" %(terms[physical.bond],terms[physical.angle],terms[physical.dihedral],terms[physical.improper],terms[physical.h_bond],terms[physical.ca_distance],terms[physical.phi_dihedral],terms[physical.psi_dihedral],terms[physical.xy_distance]))
+
+	
+	out_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'_beforerefine.pdb'
+	modmodel.write(file=out_pdb)
+	clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
+	os.system(clean_file)	
+
+	'''
+	for ss_refine in range(0,2):
+		if ss_refine == 0 and len(res_helix.keys())==0:
+			continue
+		if ss_refine == 1 and len(res_strand.keys())==0:
+			continue
+		rsr.clear()
+		rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
+		
+		if ss_refine == 0:
+			for item in alphahelix_restraints:
+				rsr.add(item)
+		if ss_refine == 1:
+			for item in betastrand_restraints:
+				rsr.add(item)
+
+		## randomize the helix for refinement
+		for mn in range(0,len(cont_model.get_particles())):
+			p1 = cont_model.get_particles()[mn]
+			#get atom information 
+			p1_atom = IMP.atom.Atom(p1)
+			p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
+			p1_resname = p1_res.get_name() #'SER'
+			p1_seq_id = p1_res.get_index() #1
+			if ss_refine == 0:
+				if int(p1_seq_id) in res_helix.keys():
+					### randomized the helix for optimization
+					p1_coord=IMP.core.XYZ(p1).get_coordinates()
+					dx=(2*random.random()-1)*25
+					dy=(2*random.random()-1)*25
+					dz=(2*random.random()-1)*25 
+					p1_coord_new = p1_coord
+					p1_coord_new[0] += dx
+					p1_coord_new[1] += dy
+					p1_coord_new[2] += dz
+					IMP.core.XYZ(p1).set_coordinates(p1_coord_new) #placed nearby cen
+					IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
+				else:
+					IMP.core.XYZ(p1).set_coordinates_are_optimized(False)
+			else:
+				if int(p1_seq_id) in res_strand.keys():
+					IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
+				else:
+					IMP.core.XYZ(p1).set_coordinates_are_optimized(False)
+		
+		### add stereo can make CA and side-chain atoms optimized together, very important.
+		r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+		modeller_rsr = work_dir+'/modeller.rsr'
+		rsr.write(modeller_rsr)
+		restraints_list = []
+		restraints_list.append(r)
+		# Optimize the x,y,z coordinates of both particles with conjugate gradients
+		s = IMP.core.ConjugateGradients(m)
+		#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+		sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+		s.set_scoring_function(sf)
+		s.optimize(10) ## can be small, make helix relaxing, abd will be optimized by the following molecular dynamics
+	
+	### apply MD to improve
+	rsr.clear()
+	rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
+	for item in alphahelix_restraints:
+		rsr.add(item)
+	for item in betastrand_restraints:
+		rsr.add(item)
+	
+	for item in dist_short_restraints:
+		rsr.add(item)
+	for item in dist_medium_restraints:
+		rsr.add(item)
+	for item in dist_long_restraints:
+		rsr.add(item)
+	r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+	restraints_list = []
+	restraints_list.append(r)
 	for mn in range(0,len(cont_model.get_particles())):
 		p1 = cont_model.get_particles()[mn]
 		#get atom information 
@@ -1105,43 +1469,22 @@ for i in range(1,epoch+1):
 		p1_res = IMP.atom.get_residue(p1_atom) ##1 "SER"
 		p1_resname = p1_res.get_name() #'SER'
 		p1_seq_id = p1_res.get_index() #1
-		if int(p1_seq_id) in res_helix.keys():
-			### randomized the helix for optimization
-			p1_coord=IMP.core.XYZ(p1).get_coordinates()
-			dx=(2*random.random()-1)*10
-			dy=(2*random.random()-1)*10
-			dz=(2*random.random()-1)*10 
-			p1_coord_new = p1_coord
-			p1_coord_new[0] += dx
-			p1_coord_new[1] += dy
-			p1_coord_new[2] += dz
-			IMP.core.XYZ(p1).set_coordinates(p1_coord_new) #placed nearby cen
-
-		
-	rsr.clear()
-	rsr.make(atmsel, restraint_type='stereo', spline_on_site=False)
-	for item in alphahelix_restraints:
-		rsr.add(item)
-	for item in betastrand_restraints:
-		rsr.add(item)
-
-	for item in dist_short_restraints:
-		rsr.add(item)
-	for item in dist_medium_restraints:
-		rsr.add(item)
-	for item in dist_long_restraints:
-		rsr.add(item)
+		IMP.core.XYZ(p1).set_coordinates_are_optimized(True)
+	'''
 	
-	### add stereo can make CA and side-chain atoms optimized together, very important.
-	r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
-	restraints_list = []
-	restraints_list.append(r)
-
+	
+	# Optimize the x,y,z coordinates of both particles with conjugate gradients
+	s = IMP.core.ConjugateGradients(m)
+	#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
+	sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
+	s.set_scoring_function(sf)
+	s.optimize(10)
+	
 	### simulated annealing using Molecular Dynamics
 	t0 = time.time()
 	hot = 1000
 	cold = 100
-	nc = 4
+	nc = 2
 	dt = (hot-cold)/nc
 	for san in range(nc+1):
 		t1 = time.time()
@@ -1150,35 +1493,44 @@ for i in range(1,epoch+1):
 		sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
 		s.set_scoring_function(sf)
 		xyzr = cont_model.get_particles()
-		md   = IMP.atom.LangevinThermostatOptimizerState(m,xyzr,t,0.1)
+		md   = IMP.atom.VelocityScalingOptimizerState(m,xyzr,t)
 		s.add_optimizer_state(md)
-		score = s.optimize(100)
+		score = s.optimize(50)
 		s.remove_optimizer_state(md)
 		print("\tMD ",str(cgstep),' steps ',str(san),' done ',str(t1),' score = ',str(score))
-		(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))		
-
+		(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))
+		# molpdf is the total 'energy', and terms contains the contributions from
+		# each physical type. Here we print out the bond length contribution:
+		# https://salilab.org/modeller/9.12/manual/node260.html
+	
 	# Optimize the x,y,z coordinates of both particles with conjugate gradients
 	s = IMP.core.ConjugateGradients(m)
 	#sf = IMP.core.RestraintsScoringFunction([br,r], "scoring function")
 	sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
 	s.set_scoring_function(sf)
-	s.optimize(300)
-		
-		
+	s.optimize(50)	
+	################### Finish refining secondary structure
+	
+	### add stereo can make CA and side-chain atoms optimized together, very important.
+	r = IMP.modeller.ModellerRestraints(m, modmodel, atoms_model)
+	modeller_rsr = work_dir+'/modeller.rsr'
+	rsr.write(modeller_rsr)
+	restraints_list = []
+	restraints_list.append(r)
+	sf = IMP.core.RestraintsScoringFunction(restraints_list, "scoring function")
 	(molpdf, terms) = atmsel.energy(edat=energy_data(dynamic_sphere=True))
 
 	# molpdf is the total 'energy', and terms contains the contributions from
 	# each physical type. Here we print out the bond length contribution:
 	# https://salilab.org/modeller/9.12/manual/node260.html
-	print("\n\tBond\tAngle\tdihedral\timproper\th_bond\tca_distance\tphi_dihedral\tpsi_dihedral\txy_distance")
+	print("\tBond\tAngle\tdihedral\timproper\th_bond\tca_distance\tphi_dihedral\tpsi_dihedral\txy_distance")
 	print("\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\t%.5f\n" %(terms[physical.bond],terms[physical.angle],terms[physical.dihedral],terms[physical.improper],terms[physical.h_bond],terms[physical.ca_distance],terms[physical.phi_dihedral],terms[physical.psi_dihedral],terms[physical.xy_distance]))
 
-	
-	out_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'_beforerefine.pdb'
-	modmodel.write(file=out_pdb)
-	clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
-	os.system(clean_file)	
-
+		#if j ==0:
+		#	out_pdb = sample_dir+'/'+target+'-epoch'+str(i).zfill(5)+'_onlyhbondss.pdb'
+		#	IMP.atom.write_pdb(prot, out_pdb)
+		#	clean_file = "sed -e \'s/\\x00//\' -i " + out_pdb
+		#	os.system(clean_file)
 		
 	energy = sf.evaluate(False)
 	print("Epoch: ",i,": ",energy)
