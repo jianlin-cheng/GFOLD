@@ -22,7 +22,7 @@ perl setup_database.pl
 ```
 a. edit configure.pl
 
-b. set the path of variable '$GFOLD_db_tools_dir' for multicom databases and tools (i.e., /home/GFOLD_db_tools/).
+b. set the path of variable '$GFOLD_db_tools_dir' for multicom databases and tools (i.e., /data/commons/GFOLD_db_tools).
 
 c. save configure.pl
 
