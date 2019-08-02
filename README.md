@@ -15,7 +15,11 @@ cd GFOLD
 **(2) Setup the tools and download the database (required)**
 
 ```
-perl setup_database.pl
+a. edit setup_database.pl
+    (i) Manually create folder for database (i.e., /data/commons/GFOLD_db_tools/)
+    (ii) Set the path of variable '$GFOLD_db_tools_dir' for GFOLD databases and tools (i.e., /data/commons/GFOLD_db_tools/).
+
+b. perl setup_database.pl
 ```
 
 **(3) Configure GFOLD system (required)**
@@ -23,7 +27,7 @@ perl setup_database.pl
 ```
 a. edit configure.pl
 
-b. set the path of variable '$GFOLD_db_tools_dir' for multicom databases and tools (i.e., /data/commons/GFOLD_db_tools).
+b. set the path of variable '$GFOLD_db_tools_dir' for GFOLD databases and tools (i.e., /data/commons/GFOLD_db_tools/).
 
 c. save configure.pl
 
