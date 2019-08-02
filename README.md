@@ -1,6 +1,6 @@
 # The GFOLD protein structure system using gradient descent and residue-residue distance. 
 <h3> slides related to GFOLD method can be found in https://drive.google.com/drive/u/0/folders/1yoxuNOQsscytWkgJ36wtVUuWzKe94j5n</h3>
-
+<h3> The latest slide for GFOLD is 'GFOLD_20190520.pptx'</h3>
 
 **(1) Download GFOLD package (short path is recommended)**
 
