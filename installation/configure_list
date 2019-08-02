@@ -6,3 +6,7 @@ bin/run_GFOLD.sh
 
 #### examples
 installation/GFOLD_test_codes/T0_run_GFOLD-1G5T-A.sh
+installation/GFOLD_test_codes/T0_run_GFOLD-1CCW-C.sh
+installation/GFOLD_test_codes/T0_run_GFOLD-1AYO-B.sh
+installation/GFOLD_test_codes/T0_run_GFOLD-1ALY-A.sh
+installation/GFOLD_test_codes/T0_run_GFOLD-1BYR-A.sh

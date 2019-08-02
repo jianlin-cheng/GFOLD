@@ -56,13 +56,13 @@ gcc -O3  -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -I. -D_FILE_OFFSET_BITS=64 -c -o 
 gcc -O3  -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -o example64 example64.o -L. libz.a
 gcc -O3  -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -I. -D_FILE_OFFSET_BITS=64 -c -o minigzip64.o test/minigzip.c
 gcc -O3  -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN -o minigzip64 minigzip64.o -L. libz.a
-cp libz.a /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/lib
-chmod 644 /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/lib/libz.a
-cp libz.so.1.2.8 /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/lib
-chmod 755 /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/lib/libz.so.1.2.8
-cp zlib.3 /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/share/man/man3
-chmod 644 /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/share/man/man3/zlib.3
-cp zlib.pc /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/lib/pkgconfig
-chmod 644 /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/lib/pkgconfig/zlib.pc
-cp zlib.h zconf.h /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/include
-chmod 644 /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/include/zlib.h /data/jh7x3/GFOLD/GFOLD_database_tools2//tools/zlib-1.2.8/include/zconf.h
+cp libz.a /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/lib
+chmod 644 /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/lib/libz.a
+cp libz.so.1.2.8 /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/lib
+chmod 755 /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/lib/libz.so.1.2.8
+cp zlib.3 /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/share/man/man3
+chmod 644 /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/share/man/man3/zlib.3
+cp zlib.pc /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/lib/pkgconfig
+chmod 644 /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/lib/pkgconfig/zlib.pc
+cp zlib.h zconf.h /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/include
+chmod 644 /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/include/zlib.h /data/commons/GFOLD_db_tools//tools/zlib-1.2.8/include/zconf.h
