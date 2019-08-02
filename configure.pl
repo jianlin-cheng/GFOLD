@@ -105,6 +105,10 @@ configure_file2($option_list,'bin');
 print "#########  Configuring option files, done\n\n\n";
 
 
+### compress benchmark dataset
+chdir("$install_dir/installation");
+`tar -zxf benchmark.tar.gz`;
+
 =pod
 print "#########  (3) Configuring scripts\n";
 
@@ -153,10 +157,6 @@ print "#########  Configuring database update scripts, done\n\n\n";
 
 
 
-
-### compress benchmark dataset
-chdir("$install_dir/installation");
-`tar -zxf benchmark.tar.gz`;
 
 
 
