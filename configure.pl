@@ -108,10 +108,10 @@ print "#########  Configuring option files, done\n\n\n";
 
 ### compress benchmark dataset
 
-$benchmark_dir = "$GFOLD_db_tools_dir/installation";
+$benchmark_dir = "$install_dir/installation";
 chdir($benchmark_dir);
 
-print "Updating benchmark dataset\n\n";
+print "Updating benchmark dataset in $benchmark_dir\n\n";
 if(-e "benchmark.tar.gz")
 {
 	`rm benchmark.tar.gz`;
