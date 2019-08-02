@@ -7,7 +7,7 @@
 #																					#
 # Set directory of GFOLD databases and tools								        #
 
-$GFOLD_db_tools_dir = "/data/commons/GFOLD_db_tools/";							        
+$GFOLD_db_tools_dir = "/data/jh7x3/GFOLD/GFOLD_database_tools/";							        
 
 ######################## !!! End of customize settings !!! ##########################
 
@@ -91,21 +91,21 @@ if (prompt_yn("GFOLD will be installed into <$install_dir> ")){
 print "Start install GFOLD into <$install_dir>\n"; 
 
 
-=pod
+
 
 print "#########  (1) Configuring option files\n";
 
-$option_list = "$install_dir/installation/GFOLD_configure_files/GFOLD_option_list";
+$option_list = "$install_dir/installation/configure_list";
 
 if (! -f $option_list)
 {
         die "\nOption file $option_list not exists.\n";
 }
-configure_file($option_list,'src');
+configure_file2($option_list,'bin');
 print "#########  Configuring option files, done\n\n\n";
 
 
-
+=pod
 print "#########  (3) Configuring scripts\n";
 
 $option_list = "$install_dir/installation/GFOLD_configure_files/GFOLD_scripts_list";

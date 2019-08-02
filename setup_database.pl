@@ -281,7 +281,7 @@ close OUT;
 
 #### install gmp-4.3.2
 
-open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P9_install_gmp-4.3.2.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P9_install_gsl-gmp-4.3.2.sh\n";
+open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P10_install_gmp-4.3.2.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P9_install_gsl-gmp-4.3.2.sh\n";
 print OUT "#!/bin/bash -e\n\n";
 print OUT "echo \" Start compile gmp-4.3.2 (will take ~1 min)\"\n\n";
 print OUT "cd $GFOLD_db_tools_dir/tools\n\n";
@@ -292,6 +292,152 @@ print OUT "make install\n\n";
 print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/gmp-4.3.2/install.done\n\n";
 close OUT;
 
+#### install mpfr-2.4.2
+
+open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P11_install_mpfr-2.4.2.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P11_install_mpfr-2.4.2.sh\n";
+print OUT "#!/bin/bash -e\n\n";
+print OUT "echo \" Start compile mpfr-2.4.2 (will take ~1 min)\"\n\n";
+print OUT "cd $GFOLD_db_tools_dir/tools\n\n";
+print OUT "cd mpfr-2.4.2\n\n";
+print OUT "./configure --prefix=$GFOLD_db_tools_dir/tools/mpfr-2.4.2/ --enable-static --disable-shared  --with-gmp-build=$GFOLD_db_tools_dir/tools/gmp-4.3.2\n\n";
+print OUT "make\n\n";
+print OUT "make install\n\n";
+print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/mpfr-2.4.2/install.done\n\n";
+close OUT;
+
+
+if($gcc_version[0] ==4 and $gcc_version[1]<6) #gcc 4.6
+{
+	#### install CGAL-4.8.1  using boost 1.38
+
+	open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P12_install_CGAL-4.8.1.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P12_install_CGAL-4.8.1.sh\n";
+	print OUT "#!/bin/bash -e\n\n";
+	print OUT "echo \" Start compile CGAL-4.8.1 (will take ~1 min)\"\n\n";
+	print OUT "cd $GFOLD_db_tools_dir/tools\n\n";
+	print OUT "cd CGAL-4.8.1\n\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/cmake-2.8.12.2/bin/:\$PATH\n\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/gmp-4.3.2/:\$PATH\n\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/mpfr-2.4.2/:\$PATH\n\n";
+	print OUT "export BOOST_ROOT=\"$GFOLD_db_tools_dir/tools/boost_1_38_0\"\n\n";
+	print OUT "export BOOST_INCLUDE=\"$GFOLD_db_tools_dir/tools/boost_1_38_0/include\"\n\n";
+	print OUT "export BOOST_LIBDIR=\"$GFOLD_db_tools_dir/tools/boost_1_38_0/lib\"\n\n";
+	print OUT "export BOOST_OPTS=\"-DBOOST_ROOT=\${BOOST_ROOT} -DBOOST_INCLUDEDIR=\${BOOST_INCLUDE} -DBOOST_LIBRARYDIR=\${BOOST_LIBDIR}\"\n\n";
+	print OUT "cmake .\n\n";
+	print OUT "make\n\n";
+	print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/CGAL-4.8.1/install.done\n\n";
+	close OUT;
+}else{
+	#### install CGAL-4.8.1  using boost 1.55
+
+	open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P12_install_CGAL-4.8.1.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P12_install_CGAL-4.8.1.sh\n";
+	print OUT "#!/bin/bash -e\n\n";
+	print OUT "echo \" Start compile CGAL-4.8.1 (will take ~1 min)\"\n\n";
+	print OUT "cd $GFOLD_db_tools_dir/tools\n\n";
+	print OUT "cd CGAL-4.8.1\n\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/cmake-2.8.12.2/bin/:\$PATH\n\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/gmp-4.3.2/:\$PATH\n\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/mpfr-2.4.2/:\$PATH\n\n";
+	print OUT "export BOOST_ROOT=\"$GFOLD_db_tools_dir/tools/boost_1_55_0\"\n\n";
+	print OUT "export BOOST_INCLUDE=\"$GFOLD_db_tools_dir/tools/boost_1_55_0/include\"\n\n";
+	print OUT "export BOOST_LIBDIR=\"$GFOLD_db_tools_dir/tools/boost_1_55_0/lib\"\n\n";
+	print OUT "export BOOST_OPTS=\"-DBOOST_ROOT=\${BOOST_ROOT} -DBOOST_INCLUDEDIR=\${BOOST_INCLUDE} -DBOOST_LIBRARYDIR=\${BOOST_LIBDIR}\"\n\n";
+	print OUT "cmake .\n\n";
+	print OUT "make\n\n";
+	print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/CGAL-4.8.1/install.done\n\n";
+	close OUT;
+}
+
+
+#### install fftw-3.3.4
+
+open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P13_install_fftw-3.3.4.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P13_install_fftw-3.3.4.sh\n";
+print OUT "#!/bin/bash -e\n\n";
+print OUT "echo \" Start compile fftw-3.3.4 (will take ~1 min)\"\n\n";
+print OUT "cd $GFOLD_db_tools_dir/tools\n\n";
+print OUT "cd fftw-3.3.4\n\n";
+print OUT "./configure --prefix=$GFOLD_db_tools_dir/tools/fftw-3.3.4/ --enable-shared  --with-pic\n\n";
+print OUT "make\n\n";
+print OUT "make install\n\n";
+print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/fftw-3.3.4/install.done\n\n";
+close OUT;
+
+
+#### install opencv
+
+open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P14_install_opencv.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P14_install_opencv.sh\n";
+print OUT "#!/bin/bash -e\n\n";
+print OUT "echo \" Start compile opencv (will take ~10 min)\"\n\n";
+print OUT "cd $GFOLD_db_tools_dir/tools\n\n";
+print OUT "cd opencv\n\n";
+print OUT "mkdir $GFOLD_db_tools_dir/tools/opencv/release\n\n";
+print OUT "cd $GFOLD_db_tools_dir/tools/opencv/release\n\n";
+print OUT "$GFOLD_db_tools_dir/tools/cmake-3.5.2/bin/cmake -D CMAKE_BUILD_TYPE=RELEASE -D  CMAKE_INSTALL_PREFIX=$GFOLD_db_tools_dir/tools/opencv/release ..\n\n";
+print OUT "make -j 8\n\n";
+print OUT "#make install\n\n";
+print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/opencv/install.done\n\n";
+close OUT;
+
+
+
+
+if($gcc_version[0] ==4 and $gcc_version[1]<6) #gcc 4.6
+{
+
+	#### install imp-2.6.2 using boost 1.38
+
+	open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P15_install_imp-2.6.2.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P15_install_imp-2.6.2.sh\n";
+	print OUT "#!/bin/bash -e\n\n";
+	print OUT "echo \" Start compile imp-2.6.2 (will take ~10 min)\"\n\n";
+	print OUT "cd $GFOLD_db_tools_dir/tools\n\n";
+	print OUT "cd imp-2.6.2\n\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/boost_1_38_0/:\$PATH\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/hdf5-1.8.16/hdf5/:\$PATH\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/CGAL-4.8.1:\$PATH\n";
+	print OUT "## CGAL-4.8.1 will increase foxs performance\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/fftw-3.3.4/:\$PATH\n";
+	print OUT "## sometimes the multifit.so will failed, but it is okay to include fftw-3.3.4, won't influence other lib\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/doxygen-1.8.6/bin/:\$PATH\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/gsl-2.1/:\$PATH\n";
+	print OUT "export LD_LIBRARY_PATH=$GFOLD_db_tools_dir/tools/opencv/lib:\$LD_LIBRARY_PATH\n";
+
+	print OUT "mkdir -p $GFOLD_db_tools_dir/tools/IMP2.6/\n";
+	print OUT "cd $GFOLD_db_tools_dir/tools/IMP2.6/\n";
+
+	print OUT "$GFOLD_db_tools_dir/tools/cmake-3.5.2/bin/cmake $GFOLD_db_tools_dir/tools/imp-2.6.2/  -DCMAKE_INSTALL_PREFIX=$GFOLD_db_tools_dir/tools/IMP2.6/  -DIMP_DOXYGEN_FOUND=\"\"\n";
+	print OUT "make\n";
+	print OUT "make install\n";
+
+	print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/imp-2.6.2/install.done\n\n";
+	close OUT;
+}else{
+
+	#### install imp-2.6.2 using boost 1.55
+
+	open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P15_install_imp-2.6.2.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P15_install_imp-2.6.2.sh\n";
+	print OUT "#!/bin/bash -e\n\n";
+	print OUT "echo \" Start compile imp-2.6.2 (will take ~10 min)\"\n\n";
+	print OUT "cd $GFOLD_db_tools_dir/tools\n\n";
+	print OUT "cd imp-2.6.2\n\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/boost_1_55_0/:\$PATH\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/hdf5-1.8.16/hdf5/:\$PATH\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/CGAL-4.8.1:\$PATH\n";
+	print OUT "## CGAL-4.8.1 will increase foxs performance\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/fftw-3.3.4/:\$PATH\n";
+	print OUT "## sometimes the multifit.so will failed, but it is okay to include fftw-3.3.4, won't influence other lib\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/doxygen-1.8.6/bin/:\$PATH\n";
+	print OUT "export PATH=$GFOLD_db_tools_dir/tools/gsl-2.1/:\$PATH\n";
+	print OUT "export LD_LIBRARY_PATH=$GFOLD_db_tools_dir/tools/opencv/lib:\$LD_LIBRARY_PATH\n";
+
+	print OUT "mkdir -p $GFOLD_db_tools_dir/tools/IMP2.6/\n";
+	print OUT "cd $GFOLD_db_tools_dir/tools/IMP2.6/\n";
+
+	print OUT "$GFOLD_db_tools_dir/tools/cmake-3.5.2/bin/cmake $GFOLD_db_tools_dir/tools/imp-2.6.2/  -DCMAKE_INSTALL_PREFIX=$GFOLD_db_tools_dir/tools/IMP2.6/  -DIMP_DOXYGEN_FOUND=\"\"\n";
+	print OUT "make\n";
+	print OUT "make install\n";
+
+	print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/imp-2.6.2/install.done\n\n";
+	close OUT;
+}
 
 
 
@@ -353,7 +499,7 @@ foreach $db (@basic_db)
 print("\n#### (2) Download basic tools\n\n");
 
 chdir($tools_dir);
-$basic_tools_list = "modeller-9.16.tar.gz;boost_1_38_0.tar.gz;boost_1_55_0.tar.gz;OpenBLAS.tar.gz;scwrl4.tar.gz;SCRATCH-1D_1.1.tar.gz;TMscore.tar.gz;cmake-2.8.12.2.tar.gz;cmake-3.5.2.tar.gz;Mocapy++-1.07.tar.gz;blas-3.6.0.tar.gz;lapack-3.4.1.tar.gz;zlib-1.2.8.tar.gz;hdf5-1.8.16.tar.gz;gsl-2.1.tar.gz;gmp-4.3.2.tar.gz;mpfr-2.4.2.tar.gz;CGAL-4.8.1.tar.gz";
+$basic_tools_list = "modeller-9.16.tar.gz;boost_1_38_0.tar.gz;boost_1_55_0.tar.gz;OpenBLAS.tar.gz;scwrl4.tar.gz;SCRATCH-1D_1.1.tar.gz;TMscore.tar.gz;cmake-2.8.12.2.tar.gz;cmake-3.5.2.tar.gz;Mocapy++-1.07.tar.gz;blas-3.6.0.tar.gz;lapack-3.4.1.tar.gz;zlib-1.2.8.tar.gz;hdf5-1.8.16.tar.gz;gsl-2.1.tar.gz;gmp-4.3.2.tar.gz;mpfr-2.4.2.tar.gz;CGAL-4.8.1.tar.gz;fftw-3.3.4.tar.gz;libTAU-1.0.1.tar.gz;opencv.tar.gz;doxygen-1.8.6.tar.gz;imp-2.6.2.tar.gz";
 @basic_tools = split(';',$basic_tools_list);
 foreach $tool (@basic_tools)
 {
@@ -633,13 +779,68 @@ if(! -e "$GFOLD_db_tools_dir/tools/gsl-2.1/install.done")
 
 if(! -e "$GFOLD_db_tools_dir/tools/gmp-4.3.2/install.done")
 {
-	print "\nStart install gmp-4.3.2, may take ~1 min (sh P9_install_gmp-4.3.2.sh &> P9_install_gmp-4.3.2.log)\n\n";
-	print "\n\t\t\tLog is saved in $install_dir/installation/GFOLD_manually_install_files/P9_install_gmp-4.3.2.log\n\n";
-	`sh P9_install_gmp-4.3.2.sh &> P9_install_gmp-4.3.2.log`;
+	print "\nStart install gmp-4.3.2, may take ~1 min (sh P10_install_gmp-4.3.2.sh &> P10_install_gmp-4.3.2.log)\n\n";
+	print "\n\t\t\tLog is saved in $install_dir/installation/GFOLD_manually_install_files/P10_install_gmp-4.3.2.log\n\n";
+	`sh P10_install_gmp-4.3.2.sh &> P10_install_gmp-4.3.2.log`;
 }else{
 	print "\ngmp-4.3.2 is installed!\n\n";
 } 
 
+#### install mpfr-2.4.2
+
+if(! -e "$GFOLD_db_tools_dir/tools/mpfr-2.4.2/install.done")
+{
+	print "\nStart install mpfr-2.4.2, may take ~1 min (sh P11_install_mpfr-2.4.2.sh &> P11_install_mpfr-2.4.2.log)\n\n";
+	print "\n\t\t\tLog is saved in $install_dir/installation/GFOLD_manually_install_files/P11_install_mpfr-2.4.2.log\n\n";
+	`sh P11_install_mpfr-2.4.2.sh &> P11_install_mpfr-2.4.2.log`;
+}else{
+	print "\nmpfr-2.4.2 is installed!\n\n";
+} 
+
+#### install CGAL-4.8.1
+
+if(! -e "$GFOLD_db_tools_dir/tools/CGAL-4.8.1/install.done")
+{
+	print "\nStart install CGAL-4.8.1, may take ~1 min (sh P12_install_CGAL-4.8.1.sh &> P12_install_CGAL-4.8.1.log)\n\n";
+	print "\n\t\t\tLog is saved in $install_dir/installation/GFOLD_manually_install_files/P12_install_CGAL-4.8.1.log\n\n";
+	`sh P12_install_CGAL-4.8.1.sh &> P12_install_CGAL-4.8.1.log`;
+}else{
+	print "\nCGAL-4.8.1 is installed!\n\n";
+} 
+
+#### install fftw-3.3.4
+
+if(! -e "$GFOLD_db_tools_dir/tools/fftw-3.3.4/install.done")
+{
+	print "\nStart install fftw-3.3.4, may take ~1 min (sh P13_install_fftw-3.3.4.sh &> P13_install_fftw-3.3.4.log)\n\n";
+	print "\n\t\t\tLog is saved in $install_dir/installation/GFOLD_manually_install_files/P13_install_fftw-3.3.4.log\n\n";
+	`sh P13_install_fftw-3.3.4.sh &> P13_install_fftw-3.3.4.log`;
+}else{
+	print "\nfftw-3.3.4 is installed!\n\n";
+} 
+
+
+#### install opencv
+
+if(! -e "$GFOLD_db_tools_dir/tools/opencv/install.done")
+{
+	print "\nStart install opencv, may take ~1 min (sh P14_install_opencv.sh &> P14_install_opencv.log)\n\n";
+	print "\n\t\t\tLog is saved in $install_dir/installation/GFOLD_manually_install_files/P14_install_opencv.log\n\n";
+	`sh P14_install_opencv.sh &> P14_install_opencv.log`;
+}else{
+	print "\nopencv is installed!\n\n";
+}
+
+#### install imp-2.6.2
+
+if(! -e "$GFOLD_db_tools_dir/tools/imp-2.6.2/install.done")
+{
+	print "\nStart install imp-2.6.2, may take ~1 min (sh P15_install_imp-2.6.2.sh &> P15_install_imp-2.6.2.log)\n\n";
+	print "\n\t\t\tLog is saved in $install_dir/installation/GFOLD_manually_install_files/P15_install_imp-2.6.2.log\n\n";
+	`sh P15_install_imp-2.6.2.sh &> P15_install_imp-2.6.2.log`;
+}else{
+	print "\nimp-2.6.2 is installed!\n\n";
+} 
 
 
 ### change permission of SCRATCH, will write tmp file 
