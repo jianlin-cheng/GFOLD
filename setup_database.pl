@@ -398,7 +398,7 @@ if($gcc_version[0] ==4 and $gcc_version[1]<6) #gcc 4.6
 	print OUT "## sometimes the multifit.so will failed, but it is okay to include fftw-3.3.4, won't influence other lib\n";
 	print OUT "export PATH=$GFOLD_db_tools_dir/tools/doxygen-1.8.6/bin/:\$PATH\n";
 	print OUT "export PATH=$GFOLD_db_tools_dir/tools/gsl-2.1/:\$PATH\n";
-	print OUT "export LD_LIBRARY_PATH=$GFOLD_db_tools_dir/tools/opencv/lib:\$LD_LIBRARY_PATH\n";
+	print OUT "export LD_LIBRARY_PATH=$GFOLD_db_tools_dir/tools/opencv/release/lib:\$LD_LIBRARY_PATH\n";
 
 	print OUT "mkdir -p $GFOLD_db_tools_dir/tools/IMP2.6/\n";
 	print OUT "cd $GFOLD_db_tools_dir/tools/IMP2.6/\n";
@@ -426,7 +426,7 @@ if($gcc_version[0] ==4 and $gcc_version[1]<6) #gcc 4.6
 	print OUT "## sometimes the multifit.so will failed, but it is okay to include fftw-3.3.4, won't influence other lib\n";
 	print OUT "export PATH=$GFOLD_db_tools_dir/tools/doxygen-1.8.6/bin/:\$PATH\n";
 	print OUT "export PATH=$GFOLD_db_tools_dir/tools/gsl-2.1/:\$PATH\n";
-	print OUT "export LD_LIBRARY_PATH=$GFOLD_db_tools_dir/tools/opencv/lib:\$LD_LIBRARY_PATH\n";
+	print OUT "export LD_LIBRARY_PATH=$GFOLD_db_tools_dir/tools/opencv/release/lib:\$LD_LIBRARY_PATH\n";
 
 	print OUT "mkdir -p $GFOLD_db_tools_dir/tools/IMP2.6/\n";
 	print OUT "cd $GFOLD_db_tools_dir/tools/IMP2.6/\n";

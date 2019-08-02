@@ -7,7 +7,7 @@
 #																					#
 # Set directory of GFOLD databases and tools								        #
 
-$GFOLD_db_tools_dir = "/data/jh7x3/GFOLD/GFOLD_database_tools/";							        
+$GFOLD_db_tools_dir = "/data/jh7x3/GFOLD/GFOLD_database_tools2/";							        
 
 ######################## !!! End of customize settings !!! ##########################
 
