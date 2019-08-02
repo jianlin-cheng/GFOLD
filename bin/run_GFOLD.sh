@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #!/bin/sh
 # DeepRank prediction file for protein quality assessment #
 if [ $# -lt 5 ]
@@ -52,7 +51,4 @@ printf "python /data/jh7x3/GFOLD/src/GFOLD.py  --target $targetid  --fasta $fast
 python /data/jh7x3/GFOLD/src/GFOLD.py  --target $targetid  --fasta $fasta --ss $secondary_structure  --hbond 1 --restraints $restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  $outputfolder --sep 1
 
 
-=======
-#!/bin/bash -e
->>>>>>> 6a303909c0ba9356f04beb0ac450bfc06c2f6182
 

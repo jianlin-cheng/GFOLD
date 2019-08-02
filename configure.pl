@@ -7,11 +7,7 @@
 #																					#
 # Set directory of GFOLD databases and tools								        #
 
-<<<<<<< HEAD
 $GFOLD_db_tools_dir = "/data/jh7x3/GFOLD/GFOLD_database_tools/";							        
-=======
-$GFOLD_db_tools_dir = "/data/commons/GFOLD_db_tools/";							        
->>>>>>> 6a303909c0ba9356f04beb0ac450bfc06c2f6182
 
 ######################## !!! End of customize settings !!! ##########################
 
@@ -95,25 +91,16 @@ if (prompt_yn("GFOLD will be installed into <$install_dir> ")){
 print "Start install GFOLD into <$install_dir>\n"; 
 
 
-<<<<<<< HEAD
 
 
 print "#########  (1) Configuring option files\n";
 
 $option_list = "$install_dir/installation/configure_list";
-=======
-=pod
-
-print "#########  (1) Configuring option files\n";
-
-$option_list = "$install_dir/installation/GFOLD_configure_files/GFOLD_option_list";
->>>>>>> 6a303909c0ba9356f04beb0ac450bfc06c2f6182
 
 if (! -f $option_list)
 {
         die "\nOption file $option_list not exists.\n";
 }
-<<<<<<< HEAD
 configure_file2($option_list,'bin');
 print "#########  Configuring option files, done\n\n\n";
 
@@ -122,14 +109,31 @@ print "#########  Configuring option files, done\n\n\n";
 chdir("$install_dir/installation");
 `tar -zxf benchmark.tar.gz`;
 
+
+
+
+
+
+$benchmark_dir = "$GFOLD_db_tools_dir/installation";
+chdir($benchmark_dir);
+
+print "Updating benchmark dataset\n\n";
+if(-e "benchmark.tar.gz")
+{
+	`rm benchmark.tar.gz`;
+}
+`wget http://sysbio.rnet.missouri.edu/bdm_download/test/benchmark.tar.gz`;
+`tar -zxf benchmark.tar.gz`;
+`rm benchmark.tar.gz`;
+if(! -d "benchmark")
+{
+	die "Failed to download benchmark.tar.gz from http://sysbio.rnet.missouri.edu/bdm_download/test/benchmark.tar.gz, please contact chengji\@missouri.edu\n";
+}
+
+
+
+
 =pod
-=======
-configure_file($option_list,'src');
-print "#########  Configuring option files, done\n\n\n";
-
-
-
->>>>>>> 6a303909c0ba9356f04beb0ac450bfc06c2f6182
 print "#########  (3) Configuring scripts\n";
 
 $option_list = "$install_dir/installation/GFOLD_configure_files/GFOLD_scripts_list";
@@ -178,13 +182,6 @@ print "#########  Configuring database update scripts, done\n\n\n";
 
 
 
-<<<<<<< HEAD
-=======
-### compress benchmark dataset
-chdir("$install_dir/installation");
-`tar -zxf benchmark.tar.gz`;
-
->>>>>>> 6a303909c0ba9356f04beb0ac450bfc06c2f6182
 
 
 ##### generate scripts for methods, saved in bin
