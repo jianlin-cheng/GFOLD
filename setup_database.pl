@@ -373,7 +373,7 @@ print OUT "mkdir $GFOLD_db_tools_dir/tools/opencv/release\n\n";
 print OUT "cd $GFOLD_db_tools_dir/tools/opencv/release\n\n";
 print OUT "$GFOLD_db_tools_dir/tools/cmake-3.5.2/bin/cmake -D CMAKE_BUILD_TYPE=RELEASE -D  CMAKE_INSTALL_PREFIX=$GFOLD_db_tools_dir/tools/opencv/release ..\n\n";
 print OUT "make -j 8\n\n";
-print OUT "#make install\n\n";
+print OUT "make install\n\n";
 print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/opencv/install.done\n\n";
 close OUT;
 
@@ -433,7 +433,7 @@ if($gcc_version[0] ==4 and $gcc_version[1]<6) #gcc 4.6
 
 	print OUT "$GFOLD_db_tools_dir/tools/cmake-3.5.2/bin/cmake $GFOLD_db_tools_dir/tools/imp-2.6.2/  -DCMAKE_INSTALL_PREFIX=$GFOLD_db_tools_dir/tools/IMP2.6/  -DIMP_DOXYGEN_FOUND=\"\"\n";
 	print OUT "make\n";
-	print OUT "#make install\n";
+	print OUT "make install\n";
 
 	print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/imp-2.6.2/install.done\n\n";
 	close OUT;

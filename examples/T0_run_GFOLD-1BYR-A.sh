@@ -22,7 +22,7 @@ export PYTHONPATH
 
 
 if [[ ! -f "/data/jh7x3/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb" ]];then 
-	printf "python /data/jh7x3/GFOLD/src/GFOLD.py  --target 1BYR-A  --fasta /data/jh7x3/GFOLD/examples/1BYR-A.fasta --ss /data/jh7x3/GFOLD/examples/1BYR-A.ss  --hbond 1 --restraints /data/jh7x3/GFOLD/examples/1BYR-A.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  /data/jh7x3/GFOLD/test_out/1BYR-A/ --sep 1  2>&1\n\n"
+	printf "python /data/jh7x3/GFOLD/src/GFOLD.py  --target 1BYR-A  --fasta /data/jh7x3/GFOLD/examples/1BYR-A.fasta --ss /data/jh7x3/GFOLD/examples/1BYR-A.ss  --hbond 1 --restraints /data/jh7x3/GFOLD/examples/1BYR-A.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  /data/jh7x3/GFOLD/test_out/1BYR-A/ --sep 1\n\n"
 	python /data/jh7x3/GFOLD/src/GFOLD.py  --target 1BYR-A  --fasta /data/jh7x3/GFOLD/examples/1BYR-A.fasta --ss /data/jh7x3/GFOLD/examples/1BYR-A.ss  --hbond 1 --restraints /data/jh7x3/GFOLD/examples/1BYR-A.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  /data/jh7x3/GFOLD/test_out/1BYR-A/ --sep 1 
 fi
 

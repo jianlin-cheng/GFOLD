@@ -22,7 +22,7 @@ export PYTHONPATH
 
 
 if [[ ! -f "SOFTWARE_PATH/test_out/1AYO-B/1AYO-B/1AYO-B_GFOLD.pdb" ]];then 
-	printf "python SOFTWARE_PATH/src/GFOLD.py  --target 1AYO-B  --fasta SOFTWARE_PATH/examples/1AYO-B.fasta --ss SOFTWARE_PATH/examples/1AYO-B.ss  --hbond 1 --restraints SOFTWARE_PATH/examples/1AYO-B.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  SOFTWARE_PATH/test_out/1AYO-B/ --sep 1  2>&1\n\n"
+	printf "python SOFTWARE_PATH/src/GFOLD.py  --target 1AYO-B  --fasta SOFTWARE_PATH/examples/1AYO-B.fasta --ss SOFTWARE_PATH/examples/1AYO-B.ss  --hbond 1 --restraints SOFTWARE_PATH/examples/1AYO-B.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  SOFTWARE_PATH/test_out/1AYO-B/ --sep 1\n\n"
 	python SOFTWARE_PATH/src/GFOLD.py  --target 1AYO-B  --fasta SOFTWARE_PATH/examples/1AYO-B.fasta --ss SOFTWARE_PATH/examples/1AYO-B.ss  --hbond 1 --restraints SOFTWARE_PATH/examples/1AYO-B.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  SOFTWARE_PATH/test_out/1AYO-B/ --sep 1 
 fi
 
