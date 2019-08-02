@@ -6,11 +6,11 @@ echo " "
 
 echo " "
 
-echo " !!!!!!!! Please copy and set the installation path of scwrl to </data/jh7x3/GFOLD/GFOLD_database_tools/tools/scwrl4> !!!!!!!! "
+echo " !!!!!!!! Please copy and set the installation path of scwrl to </data/commons/GFOLD_db_tools/tools/scwrl4> !!!!!!!! "
 
 echo " "
 
-cd /data/jh7x3/GFOLD/GFOLD_database_tools//tools
+cd /data/commons/GFOLD_db_tools//tools
 
 cd scwrl4
 

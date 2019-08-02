@@ -9,7 +9,7 @@
 #																					#
 # Set directory of GFOLD databases and tools								        #
 
-$GFOLD_db_tools_dir = "/data/jh7x3/GFOLD/GFOLD_database_tools/";							        
+$GFOLD_db_tools_dir = "/data/commons/GFOLD_db_tools/";							        
 						        
 
 ######################## !!! End of customize settings !!! ##########################
@@ -281,11 +281,7 @@ close OUT;
 
 #### install gmp-4.3.2
 
-<<<<<<< HEAD
 open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P10_install_gmp-4.3.2.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P9_install_gsl-gmp-4.3.2.sh\n";
-=======
-open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P9_install_gmp-4.3.2.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P9_install_gsl-gmp-4.3.2.sh\n";
->>>>>>> 6a303909c0ba9356f04beb0ac450bfc06c2f6182
 print OUT "#!/bin/bash -e\n\n";
 print OUT "echo \" Start compile gmp-4.3.2 (will take ~1 min)\"\n\n";
 print OUT "cd $GFOLD_db_tools_dir/tools\n\n";
@@ -296,7 +292,6 @@ print OUT "make install\n\n";
 print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/gmp-4.3.2/install.done\n\n";
 close OUT;
 
-<<<<<<< HEAD
 #### install mpfr-2.4.2
 
 open(OUT,">$install_dir/installation/GFOLD_manually_install_files/P11_install_mpfr-2.4.2.sh") || die "Failed to open file $install_dir/installation/GFOLD_manually_install_files/P11_install_mpfr-2.4.2.sh\n";
@@ -410,7 +405,7 @@ if($gcc_version[0] ==4 and $gcc_version[1]<6) #gcc 4.6
 
 	print OUT "$GFOLD_db_tools_dir/tools/cmake-3.5.2/bin/cmake $GFOLD_db_tools_dir/tools/imp-2.6.2/  -DCMAKE_INSTALL_PREFIX=$GFOLD_db_tools_dir/tools/IMP2.6/  -DIMP_DOXYGEN_FOUND=\"\"\n";
 	print OUT "make\n";
-	print OUT "make install\n";
+	print OUT "#make install\n";
 
 	print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/imp-2.6.2/install.done\n\n";
 	close OUT;
@@ -438,13 +433,12 @@ if($gcc_version[0] ==4 and $gcc_version[1]<6) #gcc 4.6
 
 	print OUT "$GFOLD_db_tools_dir/tools/cmake-3.5.2/bin/cmake $GFOLD_db_tools_dir/tools/imp-2.6.2/  -DCMAKE_INSTALL_PREFIX=$GFOLD_db_tools_dir/tools/IMP2.6/  -DIMP_DOXYGEN_FOUND=\"\"\n";
 	print OUT "make\n";
-	print OUT "make install\n";
+	print OUT "#make install\n";
 
 	print OUT "echo \"installed\" > $GFOLD_db_tools_dir/tools/imp-2.6.2/install.done\n\n";
 	close OUT;
 }
-=======
->>>>>>> 6a303909c0ba9356f04beb0ac450bfc06c2f6182
+
 
 
 
@@ -506,11 +500,8 @@ foreach $db (@basic_db)
 print("\n#### (2) Download basic tools\n\n");
 
 chdir($tools_dir);
-<<<<<<< HEAD
+
 $basic_tools_list = "modeller-9.16.tar.gz;boost_1_38_0.tar.gz;boost_1_55_0.tar.gz;OpenBLAS.tar.gz;scwrl4.tar.gz;SCRATCH-1D_1.1.tar.gz;TMscore.tar.gz;cmake-2.8.12.2.tar.gz;cmake-3.5.2.tar.gz;Mocapy++-1.07.tar.gz;blas-3.6.0.tar.gz;lapack-3.4.1.tar.gz;zlib-1.2.8.tar.gz;hdf5-1.8.16.tar.gz;gsl-2.1.tar.gz;gmp-4.3.2.tar.gz;mpfr-2.4.2.tar.gz;CGAL-4.8.1.tar.gz;fftw-3.3.4.tar.gz;libTAU-1.0.1.tar.gz;opencv.tar.gz;doxygen-1.8.6.tar.gz;imp-2.6.2.tar.gz";
-=======
-$basic_tools_list = "modeller-9.16.tar.gz;boost_1_38_0.tar.gz;boost_1_55_0.tar.gz;OpenBLAS.tar.gz;scwrl4.tar.gz;SCRATCH-1D_1.1.tar.gz;TMscore.tar.gz;cmake-2.8.12.2.tar.gz;cmake-3.5.2.tar.gz;Mocapy++-1.07.tar.gz;blas-3.6.0.tar.gz;lapack-3.4.1.tar.gz;zlib-1.2.8.tar.gz;hdf5-1.8.16.tar.gz;gsl-2.1.tar.gz;gmp-4.3.2.tar.gz;mpfr-2.4.2.tar.gz;CGAL-4.8.1.tar.gz";
->>>>>>> 6a303909c0ba9356f04beb0ac450bfc06c2f6182
 @basic_tools = split(';',$basic_tools_list);
 foreach $tool (@basic_tools)
 {
@@ -790,20 +781,13 @@ if(! -e "$GFOLD_db_tools_dir/tools/gsl-2.1/install.done")
 
 if(! -e "$GFOLD_db_tools_dir/tools/gmp-4.3.2/install.done")
 {
-<<<<<<< HEAD
 	print "\nStart install gmp-4.3.2, may take ~1 min (sh P10_install_gmp-4.3.2.sh &> P10_install_gmp-4.3.2.log)\n\n";
 	print "\n\t\t\tLog is saved in $install_dir/installation/GFOLD_manually_install_files/P10_install_gmp-4.3.2.log\n\n";
 	`sh P10_install_gmp-4.3.2.sh &> P10_install_gmp-4.3.2.log`;
-=======
-	print "\nStart install gmp-4.3.2, may take ~1 min (sh P9_install_gmp-4.3.2.sh &> P9_install_gmp-4.3.2.log)\n\n";
-	print "\n\t\t\tLog is saved in $install_dir/installation/GFOLD_manually_install_files/P9_install_gmp-4.3.2.log\n\n";
-	`sh P9_install_gmp-4.3.2.sh &> P9_install_gmp-4.3.2.log`;
->>>>>>> 6a303909c0ba9356f04beb0ac450bfc06c2f6182
 }else{
 	print "\ngmp-4.3.2 is installed!\n\n";
 } 
 
-<<<<<<< HEAD
 #### install mpfr-2.4.2
 
 if(! -e "$GFOLD_db_tools_dir/tools/mpfr-2.4.2/install.done")
@@ -859,9 +843,6 @@ if(! -e "$GFOLD_db_tools_dir/tools/imp-2.6.2/install.done")
 }else{
 	print "\nimp-2.6.2 is installed!\n\n";
 } 
-=======
->>>>>>> 6a303909c0ba9356f04beb0ac450bfc06c2f6182
-
 
 ### change permission of SCRATCH, will write tmp file 
 if(-d "$GFOLD_db_tools_dir/tools/SCRATCH-1D_1.1")

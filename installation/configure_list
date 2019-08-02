@@ -1,3 +1,8 @@
 
-
+#### program
 bin/run_GFOLD.sh
+
+
+
+#### examples
+installation/GFOLD_test_codes/T0_run_GFOLD-1G5T-A.sh

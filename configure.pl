@@ -102,17 +102,11 @@ if (! -f $option_list)
         die "\nOption file $option_list not exists.\n";
 }
 configure_file2($option_list,'bin');
+configure_file2($option_list,'installation');
 print "#########  Configuring option files, done\n\n\n";
 
 
 ### compress benchmark dataset
-chdir("$install_dir/installation");
-`tar -zxf benchmark.tar.gz`;
-
-
-
-
-
 
 $benchmark_dir = "$GFOLD_db_tools_dir/installation";
 chdir($benchmark_dir);
@@ -131,6 +125,8 @@ if(! -d "benchmark")
 }
 
 
+system("mv $install_dir/installation/GFOLD_test_codes/T0_run_GFOLD*.sh $install_dir/examples");
+system("chmod +x $install_dir/examples/*.sh");
 
 
 =pod
@@ -333,8 +329,6 @@ system("cp $install_dir/src/run_GFOLD.sh $install_dir/bin/run_GFOLD.sh");
 system("chmod +x $install_dir/bin/*.sh");
 
 
-system("mv $install_dir/installation/GFOLD_test_codes/T0-run-GFOLD-*.sh $install_dir/examples");
-system("chmod +x $install_dir/examples/*.sh");
 system("chmod +x $install_dir/src/visualize_GFOLD_cluster/*.sh");
 =cut
 

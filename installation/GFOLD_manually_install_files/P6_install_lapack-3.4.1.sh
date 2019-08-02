@@ -2,7 +2,7 @@
 
 echo " Start compile lapack-3.4.1 (will take ~1 min)"
 
-cd /data/jh7x3/GFOLD/GFOLD_database_tools//tools
+cd /data/commons/GFOLD_db_tools//tools
 
 cd lapack-3.4.1
 
@@ -12,5 +12,5 @@ make blaslib  # To generate the Reference BLAS Library
 
 make
 
-echo "installed" > /data/jh7x3/GFOLD/GFOLD_database_tools//tools/lapack-3.4.1/install.done
+echo "installed" > /data/commons/GFOLD_db_tools//tools/lapack-3.4.1/install.done
 

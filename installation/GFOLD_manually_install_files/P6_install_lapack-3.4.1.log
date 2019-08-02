@@ -1,6 +1,6 @@
  Start compile lapack-3.4.1 (will take ~1 min)
 ( cd BLAS/SRC; make )
-make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/BLAS/SRC'
+make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/BLAS/SRC'
 gfortran  -O2 -c isamax.f -o isamax.o
 gfortran  -O2 -c sasum.f -o sasum.o
 gfortran  -O2 -c saxpy.f -o saxpy.o
@@ -154,10 +154,10 @@ gfortran  -O2 -c xerbla.f -o xerbla.o
 gfortran  -O2 -c xerbla_array.f -o xerbla_array.o
 ar cr ../../librefblas.a isamax.o sasum.o saxpy.o scopy.o sdot.o snrm2.o srot.o srotg.o sscal.o sswap.o sdsdot.o srotmg.o srotm.o sgemv.o sgbmv.o ssymv.o ssbmv.o sspmv.o strmv.o stbmv.o stpmv.o strsv.o stbsv.o stpsv.o sger.o ssyr.o sspr.o ssyr2.o sspr2.o sgemm.o ssymm.o ssyrk.o ssyr2k.o strmm.o strsm.o  idamax.o dasum.o daxpy.o dcopy.o ddot.o dnrm2.o drot.o drotg.o dscal.o dsdot.o dswap.o drotmg.o drotm.o dgemv.o dgbmv.o dsymv.o dsbmv.o dspmv.o dtrmv.o dtbmv.o dtpmv.o dtrsv.o dtbsv.o dtpsv.o dger.o dsyr.o dspr.o dsyr2.o dspr2.o dgemm.o dsymm.o dsyrk.o dsyr2k.o dtrmm.o dtrsm.o scabs1.o scasum.o scnrm2.o icamax.o caxpy.o ccopy.o cdotc.o cdotu.o csscal.o crotg.o cscal.o cswap.o csrot.o cgemv.o cgbmv.o chemv.o chbmv.o chpmv.o ctrmv.o ctbmv.o ctpmv.o ctrsv.o ctbsv.o ctpsv.o cgerc.o cgeru.o cher.o chpr.o cher2.o chpr2.o cgemm.o csymm.o csyrk.o csyr2k.o ctrmm.o ctrsm.o chemm.o cherk.o cher2k.o dcabs1.o dzasum.o dznrm2.o izamax.o zaxpy.o zcopy.o zdotc.o zdotu.o zdscal.o zrotg.o zscal.o zswap.o zdrot.o zgemv.o zgbmv.o zhemv.o zhbmv.o zhpmv.o ztrmv.o ztbmv.o ztpmv.o ztrsv.o ztbsv.o ztpsv.o zgerc.o zgeru.o zher.o zhpr.o zher2.o zhpr2.o zgemm.o zsymm.o zsyrk.o zsyr2k.o ztrmm.o ztrsm.o zhemm.o zherk.o zher2k.o lsame.o xerbla.o xerbla_array.o
 ranlib ../../librefblas.a
-make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/BLAS/SRC'
+make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/BLAS/SRC'
 ( cd INSTALL; make; ./testlsame; ./testslamch; ./testdlamch; \
 ./testsecond; ./testdsecnd; ./testieee; ./testversion )
-make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/INSTALL'
+make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/INSTALL'
 gfortran  -O2 -c lsame.f -o lsame.o
 gfortran  -O2 -c lsametst.f -o lsametst.o
 gfortran  -o testlsame lsame.o lsametst.o
@@ -180,7 +180,7 @@ gfortran  -o testieee tstiee.o
 gfortran  -O2 -c ilaver.f -o ilaver.o
 gfortran  -O2 -c LAPACK_version.f -o LAPACK_version.o
 gfortran  -o testversion ilaver.o LAPACK_version.o
-make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/INSTALL'
+make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/INSTALL'
   ASCII character set
   Tests completed
   Epsilon                      =    5.96046448E-08
@@ -207,12 +207,12 @@ make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-
   Reciprocal of safe minimum   =    4.4942328371557898E+307
  Time for  0.100E+09 SAXPY ops =   0.00     seconds
  *** Warning:  Time for operations was less or equal than zero => timing in TESTING might be dubious
- Including SECOND, time        =  0.709E-02 seconds
- Average time for SECOND       =  0.142E-03 milliseconds
+ Including SECOND, time        =  0.113E-01 seconds
+ Average time for SECOND       =  0.226E-03 milliseconds
  Time for  0.100E+09 DAXPY ops =   0.00     seconds
  *** Warning:  Time for operations was less or equal than zero => timing in TESTING might be dubious
- Including DSECND, time        =  0.111E-01 seconds
- Average time for DSECND       =  0.221E-03 milliseconds
+ Including DSECND, time        =  0.839E-02 seconds
+ Average time for DSECND       =  0.168E-03 milliseconds
  We are about to check whether infinity arithmetic
  can be trusted.  If this test hangs, set
  ILAENV = 0 for ISPEC = 10 in LAPACK/SRC/ilaenv.f
@@ -231,7 +231,7 @@ make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-
 
  LAPACK            3 .           4 .           1
 ( cd SRC; make )
-make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/SRC'
+make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/SRC'
 gfortran  -O2 -c sgbbrd.f -o sgbbrd.o
 gfortran  -O2 -c sgbcon.f -o sgbcon.o
 gfortran  -O2 -c sgbequ.f -o sgbequ.o
@@ -1773,9 +1773,9 @@ gfortran  -O2 -c iladiag.f -o iladiag.o
 gfortran  -O2 -c chla_transtype.f -o chla_transtype.o
 ar cr ../liblapack.a sgbbrd.o sgbcon.o sgbequ.o sgbrfs.o sgbsv.o sgbsvx.o sgbtf2.o sgbtrf.o sgbtrs.o sgebak.o sgebal.o sgebd2.o sgebrd.o sgecon.o sgeequ.o sgees.o  sgeesx.o sgeev.o  sgeevx.o sgegs.o  sgegv.o  sgehd2.o sgehrd.o sgelq2.o sgelqf.o sgels.o  sgelsd.o sgelss.o sgelsx.o sgelsy.o sgeql2.o sgeqlf.o sgeqp3.o sgeqpf.o sgeqr2.o sgeqr2p.o sgeqrf.o sgeqrfp.o sgerfs.o sgerq2.o sgerqf.o sgesc2.o sgesdd.o sgesv.o  sgesvd.o sgesvx.o sgetc2.o sgetf2.o sgetri.o sggbak.o sggbal.o sgges.o  sggesx.o sggev.o  sggevx.o sggglm.o sgghrd.o sgglse.o sggqrf.o sggrqf.o sggsvd.o sggsvp.o sgtcon.o sgtrfs.o sgtsv.o sgtsvx.o sgttrf.o sgttrs.o sgtts2.o shgeqz.o shsein.o shseqr.o slabrd.o slacon.o slacn2.o slaein.o slaexc.o slag2.o  slags2.o slagtm.o slagv2.o slahqr.o slahrd.o slahr2.o slaic1.o slaln2.o slals0.o slalsa.o slalsd.o slangb.o slange.o slangt.o slanhs.o slansb.o slansp.o slansy.o slantb.o slantp.o slantr.o slanv2.o slapll.o slapmt.o slaqgb.o slaqge.o slaqp2.o slaqps.o slaqsb.o slaqsp.o slaqsy.o slaqr0.o slaqr1.o slaqr2.o slaqr3.o slaqr4.o slaqr5.o slaqtr.o slar1v.o slar2v.o ilaslr.o ilaslc.o slarf.o  slarfb.o slarfg.o slarfgp.o slarft.o slarfx.o slargv.o slarrv.o slartv.o slarz.o  slarzb.o slarzt.o slaswp.o slasy2.o slasyf.o slatbs.o slatdf.o slatps.o slatrd.o slatrs.o slatrz.o slatzm.o slauu2.o slauum.o sopgtr.o sopmtr.o sorg2l.o sorg2r.o sorgbr.o sorghr.o sorgl2.o sorglq.o sorgql.o sorgqr.o sorgr2.o sorgrq.o sorgtr.o sorm2l.o sorm2r.o sormbr.o sormhr.o sorml2.o sormlq.o sormql.o sormqr.o sormr2.o sormr3.o sormrq.o sormrz.o sormtr.o spbcon.o spbequ.o spbrfs.o spbstf.o spbsv.o  spbsvx.o spbtf2.o spbtrf.o spbtrs.o spocon.o spoequ.o sporfs.o sposv.o sposvx.o spotf2.o  spotri.o  spstrf.o spstf2.o sppcon.o sppequ.o spprfs.o sppsv.o  sppsvx.o spptrf.o spptri.o spptrs.o sptcon.o spteqr.o sptrfs.o sptsv.o  sptsvx.o spttrs.o sptts2.o srscl.o ssbev.o  ssbevd.o ssbevx.o ssbgst.o ssbgv.o  ssbgvd.o ssbgvx.o ssbtrd.o sspcon.o sspev.o  sspevd.o sspevx.o sspgst.o sspgv.o  sspgvd.o sspgvx.o ssprfs.o sspsv.o  sspsvx.o ssptrd.o ssptrf.o ssptri.o ssptrs.o sstegr.o sstein.o sstev.o  sstevd.o sstevr.o sstevx.o ssycon.o ssyev.o  ssyevd.o ssyevr.o ssyevx.o ssygs2.o ssygst.o ssygv.o  ssygvd.o ssygvx.o ssyrfs.o ssysv.o  ssysvx.o ssytd2.o ssytf2.o ssytrd.o ssytrf.o ssytri.o ssytri2.o ssytri2x.o ssyswapr.o ssytrs.o ssytrs2.o ssyconv.o stbcon.o stbrfs.o stbtrs.o stgevc.o stgex2.o stgexc.o stgsen.o stgsja.o stgsna.o stgsy2.o stgsyl.o stpcon.o stprfs.o stptri.o stptrs.o strcon.o strevc.o strexc.o strrfs.o strsen.o strsna.o strsyl.o strti2.o strtri.o strtrs.o stzrqf.o stzrzf.o sstemr.o slansf.o spftrf.o spftri.o spftrs.o ssfrk.o stfsm.o stftri.o stfttp.o stfttr.o stpttf.o stpttr.o strttf.o strttp.o sgejsv.o  sgesvj.o  sgsvj0.o  sgsvj1.o sgeequb.o ssyequb.o spoequb.o sgbequb.o sbbcsd.o slapmr.o sorbdb.o sorcsd.o sgeqrt.o sgeqrt2.o sgeqrt3.o sgemqrt.o stpqrt.o stpqrt2.o stpmqrt.o stprfb.o dgbbrd.o dgbcon.o dgbequ.o dgbrfs.o dgbsv.o dgbsvx.o dgbtf2.o dgbtrf.o dgbtrs.o dgebak.o dgebal.o dgebd2.o dgebrd.o dgecon.o dgeequ.o dgees.o  dgeesx.o dgeev.o  dgeevx.o dgegs.o  dgegv.o  dgehd2.o dgehrd.o dgelq2.o dgelqf.o dgels.o  dgelsd.o dgelss.o dgelsx.o dgelsy.o dgeql2.o dgeqlf.o dgeqp3.o dgeqpf.o dgeqr2.o dgeqr2p.o dgeqrf.o dgeqrfp.o dgerfs.o dgerq2.o dgerqf.o dgesc2.o dgesdd.o dgesv.o  dgesvd.o dgesvx.o dgetc2.o dgetf2.o dgetrf.o dgetri.o dgetrs.o dggbak.o dggbal.o dgges.o  dggesx.o dggev.o  dggevx.o dggglm.o dgghrd.o dgglse.o dggqrf.o dggrqf.o dggsvd.o dggsvp.o dgtcon.o dgtrfs.o dgtsv.o dgtsvx.o dgttrf.o dgttrs.o dgtts2.o dhgeqz.o dhsein.o dhseqr.o dlabrd.o dlacon.o dlacn2.o dlaein.o dlaexc.o dlag2.o  dlags2.o dlagtm.o dlagv2.o dlahqr.o dlahrd.o dlahr2.o dlaic1.o dlaln2.o dlals0.o dlalsa.o dlalsd.o dlangb.o dlange.o dlangt.o dlanhs.o dlansb.o dlansp.o dlansy.o dlantb.o dlantp.o dlantr.o dlanv2.o dlapll.o dlapmt.o dlaqgb.o dlaqge.o dlaqp2.o dlaqps.o dlaqsb.o dlaqsp.o dlaqsy.o dlaqr0.o dlaqr1.o dlaqr2.o dlaqr3.o dlaqr4.o dlaqr5.o dlaqtr.o dlar1v.o dlar2v.o iladlr.o iladlc.o dlarf.o  dlarfb.o dlarfg.o dlarfgp.o dlarft.o dlarfx.o dlargv.o dlarrv.o dlartv.o dlarz.o  dlarzb.o dlarzt.o dlaswp.o dlasy2.o dlasyf.o dlatbs.o dlatdf.o dlatps.o dlatrd.o dlatrs.o dlatrz.o dlatzm.o dlauu2.o dlauum.o dopgtr.o dopmtr.o dorg2l.o dorg2r.o dorgbr.o dorghr.o dorgl2.o dorglq.o dorgql.o dorgqr.o dorgr2.o dorgrq.o dorgtr.o dorm2l.o dorm2r.o dormbr.o dormhr.o dorml2.o dormlq.o dormql.o dormqr.o dormr2.o dormr3.o dormrq.o dormrz.o dormtr.o dpbcon.o dpbequ.o dpbrfs.o dpbstf.o dpbsv.o  dpbsvx.o dpbtf2.o dpbtrf.o dpbtrs.o dpocon.o dpoequ.o dporfs.o dposv.o dposvx.o dpotf2.o dpotrf.o dpotri.o dpotrs.o dpstrf.o dpstf2.o dppcon.o dppequ.o dpprfs.o dppsv.o  dppsvx.o dpptrf.o dpptri.o dpptrs.o dptcon.o dpteqr.o dptrfs.o dptsv.o  dptsvx.o dpttrs.o dptts2.o drscl.o dsbev.o  dsbevd.o dsbevx.o dsbgst.o dsbgv.o  dsbgvd.o dsbgvx.o dsbtrd.o  dspcon.o dspev.o  dspevd.o dspevx.o dspgst.o dspgv.o  dspgvd.o dspgvx.o dsprfs.o dspsv.o  dspsvx.o dsptrd.o dsptrf.o dsptri.o dsptrs.o dstegr.o dstein.o dstev.o  dstevd.o dstevr.o dstevx.o dsycon.o dsyev.o  dsyevd.o dsyevr.o dsyevx.o dsygs2.o dsygst.o dsygv.o  dsygvd.o dsygvx.o dsyrfs.o dsysv.o  dsysvx.o dsytd2.o dsytf2.o dsytrd.o dsytrf.o dsytri.o dsytri2.o dsytri2x.o dsyswapr.o dsytrs.o dsytrs2.o dsyconv.o dtbcon.o dtbrfs.o dtbtrs.o dtgevc.o dtgex2.o dtgexc.o dtgsen.o dtgsja.o dtgsna.o dtgsy2.o dtgsyl.o dtpcon.o dtprfs.o dtptri.o dtptrs.o dtrcon.o dtrevc.o dtrexc.o dtrrfs.o dtrsen.o dtrsna.o dtrsyl.o dtrti2.o dtrtri.o dtrtrs.o dtzrqf.o dtzrzf.o dstemr.o dsgesv.o dsposv.o dlag2s.o slag2d.o dlat2s.o dlansf.o dpftrf.o dpftri.o dpftrs.o dsfrk.o dtfsm.o dtftri.o dtfttp.o dtfttr.o dtpttf.o dtpttr.o dtrttf.o dtrttp.o dgejsv.o  dgesvj.o  dgsvj0.o  dgsvj1.o dgeequb.o dsyequb.o dpoequb.o dgbequb.o dbbcsd.o dlapmr.o dorbdb.o dorcsd.o dgeqrt.o dgeqrt2.o dgeqrt3.o dgemqrt.o dtpqrt.o dtpqrt2.o dtpmqrt.o dtprfb.o spotrs.o sgetrs.o spotrf.o sgetrf.o  cbdsqr.o cgbbrd.o cgbcon.o cgbequ.o cgbrfs.o cgbsv.o  cgbsvx.o cgbtf2.o cgbtrf.o cgbtrs.o cgebak.o cgebal.o cgebd2.o cgebrd.o cgecon.o cgeequ.o cgees.o  cgeesx.o cgeev.o  cgeevx.o cgegs.o  cgegv.o  cgehd2.o cgehrd.o cgelq2.o cgelqf.o cgels.o  cgelsd.o cgelss.o cgelsx.o cgelsy.o cgeql2.o cgeqlf.o cgeqp3.o cgeqpf.o cgeqr2.o cgeqr2p.o cgeqrf.o cgeqrfp.o cgerfs.o cgerq2.o cgerqf.o cgesc2.o cgesdd.o cgesv.o  cgesvd.o cgesvx.o cgetc2.o cgetf2.o cgetri.o cggbak.o cggbal.o cgges.o  cggesx.o cggev.o  cggevx.o cggglm.o cgghrd.o cgglse.o cggqrf.o cggrqf.o cggsvd.o cggsvp.o cgtcon.o cgtrfs.o cgtsv.o  cgtsvx.o cgttrf.o cgttrs.o cgtts2.o chbev.o chbevd.o chbevx.o chbgst.o chbgv.o  chbgvd.o chbgvx.o chbtrd.o checon.o cheev.o  cheevd.o cheevr.o cheevx.o chegs2.o chegst.o chegv.o  chegvd.o chegvx.o cherfs.o chesv.o  chesvx.o chetd2.o chetf2.o chetrd.o chetrf.o chetri.o chetri2.o chetri2x.o cheswapr.o chetrs.o chetrs2.o chgeqz.o chpcon.o chpev.o  chpevd.o chpevx.o chpgst.o chpgv.o  chpgvd.o chpgvx.o chprfs.o chpsv.o chpsvx.o chptrd.o chptrf.o chptri.o chptrs.o chsein.o chseqr.o clabrd.o clacgv.o clacon.o clacn2.o clacp2.o clacpy.o clacrm.o clacrt.o cladiv.o claed0.o claed7.o claed8.o claein.o claesy.o claev2.o clags2.o clagtm.o clahef.o clahqr.o clahrd.o clahr2.o claic1.o clals0.o clalsa.o clalsd.o clangb.o clange.o clangt.o clanhb.o clanhe.o clanhp.o clanhs.o clanht.o clansb.o clansp.o clansy.o clantb.o clantp.o clantr.o clapll.o clapmt.o clarcm.o claqgb.o claqge.o claqhb.o claqhe.o claqhp.o claqp2.o claqps.o claqsb.o claqr0.o claqr1.o claqr2.o claqr3.o claqr4.o claqr5.o claqsp.o claqsy.o clar1v.o clar2v.o ilaclr.o ilaclc.o clarf.o  clarfb.o clarfg.o clarft.o clarfgp.o clarfx.o clargv.o clarnv.o clarrv.o clartg.o clartv.o clarz.o  clarzb.o clarzt.o clascl.o claset.o clasr.o  classq.o claswp.o clasyf.o clatbs.o clatdf.o clatps.o clatrd.o clatrs.o clatrz.o clatzm.o clauu2.o clauum.o cpbcon.o cpbequ.o cpbrfs.o cpbstf.o cpbsv.o cpbsvx.o cpbtf2.o cpbtrf.o cpbtrs.o cpocon.o cpoequ.o cporfs.o cposv.o  cposvx.o cpotf2.o cpotri.o cpstrf.o cpstf2.o cppcon.o cppequ.o cpprfs.o cppsv.o  cppsvx.o cpptrf.o cpptri.o cpptrs.o cptcon.o cpteqr.o cptrfs.o cptsv.o  cptsvx.o cpttrf.o cpttrs.o cptts2.o crot.o   cspcon.o cspmv.o  cspr.o   csprfs.o cspsv.o cspsvx.o csptrf.o csptri.o csptrs.o csrscl.o cstedc.o cstegr.o cstein.o csteqr.o csycon.o csymv.o csyr.o csyrfs.o csysv.o  csysvx.o csytf2.o csytrf.o csytri.o csytri2.o csytri2x.o csyswapr.o csytrs.o csytrs2.o csyconv.o ctbcon.o ctbrfs.o ctbtrs.o ctgevc.o ctgex2.o ctgexc.o ctgsen.o ctgsja.o ctgsna.o ctgsy2.o ctgsyl.o ctpcon.o ctprfs.o ctptri.o ctptrs.o ctrcon.o ctrevc.o ctrexc.o ctrrfs.o ctrsen.o ctrsna.o ctrsyl.o ctrti2.o ctrtri.o ctrtrs.o ctzrqf.o ctzrzf.o cung2l.o cung2r.o cungbr.o cunghr.o cungl2.o cunglq.o cungql.o cungqr.o cungr2.o cungrq.o cungtr.o cunm2l.o cunm2r.o cunmbr.o cunmhr.o cunml2.o cunmlq.o cunmql.o cunmqr.o cunmr2.o cunmr3.o cunmrq.o cunmrz.o cunmtr.o cupgtr.o cupmtr.o icmax1.o scsum1.o cstemr.o chfrk.o ctfttp.o clanhf.o cpftrf.o cpftri.o cpftrs.o ctfsm.o ctftri.o ctfttr.o ctpttf.o ctpttr.o ctrttf.o ctrttp.o cgeequb.o cgbequb.o csyequb.o cpoequb.o cheequb.o cbbcsd.o clapmr.o cunbdb.o cuncsd.o cgeqrt.o cgeqrt2.o cgeqrt3.o cgemqrt.o ctpqrt.o ctpqrt2.o ctpmqrt.o ctprfb.o zbdsqr.o zgbbrd.o zgbcon.o zgbequ.o zgbrfs.o zgbsv.o  zgbsvx.o zgbtf2.o zgbtrf.o zgbtrs.o zgebak.o zgebal.o zgebd2.o zgebrd.o zgecon.o zgeequ.o zgees.o  zgeesx.o zgeev.o  zgeevx.o zgegs.o  zgegv.o  zgehd2.o zgehrd.o zgelq2.o zgelqf.o zgels.o  zgelsd.o zgelss.o zgelsx.o zgelsy.o zgeql2.o zgeqlf.o zgeqp3.o zgeqpf.o zgeqr2.o zgeqr2p.o zgeqrf.o zgeqrfp.o zgerfs.o zgerq2.o zgerqf.o zgesc2.o zgesdd.o zgesv.o  zgesvd.o zgesvx.o zgetc2.o zgetf2.o zgetrf.o zgetri.o zgetrs.o zggbak.o zggbal.o zgges.o  zggesx.o zggev.o  zggevx.o zggglm.o zgghrd.o zgglse.o zggqrf.o zggrqf.o zggsvd.o zggsvp.o zgtcon.o zgtrfs.o zgtsv.o  zgtsvx.o zgttrf.o zgttrs.o zgtts2.o zhbev.o zhbevd.o zhbevx.o zhbgst.o zhbgv.o  zhbgvd.o zhbgvx.o zhbtrd.o zhecon.o zheev.o  zheevd.o zheevr.o zheevx.o zhegs2.o zhegst.o zhegv.o  zhegvd.o zhegvx.o zherfs.o zhesv.o  zhesvx.o zhetd2.o zhetf2.o zhetrd.o zhetrf.o zhetri.o zhetri2.o zhetri2x.o zheswapr.o zhetrs.o zhetrs2.o zhgeqz.o zhpcon.o zhpev.o  zhpevd.o zhpevx.o zhpgst.o zhpgv.o  zhpgvd.o zhpgvx.o zhprfs.o zhpsv.o zhpsvx.o zhptrd.o zhptrf.o zhptri.o zhptrs.o zhsein.o zhseqr.o zlabrd.o zlacgv.o zlacon.o zlacn2.o zlacp2.o zlacpy.o zlacrm.o zlacrt.o zladiv.o zlaed0.o zlaed7.o zlaed8.o zlaein.o zlaesy.o zlaev2.o zlags2.o zlagtm.o zlahef.o zlahqr.o zlahrd.o zlahr2.o zlaic1.o zlals0.o zlalsa.o zlalsd.o zlangb.o zlange.o zlangt.o zlanhb.o zlanhe.o zlanhp.o zlanhs.o zlanht.o zlansb.o zlansp.o zlansy.o zlantb.o zlantp.o zlantr.o zlapll.o zlapmt.o zlaqgb.o zlaqge.o zlaqhb.o zlaqhe.o zlaqhp.o zlaqp2.o zlaqps.o zlaqsb.o zlaqr0.o zlaqr1.o zlaqr2.o zlaqr3.o zlaqr4.o zlaqr5.o zlaqsp.o zlaqsy.o zlar1v.o zlar2v.o ilazlr.o ilazlc.o zlarcm.o zlarf.o  zlarfb.o zlarfg.o zlarft.o zlarfgp.o zlarfx.o zlargv.o zlarnv.o zlarrv.o zlartg.o zlartv.o zlarz.o  zlarzb.o zlarzt.o zlascl.o zlaset.o zlasr.o zlassq.o zlaswp.o zlasyf.o zlatbs.o zlatdf.o zlatps.o zlatrd.o zlatrs.o zlatrz.o zlatzm.o zlauu2.o zlauum.o zpbcon.o zpbequ.o zpbrfs.o zpbstf.o zpbsv.o zpbsvx.o zpbtf2.o zpbtrf.o zpbtrs.o zpocon.o zpoequ.o zporfs.o zposv.o  zposvx.o zpotf2.o zpotrf.o zpotri.o zpotrs.o zpstrf.o zpstf2.o zppcon.o zppequ.o zpprfs.o zppsv.o  zppsvx.o zpptrf.o zpptri.o zpptrs.o zptcon.o zpteqr.o zptrfs.o zptsv.o  zptsvx.o zpttrf.o zpttrs.o zptts2.o zrot.o   zspcon.o zspmv.o  zspr.o   zsprfs.o zspsv.o zspsvx.o zsptrf.o zsptri.o zsptrs.o zdrscl.o zstedc.o zstegr.o zstein.o zsteqr.o zsycon.o zsymv.o zsyr.o zsyrfs.o zsysv.o  zsysvx.o zsytf2.o zsytrf.o zsytri.o zsytri2.o zsytri2x.o zsyswapr.o zsytrs.o zsytrs2.o zsyconv.o ztbcon.o ztbrfs.o ztbtrs.o ztgevc.o ztgex2.o ztgexc.o ztgsen.o ztgsja.o ztgsna.o ztgsy2.o ztgsyl.o ztpcon.o ztprfs.o ztptri.o ztptrs.o ztrcon.o ztrevc.o ztrexc.o ztrrfs.o ztrsen.o ztrsna.o ztrsyl.o ztrti2.o ztrtri.o ztrtrs.o ztzrqf.o ztzrzf.o zung2l.o zung2r.o zungbr.o zunghr.o zungl2.o zunglq.o zungql.o zungqr.o zungr2.o zungrq.o zungtr.o zunm2l.o zunm2r.o zunmbr.o zunmhr.o zunml2.o zunmlq.o zunmql.o zunmqr.o zunmr2.o zunmr3.o zunmrq.o zunmrz.o zunmtr.o zupgtr.o zupmtr.o izmax1.o dzsum1.o zstemr.o zcgesv.o zcposv.o zlag2c.o clag2z.o zlat2c.o zhfrk.o ztfttp.o zlanhf.o zpftrf.o zpftri.o zpftrs.o ztfsm.o ztftri.o ztfttr.o ztpttf.o ztpttr.o ztrttf.o ztrttp.o zgeequb.o zgbequb.o zsyequb.o zpoequb.o zheequb.o zbbcsd.o zlapmr.o zunbdb.o zuncsd.o zgeqrt.o zgeqrt2.o zgeqrt3.o zgemqrt.o ztpqrt.o ztpqrt2.o ztpmqrt.o ztprfb.o cpotrs.o cgetrs.o cpotrf.o cgetrf.o  sbdsdc.o sbdsqr.o sdisna.o slabad.o slacpy.o sladiv.o slae2.o  slaebz.o slaed0.o slaed1.o slaed2.o slaed3.o slaed4.o slaed5.o slaed6.o slaed7.o slaed8.o slaed9.o slaeda.o slaev2.o slagtf.o slagts.o slamrg.o slanst.o slapy2.o slapy3.o slarnv.o slarra.o slarrb.o slarrc.o slarrd.o slarre.o slarrf.o slarrj.o slarrk.o slarrr.o slaneg.o slartg.o slaruv.o slas2.o  slascl.o slasd0.o slasd1.o slasd2.o slasd3.o slasd4.o slasd5.o slasd6.o slasd7.o slasd8.o slasda.o slasdq.o slasdt.o slaset.o slasq1.o slasq2.o slasq3.o slasq4.o slasq5.o slasq6.o slasr.o  slasrt.o slassq.o slasv2.o spttrf.o sstebz.o sstedc.o ssteqr.o ssterf.o slaisnan.o sisnan.o slartgp.o slartgs.o ../INSTALL/second_INT_ETIME.o dbdsdc.o dbdsqr.o ddisna.o dlabad.o dlacpy.o dladiv.o dlae2.o  dlaebz.o dlaed0.o dlaed1.o dlaed2.o dlaed3.o dlaed4.o dlaed5.o dlaed6.o dlaed7.o dlaed8.o dlaed9.o dlaeda.o dlaev2.o dlagtf.o dlagts.o dlamrg.o dlanst.o dlapy2.o dlapy3.o dlarnv.o dlarra.o dlarrb.o dlarrc.o dlarrd.o dlarre.o dlarrf.o dlarrj.o dlarrk.o dlarrr.o dlaneg.o dlartg.o dlaruv.o dlas2.o  dlascl.o dlasd0.o dlasd1.o dlasd2.o dlasd3.o dlasd4.o dlasd5.o dlasd6.o dlasd7.o dlasd8.o dlasda.o dlasdq.o dlasdt.o dlaset.o dlasq1.o dlasq2.o dlasq3.o dlasq4.o dlasq5.o dlasq6.o dlasr.o  dlasrt.o dlassq.o dlasv2.o dpttrf.o dstebz.o dstedc.o dsteqr.o dsterf.o dlaisnan.o disnan.o dlartgp.o dlartgs.o ../INSTALL/dlamch.o ../INSTALL/dsecnd_INT_ETIME.o ilaenv.o ieeeck.o lsamen.o xerbla.o xerbla_array.o iparmq.o ilaprec.o ilatrans.o ilauplo.o iladiag.o chla_transtype.o ../INSTALL/ilaver.o ../INSTALL/lsame.o ../INSTALL/slamch.o 
 ranlib ../liblapack.a
-make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/SRC'
+make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/SRC'
 ( cd TESTING/MATGEN; make )
-make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/MATGEN'
+make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/MATGEN'
 gfortran  -O2 -c slatms.f -o slatms.o
 gfortran  -O2 -c slatme.f -o slatme.o
 gfortran  -O2 -c slatmr.f -o slatmr.o
@@ -1852,9 +1852,9 @@ gfortran  -O0 -c dlaran.f
 gfortran  -O2 -c dlarnd.f -o dlarnd.o
 ar cr ../../libtmglib.a slatms.o slatme.o slatmr.o slatmt.o slagge.o slagsy.o slakf2.o slarge.o slaror.o slarot.o slatm2.o slatm3.o slatm5.o slatm6.o slatm7.o slahilb.o clatms.o clatme.o clatmr.o clatmt.o clagge.o claghe.o clagsy.o clakf2.o clarge.o claror.o clarot.o clatm1.o clarnd.o clatm2.o clatm3.o clatm5.o clatm6.o clahilb.o slatm1.o slaran.o slarnd.o dlatms.o dlatme.o dlatmr.o dlatmt.o dlagge.o dlagsy.o dlakf2.o dlarge.o dlaror.o dlarot.o dlatm2.o dlatm3.o dlatm5.o dlatm6.o dlatm7.o dlahilb.o zlatms.o zlatme.o zlatmr.o zlatmt.o zlagge.o zlaghe.o zlagsy.o zlakf2.o zlarge.o zlaror.o zlarot.o zlatm1.o zlarnd.o zlatm2.o zlatm3.o zlatm5.o zlatm6.o zlahilb.o dlatm1.o dlaran.o dlarnd.o
 ranlib ../../libtmglib.a
-make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/MATGEN'
+make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/MATGEN'
 ( cd BLAS/TESTING; make -f Makeblat1 )
-make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/BLAS/TESTING'
+make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/BLAS/TESTING'
 gfortran  -O2 -c sblat1.f -o sblat1.o
 gfortran  sblat1.o  \
         ../../librefblas.a  -o ../xblat1s
@@ -1867,13 +1867,13 @@ gfortran  cblat1.o  \
 gfortran  -O2 -c zblat1.f -o zblat1.o
 gfortran  zblat1.o \
         ../../librefblas.a  -o ../xblat1z
-make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/BLAS/TESTING'
+make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/BLAS/TESTING'
 ( cd BLAS; ./xblat1s > sblat1.out    ; \
            ./xblat1d > dblat1.out    ; \
            ./xblat1c > cblat1.out    ; \
            ./xblat1z > zblat1.out    ) 
 ( cd BLAS/TESTING; make -f Makeblat2 )
-make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/BLAS/TESTING'
+make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/BLAS/TESTING'
 gfortran  -O2 -c sblat2.f -o sblat2.o
 gfortran  sblat2.o  \
         ../../librefblas.a  -o ../xblat2s
@@ -1886,13 +1886,13 @@ gfortran  cblat2.o  \
 gfortran  -O2 -c zblat2.f -o zblat2.o
 gfortran  zblat2.o \
         ../../librefblas.a  -o ../xblat2z
-make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/BLAS/TESTING'
+make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/BLAS/TESTING'
 ( cd BLAS; ./xblat2s < sblat2.in     ; \
            ./xblat2d < dblat2.in     ; \
            ./xblat2c < cblat2.in     ; \
            ./xblat2z < zblat2.in     )
 ( cd BLAS/TESTING; make -f Makeblat3 )
-make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/BLAS/TESTING'
+make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/BLAS/TESTING'
 gfortran  -O2 -c sblat3.f -o sblat3.o
 gfortran  sblat3.o \
         ../../librefblas.a -o ../xblat3s
@@ -1905,15 +1905,15 @@ gfortran  cblat3.o  \
 gfortran  -O2 -c zblat3.f -o zblat3.o
 gfortran  zblat3.o \
         ../../librefblas.a -o ../xblat3z
-make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/BLAS/TESTING'
+make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/BLAS/TESTING'
 ( cd BLAS; ./xblat3s < sblat3.in     ; \
            ./xblat3d < dblat3.in     ; \
            ./xblat3c < cblat3.in     ; \
            ./xblat3z < zblat3.in     ) 
 ( cd TESTING ; make )
-make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING'
+make[1]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING'
 cd LIN ; make single
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 gfortran  -O2 -c aladhd.f -o aladhd.o
 gfortran  -O2 -c alaerh.f -o alaerh.o
 gfortran  -O2 -c alaesm.f -o alaesm.o
@@ -2064,11 +2064,11 @@ gfortran  -O2 -c slaord.f -o slaord.o
 gfortran   aladhd.o alaerh.o alaesm.o alahd.o alareq.o alasum.o alasvm.o chkxer.o icopy.o ilaenv.o xlaenv.o xerbla.o slaord.o schkaa.o schkeq.o schkgb.o schkge.o schkgt.o schklq.o schkpb.o schkpo.o schkps.o schkpp.o schkpt.o schkq3.o schkql.o schkqp.o schkqr.o schkrq.o schksp.o schksy.o schktb.o schktp.o schktr.o schktz.o sdrvgt.o sdrvls.o sdrvpb.o sdrvpp.o sdrvpt.o sdrvsp.o serrgt.o serrlq.o serrls.o serrps.o serrql.o serrqp.o serrqr.o serrrq.o serrtr.o serrtz.o sgbt01.o sgbt02.o sgbt05.o sgelqs.o sgeqls.o sgeqrs.o sgerqs.o sget01.o sget02.o sget03.o sget04.o sget06.o sget07.o sgtt01.o sgtt02.o sgtt05.o slaptm.o slarhs.o slatb4.o slatb5.o slattb.o slattp.o slattr.o slavsp.o slavsy.o slqt01.o slqt02.o slqt03.o spbt01.o spbt02.o spbt05.o spot01.o spot02.o spot03.o spot05.o spst01.o sppt01.o sppt02.o sppt03.o sppt05.o sptt01.o sptt02.o sptt05.o sqlt01.o sqlt02.o sqlt03.o sqpt01.o sqrt01.o sqrt01p.o sqrt02.o sqrt03.o sqrt11.o sqrt12.o sqrt13.o sqrt14.o sqrt15.o sqrt16.o sqrt17.o srqt01.o srqt02.o srqt03.o srzt01.o srzt02.o sspt01.o ssyt01.o stbt02.o stbt03.o stbt05.o stbt06.o stpt01.o stpt02.o stpt03.o stpt05.o stpt06.o strt01.o strt02.o strt03.o strt05.o strt06.o stzt01.o stzt02.o sgennd.o sqrt04.o sqrt05.o schkqrt.o serrqrt.o schkqrtp.o serrqrtp.o serrvx.o sdrvge.o sdrvsy.o serrge.o sdrvgb.o sdrvpo.o serrsy.o serrpo.o \
         ../../libtmglib.a ../../liblapack.a   ../../librefblas.a -o xlintsts
 mv xlintsts ../xlintsts
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 Testing REAL LAPACK linear equation routines
 ./xlintsts < stest.in > stest.out 2>&1
 cd EIG ; make single
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/EIG'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/EIG'
 gfortran  -O2 -c schkee.f -o schkee.o
 gfortran  -O2 -c sbdt01.f -o sbdt01.o
 gfortran  -O2 -c sbdt02.f -o sbdt02.o
@@ -2168,7 +2168,7 @@ gfortran  -O2 -c chkxer.f -o chkxer.o
           gfortran  -o xeigtsts \
           schkee.o sbdt01.o sbdt02.o sbdt03.o schkbb.o schkbd.o schkbk.o schkbl.o schkec.o schkgg.o schkgk.o schkgl.o schkhs.o schksb.o schkst.o sckcsd.o sckglm.o sckgqr.o sckgsv.o scklse.o scsdts.o sdrges.o sdrgev.o sdrgsx.o sdrgvx.o sdrvbd.o sdrves.o sdrvev.o sdrvgg.o sdrvsg.o sdrvst.o sdrvsx.o sdrvvx.o serrbd.o serrec.o serred.o serrgg.o serrhs.o serrst.o sget02.o sget10.o sget22.o sget23.o sget24.o sget31.o sget32.o sget33.o sget34.o sget35.o sget36.o sget37.o sget38.o sget39.o sget51.o sget52.o sget53.o sget54.o sglmts.o sgqrts.o sgrqts.o sgsvts.o shst01.o slarfy.o slarhs.o slatm4.o slctes.o slctsx.o slsets.o sort01.o sort03.o ssbt21.o ssgt01.o sslect.o sspt21.o sstt21.o sstt22.o ssyt21.o ssyt22.o slafts.o slahd2.o slasum.o slatb9.o sstech.o sstect.o ssvdch.o ssvdct.o ssxt1.o alahdg.o alasum.o alasvm.o alareq.o ilaenv.o xerbla.o xlaenv.o chkxer.o ../../libtmglib.a \
 	  ../../liblapack.a ../../librefblas.a && mv xeigtsts ../xeigtsts
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/EIG'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/EIG'
 NEP: Testing Nonsymmetric Eigenvalue Problem routines
 ./xeigtsts < nep.in > snep.out 2>&1
 SEP: Testing Symmetric Eigenvalue Problem routines
@@ -2208,7 +2208,7 @@ CSD: Testing CS Decomposition routines
 LSE: Testing Constrained Linear Least Squares routines
 ./xeigtsts < lse.in > slse.out 2>&1
 cd LIN ; make complex
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 gfortran  -O2 -c cchkaa.f -o cchkaa.o
 gfortran  -O2 -c cchkeq.f -o cchkeq.o
 gfortran  -O2 -c cchkgb.f -o cchkgb.o
@@ -2362,11 +2362,11 @@ gfortran  -O2 -c cerrhe.f -o cerrhe.o
 gfortran   aladhd.o alaerh.o alaesm.o alahd.o alareq.o alasum.o alasvm.o chkxer.o icopy.o ilaenv.o xlaenv.o xerbla.o slaord.o cchkaa.o cchkeq.o cchkgb.o cchkge.o cchkgt.o cchkhe.o cchkhp.o cchklq.o cchkpb.o cchkpo.o cchkps.o cchkpp.o cchkpt.o cchkq3.o cchkql.o cchkqp.o cchkqr.o cchkrq.o cchksp.o cchksy.o cchktb.o cchktp.o cchktr.o cchktz.o cdrvgt.o cdrvhp.o cdrvls.o cdrvpb.o cdrvpp.o cdrvpt.o cdrvsp.o cerrgt.o cerrlq.o cerrls.o cerrps.o cerrql.o cerrqp.o cerrqr.o cerrrq.o cerrtr.o cerrtz.o cgbt01.o cgbt02.o cgbt05.o cgelqs.o cgeqls.o cgeqrs.o cgerqs.o cget01.o cget02.o cget03.o cget04.o cget07.o cgtt01.o cgtt02.o cgtt05.o chet01.o chpt01.o claipd.o claptm.o clarhs.o clatb4.o clatb5.o clatsp.o clatsy.o clattb.o clattp.o clattr.o clavhe.o clavhp.o clavsp.o clavsy.o clqt01.o clqt02.o clqt03.o cpbt01.o cpbt02.o cpbt05.o cpot01.o cpot02.o cpot03.o cpot05.o cpst01.o cppt01.o cppt02.o cppt03.o cppt05.o cptt01.o cptt02.o cptt05.o cqlt01.o cqlt02.o cqlt03.o cqpt01.o cqrt01.o cqrt01p.o cqrt02.o cqrt03.o cqrt11.o cqrt12.o cqrt13.o cqrt14.o cqrt15.o cqrt16.o cqrt17.o crqt01.o crqt02.o crqt03.o crzt01.o crzt02.o csbmv.o  cspt01.o cspt02.o cspt03.o csyt01.o csyt02.o csyt03.o ctbt02.o ctbt03.o ctbt05.o ctbt06.o ctpt01.o ctpt02.o ctpt03.o ctpt05.o ctpt06.o ctrt01.o ctrt02.o ctrt03.o ctrt05.o ctrt06.o ctzt01.o ctzt02.o sget06.o cgennd.o cqrt04.o cqrt05.o cchkqrt.o cerrqrt.o cchkqrtp.o cerrqrtp.o cerrvx.o cdrvge.o cdrvsy.o cdrvgb.o cerrge.o cdrvpo.o cdrvhe.o cerrpo.o cerrsy.o cerrhe.o \
         ../../libtmglib.a ../../liblapack.a   ../../librefblas.a -o xlintstc
 mv xlintstc ../xlintstc
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 Testing COMPLEX LAPACK linear equation routines
 ./xlintstc < ctest.in > ctest.out 2>&1
 cd EIG ; make complex
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/EIG'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/EIG'
 gfortran  -O2 -c cchkee.f -o cchkee.o
 gfortran  -O2 -c cbdt01.f -o cbdt01.o
 gfortran  -O2 -c cbdt02.f -o cbdt02.o
@@ -2444,7 +2444,7 @@ gfortran  -O2 -c cunt03.f -o cunt03.o
           gfortran  -o xeigtstc \
           cchkee.o cbdt01.o cbdt02.o cbdt03.o cchkbb.o cchkbd.o cchkbk.o cchkbl.o cchkec.o cchkgg.o cchkgk.o cchkgl.o cchkhb.o cchkhs.o cchkst.o cckcsd.o cckglm.o cckgqr.o cckgsv.o ccklse.o ccsdts.o cdrges.o cdrgev.o cdrgsx.o cdrgvx.o cdrvbd.o cdrves.o cdrvev.o cdrvgg.o cdrvsg.o cdrvst.o cdrvsx.o cdrvvx.o cerrbd.o cerrec.o cerred.o cerrgg.o cerrhs.o cerrst.o cget02.o cget10.o cget22.o cget23.o cget24.o cget35.o cget36.o cget37.o cget38.o cget51.o cget52.o cget54.o cglmts.o cgqrts.o cgrqts.o cgsvts.o chbt21.o chet21.o chet22.o chpt21.o chst01.o clarfy.o clarhs.o clatm4.o clctes.o clctsx.o clsets.o csbmv.o csgt01.o cslect.o cstt21.o cstt22.o cunt01.o cunt03.o slafts.o slahd2.o slasum.o slatb9.o sstech.o sstect.o ssvdch.o ssvdct.o ssxt1.o alahdg.o alasum.o alasvm.o alareq.o ilaenv.o xerbla.o xlaenv.o chkxer.o ../../libtmglib.a \
 	  ../../liblapack.a ../../librefblas.a && mv xeigtstc ../xeigtstc
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/EIG'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/EIG'
 NEP: Testing Nonsymmetric Eigenvalue Problem routines
 ./xeigtstc < nep.in > cnep.out 2>&1
 SEP: Testing Symmetric Eigenvalue Problem routines
@@ -2484,7 +2484,7 @@ CSD: Testing CS Decomposition routines
 LSE: Testing Constrained Linear Least Squares routines
 ./xeigtstc < lse.in > clse.out 2>&1
 cd LIN ; make double
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 gfortran  -O2 -c dchkaa.f -o dchkaa.o
 gfortran  -O2 -c dchkeq.f -o dchkeq.o
 gfortran  -O2 -c dchkgb.f -o dchkgb.o
@@ -2623,11 +2623,11 @@ gfortran  -O2 -c dlaord.f -o dlaord.o
 gfortran  aladhd.o alaerh.o alaesm.o alahd.o alareq.o alasum.o alasvm.o chkxer.o icopy.o ilaenv.o xlaenv.o xerbla.o dchkaa.o dchkeq.o dchkgb.o dchkge.o dchkgt.o dchklq.o dchkpb.o dchkpo.o dchkps.o dchkpp.o dchkpt.o dchkq3.o dchkql.o dchkqp.o dchkqr.o dchkrq.o dchksp.o dchksy.o dchktb.o dchktp.o dchktr.o dchktz.o ddrvgt.o ddrvls.o ddrvpb.o ddrvpp.o ddrvpt.o ddrvsp.o derrgt.o derrlq.o derrls.o derrps.o derrql.o derrqp.o derrqr.o derrrq.o derrtr.o derrtz.o dgbt01.o dgbt02.o dgbt05.o dgelqs.o dgeqls.o dgeqrs.o dgerqs.o dget01.o dget02.o dget03.o dget04.o dget06.o dget07.o dgtt01.o dgtt02.o dgtt05.o dlaptm.o dlarhs.o dlatb4.o dlatb5.o dlattb.o dlattp.o dlattr.o dlavsp.o dlavsy.o dlqt01.o dlqt02.o dlqt03.o dpbt01.o dpbt02.o dpbt05.o dpot01.o dpot02.o dpot03.o dpot05.o dpst01.o dppt01.o dppt02.o dppt03.o dppt05.o dptt01.o dptt02.o dptt05.o dqlt01.o dqlt02.o dqlt03.o dqpt01.o dqrt01.o dqrt01p.o dqrt02.o dqrt03.o dqrt11.o dqrt12.o dqrt13.o dqrt14.o dqrt15.o dqrt16.o dqrt17.o drqt01.o drqt02.o drqt03.o drzt01.o drzt02.o dspt01.o dsyt01.o dtbt02.o dtbt03.o dtbt05.o dtbt06.o dtpt01.o dtpt02.o dtpt03.o dtpt05.o dtpt06.o dtrt01.o dtrt02.o dtrt03.o dtrt05.o dtrt06.o dtzt01.o dtzt02.o dgennd.o dqrt04.o dqrt05.o dchkqrt.o derrqrt.o dchkqrtp.o derrqrtp.o derrvx.o ddrvge.o ddrvsy.o ddrvgb.o derrge.o ddrvpo.o derrpo.o derrsy.o dlaord.o ../../liblapack.a \
         ../../libtmglib.a ../../liblapack.a  ../../librefblas.a -o xlintstd
 mv xlintstd ../xlintstd
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 Testing DOUBLE PRECISION LAPACK linear equation routines
 ./xlintstd < dtest.in > dtest.out 2>&1
 cd EIG ; make double
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/EIG'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/EIG'
 gfortran  -O2 -c dchkee.f -o dchkee.o
 gfortran  -O2 -c dbdt01.f -o dbdt01.o
 gfortran  -O2 -c dbdt02.f -o dbdt02.o
@@ -2719,7 +2719,7 @@ gfortran  -O2 -c dsxt1.f -o dsxt1.o
           gfortran  -o xeigtstd \
           dchkee.o dbdt01.o dbdt02.o dbdt03.o dchkbb.o dchkbd.o dchkbk.o dchkbl.o dchkec.o dchkgg.o dchkgk.o dchkgl.o dchkhs.o dchksb.o dchkst.o dckcsd.o dckglm.o dckgqr.o dckgsv.o dcklse.o dcsdts.o ddrges.o ddrgev.o ddrgsx.o ddrgvx.o ddrvbd.o ddrves.o ddrvev.o ddrvgg.o ddrvsg.o ddrvst.o ddrvsx.o ddrvvx.o derrbd.o derrec.o derred.o derrgg.o derrhs.o derrst.o dget02.o dget10.o dget22.o dget23.o dget24.o dget31.o dget32.o dget33.o dget34.o dget35.o dget36.o dget37.o dget38.o dget39.o dget51.o dget52.o dget53.o dget54.o dglmts.o dgqrts.o dgrqts.o dgsvts.o dhst01.o dlarfy.o dlarhs.o dlatm4.o dlctes.o dlctsx.o dlsets.o dort01.o dort03.o dsbt21.o dsgt01.o dslect.o dspt21.o dstt21.o dstt22.o dsyt21.o dsyt22.o dlafts.o dlahd2.o dlasum.o dlatb9.o dstech.o dstect.o dsvdch.o dsvdct.o dsxt1.o alahdg.o alasum.o alasvm.o alareq.o ilaenv.o xerbla.o xlaenv.o chkxer.o ../../libtmglib.a \
 	  ../../liblapack.a ../../librefblas.a && mv xeigtstd ../xeigtstd
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/EIG'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/EIG'
 NEP: Testing Nonsymmetric Eigenvalue Problem routines
 ./xeigtstd < nep.in > dnep.out 2>&1
 SEP: Testing Symmetric Eigenvalue Problem routines
@@ -2759,7 +2759,7 @@ CSD: Testing CS Decomposition routines
 LSE: Testing Constrained Linear Least Squares routines
 ./xeigtstd < lse.in > dlse.out 2>&1
 cd LIN ; make complex16
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 gfortran  -O2 -c zchkaa.f -o zchkaa.o
 gfortran  -O2 -c zchkeq.f -o zchkeq.o
 gfortran  -O2 -c zchkgb.f -o zchkgb.o
@@ -2913,11 +2913,11 @@ gfortran  -O2 -c zerrhe.f -o zerrhe.o
 gfortran   aladhd.o alaerh.o alaesm.o alahd.o alareq.o alasum.o alasvm.o chkxer.o icopy.o ilaenv.o xlaenv.o xerbla.o dlaord.o  zchkaa.o zchkeq.o zchkgb.o zchkge.o zchkgt.o zchkhe.o zchkhp.o zchklq.o zchkpb.o zchkpo.o zchkps.o zchkpp.o zchkpt.o zchkq3.o zchkql.o zchkqp.o zchkqr.o zchkrq.o zchksp.o zchksy.o zchktb.o zchktp.o zchktr.o zchktz.o zdrvgt.o zdrvhp.o zdrvls.o zdrvpb.o zdrvpp.o zdrvpt.o zdrvsp.o zerrgt.o zerrlq.o zerrls.o zerrps.o zerrql.o zerrqp.o zerrqr.o zerrrq.o zerrtr.o zerrtz.o zgbt01.o zgbt02.o zgbt05.o zgelqs.o zgeqls.o zgeqrs.o zgerqs.o zget01.o zget02.o zget03.o zget04.o zget07.o zgtt01.o zgtt02.o zgtt05.o zhet01.o zhpt01.o zlaipd.o zlaptm.o zlarhs.o zlatb4.o zlatb5.o zlatsp.o zlatsy.o zlattb.o zlattp.o zlattr.o zlavhe.o zlavhp.o zlavsp.o zlavsy.o zlqt01.o zlqt02.o zlqt03.o zpbt01.o zpbt02.o zpbt05.o zpot01.o zpot02.o zpot03.o zpot05.o zpst01.o zppt01.o zppt02.o zppt03.o zppt05.o zptt01.o zptt02.o zptt05.o zqlt01.o zqlt02.o zqlt03.o zqpt01.o zqrt01.o zqrt01p.o zqrt02.o zqrt03.o zqrt11.o zqrt12.o zqrt13.o zqrt14.o zqrt15.o zqrt16.o zqrt17.o zrqt01.o zrqt02.o zrqt03.o zrzt01.o zrzt02.o zsbmv.o  zspt01.o zspt02.o zspt03.o zsyt01.o zsyt02.o zsyt03.o ztbt02.o ztbt03.o ztbt05.o ztbt06.o ztpt01.o ztpt02.o ztpt03.o ztpt05.o ztpt06.o ztrt01.o ztrt02.o ztrt03.o ztrt05.o ztrt06.o ztzt01.o ztzt02.o dget06.o zgennd.o zqrt04.o zqrt05.o zchkqrt.o zerrqrt.o zchkqrtp.o zerrqrtp.o zerrvx.o zdrvge.o zdrvsy.o zdrvgb.o zerrge.o zdrvpo.o zdrvhe.o zerrpo.o zerrsy.o zerrhe.o \
         ../../libtmglib.a ../../liblapack.a   ../../librefblas.a -o xlintstz
 mv xlintstz ../xlintstz
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 Testing COMPLEX16 LAPACK linear equation routines
 ./xlintstz < ztest.in > ztest.out 2>&1
 cd EIG ; make complex16
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/EIG'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/EIG'
 gfortran  -O2 -c zchkee.f -o zchkee.o
 gfortran  -O2 -c zbdt01.f -o zbdt01.o
 gfortran  -O2 -c zbdt02.f -o zbdt02.o
@@ -2995,7 +2995,7 @@ gfortran  -O2 -c zunt03.f -o zunt03.o
           gfortran  -o xeigtstz \
           zchkee.o zbdt01.o zbdt02.o zbdt03.o zchkbb.o zchkbd.o zchkbk.o zchkbl.o zchkec.o zchkgg.o zchkgk.o zchkgl.o zchkhb.o zchkhs.o zchkst.o zckcsd.o zckglm.o zckgqr.o zckgsv.o zcklse.o zcsdts.o zdrges.o zdrgev.o zdrgsx.o zdrgvx.o zdrvbd.o zdrves.o zdrvev.o zdrvgg.o zdrvsg.o zdrvst.o zdrvsx.o zdrvvx.o zerrbd.o zerrec.o zerred.o zerrgg.o zerrhs.o zerrst.o zget02.o zget10.o zget22.o zget23.o zget24.o zget35.o zget36.o zget37.o zget38.o zget51.o zget52.o zget54.o zglmts.o zgqrts.o zgrqts.o zgsvts.o zhbt21.o zhet21.o zhet22.o zhpt21.o zhst01.o zlarfy.o zlarhs.o zlatm4.o zlctes.o zlctsx.o zlsets.o zsbmv.o zsgt01.o zslect.o zstt21.o zstt22.o zunt01.o zunt03.o dlafts.o dlahd2.o dlasum.o dlatb9.o dstech.o dstect.o dsvdch.o dsvdct.o dsxt1.o alahdg.o alasum.o alasvm.o alareq.o ilaenv.o xerbla.o xlaenv.o chkxer.o ../../libtmglib.a \
 	  ../../liblapack.a ../../librefblas.a && mv xeigtstz ../xeigtstz
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/EIG'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/EIG'
 NEP: Testing Nonsymmetric Eigenvalue Problem routines
 ./xeigtstz < nep.in > znep.out 2>&1
 SEP: Testing Symmetric Eigenvalue Problem routines
@@ -3035,7 +3035,7 @@ CSD: Testing CS Decomposition routines
 LSE: Testing Constrained Linear Least Squares routines
 ./xeigtstz < lse.in > zlse.out 2>&1
 cd LIN ; make proto-single
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 gfortran  -O2 -c schkrfp.f -o schkrfp.o
 gfortran  -O2 -c sdrvrfp.f -o sdrvrfp.o
 gfortran  -O2 -c sdrvrf1.f -o sdrvrf1.o
@@ -3046,11 +3046,11 @@ gfortran  -O2 -c serrrfp.f -o serrrfp.o
 gfortran   schkrfp.o sdrvrfp.o sdrvrf1.o sdrvrf2.o sdrvrf3.o sdrvrf4.o serrrfp.o slatb4.o slarhs.o sget04.o spot01.o spot03.o spot02.o chkxer.o xerbla.o alaerh.o aladhd.o alahd.o alasvm.o  \
         ../../libtmglib.a ../../liblapack.a ../../librefblas.a -o xlintstrfs
 mv xlintstrfs ../xlintstrfs
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 Testing REAL LAPACK RFP protoype linear equation routines
 ./xlintstrfs < stest_rfp.in > stest_rfp.out 2>&1
 cd LIN ; make proto-double
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 gfortran  -O2 -c dchkab.f -o dchkab.o
 gfortran  -O2 -c ddrvab.f -o ddrvab.o
 gfortran  -O2 -c ddrvac.f -o ddrvac.o
@@ -3071,13 +3071,13 @@ gfortran  -O2 -c derrrfp.f -o derrrfp.o
 gfortran   dchkrfp.o ddrvrfp.o ddrvrf1.o ddrvrf2.o ddrvrf3.o ddrvrf4.o derrrfp.o dlatb4.o dlarhs.o dget04.o dpot01.o dpot03.o dpot02.o chkxer.o xerbla.o alaerh.o aladhd.o alahd.o alasvm.o  \
         ../../libtmglib.a ../../liblapack.a ../../librefblas.a -o xlintstrfd
 mv xlintstrfd ../xlintstrfd
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 Testing SINGLE-DOUBLE PRECISION LAPACK prototype linear equation routines
 ./xlintstds < dstest.in > dstest.out 2>&1
 Testing DOUBLE PRECISION LAPACK RFP protoype linear equation routines
 ./xlintstrfd < dtest_rfp.in > dtest_rfp.out 2>&1
 cd LIN ; make proto-complex
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 gfortran  -O2 -c cchkrfp.f -o cchkrfp.o
 gfortran  -O2 -c cdrvrfp.f -o cdrvrfp.o
 gfortran  -O2 -c cdrvrf1.f -o cdrvrf1.o
@@ -3088,11 +3088,11 @@ gfortran  -O2 -c cerrrfp.f -o cerrrfp.o
 gfortran   cchkrfp.o cdrvrfp.o cdrvrf1.o cdrvrf2.o cdrvrf3.o cdrvrf4.o cerrrfp.o claipd.o clatb4.o clarhs.o csbmv.o cget04.o cpot01.o cpot03.o cpot02.o chkxer.o xerbla.o alaerh.o aladhd.o alahd.o alasvm.o  \
         ../../libtmglib.a ../../liblapack.a ../../librefblas.a -o xlintstrfc
 mv xlintstrfc ../xlintstrfc
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 Testing COMPLEX LAPACK RFP protoype linear equation routines
 ./xlintstrfc < ctest_rfp.in > ctest_rfp.out 2>&1
 cd LIN ; make proto-complex16
-make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Entering directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 gfortran  -O2 -c zchkab.f -o zchkab.o
 gfortran  -O2 -c zdrvab.f -o zdrvab.o
 gfortran  -O2 -c zdrvac.f -o zdrvac.o
@@ -3113,12 +3113,12 @@ gfortran  -O2 -c zerrrfp.f -o zerrrfp.o
 gfortran   zchkrfp.o zdrvrfp.o zdrvrf1.o zdrvrf2.o zdrvrf3.o zdrvrf4.o zerrrfp.o zlatb4.o zlaipd.o zlarhs.o zsbmv.o zget04.o zpot01.o zpot03.o zpot02.o chkxer.o xerbla.o alaerh.o aladhd.o alahd.o alasvm.o  \
         ../../libtmglib.a ../../liblapack.a ../../librefblas.a -o xlintstrfz
 mv xlintstrfz ../xlintstrfz
-make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING/LIN'
+make[2]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING/LIN'
 Testing COMPLEX-COMPLEX16 LAPACK protoype linear equation routines
 ./xlintstzc < zctest.in > zctest.out 2>&1
 Testing COMPLEX16 LAPACK RFP protoype linear equation routines
 ./xlintstrfz < ztest_rfp.in > ztest_rfp.out 2>&1
-make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools/tools/lapack-3.4.1/TESTING'
+make[1]: Leaving directory `/data/jh7x3/GFOLD/GFOLD_database_tools2/tools/lapack-3.4.1/TESTING'
 ./lapack_testing.py
  
 ---------------- Testing LAPACK Routines ----------------

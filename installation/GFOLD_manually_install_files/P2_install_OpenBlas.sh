@@ -2,7 +2,7 @@
 
 echo " Start compile OpenBlas (will take ~5 min)"
 
-cd /data/jh7x3/GFOLD/GFOLD_database_tools//tools
+cd /data/commons/GFOLD_db_tools//tools
 
 cd OpenBLAS
 
@@ -10,7 +10,7 @@ cd OpenBLAS
 
 make
 
-make PREFIX=/data/jh7x3/GFOLD/GFOLD_database_tools//tools/OpenBLAS install
+make PREFIX=/data/commons/GFOLD_db_tools//tools/OpenBLAS install
 
-echo "installed" > /data/jh7x3/GFOLD/GFOLD_database_tools//tools/OpenBLAS/install.done
+echo "installed" > /data/commons/GFOLD_db_tools//tools/OpenBLAS/install.done
 
