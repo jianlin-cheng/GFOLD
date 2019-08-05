@@ -106,5 +106,21 @@ GDQNPQIAAHVISEASSKTTSVLQWAEKGYYTMSNNLVTLENGKQLTVKRQGLYYIYAQVTFCSNREASSQAPFIASLCL
 
    Example:
    $ sh bin/run_GFOLD.sh 1ALY-A  /data/jh7x3/GFOLD/examples/1ALY-A.fasta  /data/jh7x3/GFOLD/examples/1ALY-A.ss  /data/jh7x3/GFOLD/examples/1ALY-A.restraints  /data/jh7x3/GFOLD/test_out/1ALY-A_out
-   
-  
+```
+
+
+**(6) Test on cullpdb proteins using real distance**
+
+```
+*** run GFOLD on real 
+
+perl scripts/P1_run_GFOLD_batch.pl /data/jh7x3/GFOLD/installation/benchmark/original_seq/  /data/jh7x3/GFOLD/installation/benchmark/seq_secondary_structure_by_SCRATCH/ /data/jh7x3/GFOLD/installation/benchmark/native_structure /data/jh7x3/GFOLD/installation/benchmark/true_restraints/  /data/jh7x3/GFOLD/test_out/GFOLD_trueRes_folding
+
+cd /data/jh7x3/GFOLD/test_out/GFOLD_trueRes_folding
+cp */*/*_GFOLD.pdb  summary/
+
+
+perl /data/jh7x3/GFOLD/scripts/P1_evaluate_GFOLD_batch.pl /data/jh7x3/GFOLD/test_out/GFOLD_trueRes_folding/summary /data/jh7x3/GFOLD/installation/benchmark/native_structure/ 
+
+```
+
