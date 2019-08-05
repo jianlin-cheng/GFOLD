@@ -14,3 +14,4 @@ installation/GFOLD_test_codes/T0_run_GFOLD-1BYR-A.sh
 
 #### scripts
 scripts/P1_run_GFOLD_batch.pl
+scripts/P1_evaluate_GFOLD_batch.pl

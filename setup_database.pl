@@ -501,7 +501,7 @@ print("\n#### (2) Download basic tools\n\n");
 
 chdir($tools_dir);
 
-$basic_tools_list = "modeller-9.16.tar.gz;boost_1_38_0.tar.gz;boost_1_55_0.tar.gz;OpenBLAS.tar.gz;scwrl4.tar.gz;SCRATCH-1D_1.1.tar.gz;TMscore.tar.gz;cmake-2.8.12.2.tar.gz;cmake-3.5.2.tar.gz;Mocapy++-1.07.tar.gz;blas-3.6.0.tar.gz;lapack-3.4.1.tar.gz;zlib-1.2.8.tar.gz;hdf5-1.8.16.tar.gz;gsl-2.1.tar.gz;gmp-4.3.2.tar.gz;mpfr-2.4.2.tar.gz;CGAL-4.8.1.tar.gz;fftw-3.3.4.tar.gz;libTAU-1.0.1.tar.gz;opencv.tar.gz;doxygen-1.8.6.tar.gz;imp-2.6.2.tar.gz";
+$basic_tools_list = "modeller-9.16.tar.gz;boost_1_38_0.tar.gz;boost_1_55_0.tar.gz;OpenBLAS.tar.gz;scwrl4.tar.gz;SCRATCH-1D_1.1.tar.gz;TMscore.tar.gz;cmake-2.8.12.2.tar.gz;cmake-3.5.2.tar.gz;Mocapy++-1.07.tar.gz;blas-3.6.0.tar.gz;lapack-3.4.1.tar.gz;zlib-1.2.8.tar.gz;hdf5-1.8.16.tar.gz;gsl-2.1.tar.gz;gmp-4.3.2.tar.gz;mpfr-2.4.2.tar.gz;CGAL-4.8.1.tar.gz;fftw-3.3.4.tar.gz;libTAU-1.0.1.tar.gz;opencv.tar.gz;doxygen-1.8.6.tar.gz;imp-2.6.2.tar.gz;pulchra304.tar.gz;scwrl4.tar.gz";
 @basic_tools = split(';',$basic_tools_list);
 foreach $tool (@basic_tools)
 {

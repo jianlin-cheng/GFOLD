@@ -14,7 +14,7 @@ cd /data/commons/GFOLD_db_tools//tools/opencv/release
 
 make -j 8
 
-#make install
+make install
 
 echo "installed" > /data/commons/GFOLD_db_tools//tools/opencv/install.done
 

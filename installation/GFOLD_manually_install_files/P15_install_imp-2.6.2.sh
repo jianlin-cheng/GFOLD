@@ -19,6 +19,6 @@ mkdir -p /data/commons/GFOLD_db_tools//tools/IMP2.6/
 cd /data/commons/GFOLD_db_tools//tools/IMP2.6/
 /data/commons/GFOLD_db_tools//tools/cmake-3.5.2/bin/cmake /data/commons/GFOLD_db_tools//tools/imp-2.6.2/  -DCMAKE_INSTALL_PREFIX=/data/commons/GFOLD_db_tools//tools/IMP2.6/  -DIMP_DOXYGEN_FOUND=""
 make
-#make install
+make install
 echo "installed" > /data/commons/GFOLD_db_tools//tools/imp-2.6.2/install.done
 

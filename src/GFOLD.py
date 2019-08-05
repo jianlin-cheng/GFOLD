@@ -27,14 +27,14 @@ import collections
 import IMP
 import IMP.atom
 import IMP.container
-import IMP.rotamer
+#import IMP.rotamer
 import warnings
 import string, re
 import math
 import modeller
 from modeller import *
 import IMP.modeller
-warnings.filterwarnings("ignore")
+#warnings.filterwarnings("ignore")
 modeller.log.none()
 
 import random
@@ -1239,10 +1239,10 @@ print('# (7) Basic Optimization and Chain')
 print('###########################################################################################')
 
 
-rotamer_lib='/data/commons/tools/IMP_tools/rotamer/ALL.bbdep.rotamers.lib'
-rl = IMP.rotamer.RotamerLibrary()
-rl.read_library_file(rotamer_lib)
-rc = IMP.rotamer.RotamerCalculator(rl)
+#rotamer_lib='/data/commons/tools/IMP_tools/rotamer/ALL.bbdep.rotamers.lib'
+#rl = IMP.rotamer.RotamerLibrary()
+#rl.read_library_file(rotamer_lib)
+#rc = IMP.rotamer.RotamerCalculator(rl)
 
 min_energy = 100000000000000
 min_info = ''
