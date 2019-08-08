@@ -43,12 +43,12 @@ cd $outputfolder
 
 
 
-export LD_LIBRARY_PATH=/data/jh7x3/GFOLD/tools/modeller-9.16/lib/x86_64-intel8/:/data/jh7x3/GFOLD/tools/IMP2.6/lib:/data/jh7x3/GFOLD/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
-PYTHONPATH="/data/jh7x3/GFOLD/tools/IMP2.6/lib:/data/jh7x3/GFOLD/tools/modeller-9.16/lib/x86_64-intel8/python2.5/:/data/jh7x3/GFOLD/tools/modeller-9.16/modlib/:$PYTHONPATH"
+export LD_LIBRARY_PATH=/data/raj/GFOLD/tools/modeller-9.16/lib/x86_64-intel8/:/data/raj/GFOLD/tools/IMP2.6/lib:/data/raj/GFOLD/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
+PYTHONPATH="/data/raj/GFOLD/tools/IMP2.6/lib:/data/raj/GFOLD/tools/modeller-9.16/lib/x86_64-intel8/python2.5/:/data/raj/GFOLD/tools/modeller-9.16/modlib/:$PYTHONPATH"
 export PYTHONPATH
 
-printf "python /data/jh7x3/GFOLD/src/GFOLD.py  --target $targetid  --fasta $fasta --ss $secondary_structure  --hbond 1 --restraints $restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  $outputfolder --sep 1\n\n"
-python /data/jh7x3/GFOLD/src/GFOLD.py  --target $targetid  --fasta $fasta --ss $secondary_structure  --hbond 1 --restraints $restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  $outputfolder --sep 1
+printf "python /data/raj/GFOLD/src/GFOLD.py  --target $targetid  --fasta $fasta --ss $secondary_structure  --hbond 1 --restraints $restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  $outputfolder --sep 1\n\n"
+python /data/raj/GFOLD/src/GFOLD.py  --target $targetid  --fasta $fasta --ss $secondary_structure  --hbond 1 --restraints $restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  $outputfolder --sep 1
 
 
 

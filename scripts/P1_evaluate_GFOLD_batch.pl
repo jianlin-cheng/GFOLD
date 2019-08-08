@@ -43,7 +43,7 @@ foreach $file (sort @files)
 	
 	`echo $filename > $native_dir/$filename.info`;
 	chdir($native_dir);
-	#`python /data/jh7x3/GFOLD/scripts/pdb_to_png.py $filename.pdb`;
+	#`python /data/raj/GFOLD/scripts/pdb_to_png.py $filename.pdb`;
 
 	if(-e "${filename}.png" and -e "${filename}.eva")
 	{
@@ -53,12 +53,12 @@ foreach $file (sort @files)
 	$native_info = "$native_dir/$filename.info";
 
 	chdir($pdb_dir);
-	`perl /data/jh7x3/GFOLD/scripts/superimpose_two_pdb.pl $pdb_file $native_file /data/jh7x3/GFOLD_v0.1/examples/TMalign ${filename}_superimpose.pdb`;
-	`/data/jh7x3/GFOLD/tools/pulchra304/pulchra ${filename}_superimpose.pdb`;
-	`/data/jh7x3/GFOLD/tools/scwrl4/Scwrl4 -i ${filename}_superimpose.rebuilt.pdb  -o ${filename}_superimpose_rebuilt_scwrl.pdb`;
-	#`python /data/jh7x3/GFOLD/scripts/pdb_to_png.py ${filename}_superimpose_rebuilt_scwrl.pdb`;
+	`perl /data/raj/GFOLD/scripts/superimpose_two_pdb.pl $pdb_file $native_file /data/jh7x3/GFOLD_v0.1/examples/TMalign ${filename}_superimpose.pdb`;
+	`/data/raj/GFOLD/tools/pulchra304/pulchra ${filename}_superimpose.pdb`;
+	`/data/raj/GFOLD/tools/scwrl4/Scwrl4 -i ${filename}_superimpose.rebuilt.pdb  -o ${filename}_superimpose_rebuilt_scwrl.pdb`;
+	#`python /data/raj/GFOLD/scripts/pdb_to_png.py ${filename}_superimpose_rebuilt_scwrl.pdb`;
 	open(TMP, ">tmp") || die("Couldn't open file tmp\n");
-	my $command1="/data/jh7x3/GFOLD/tools/TMscore ${filename}_superimpose_rebuilt_scwrl.pdb $native_file";
+	my $command1="/data/raj/GFOLD/tools/TMscore ${filename}_superimpose_rebuilt_scwrl.pdb $native_file";
 	print "Run $command1 \n";
 	my @arr1=`$command1`;
 
@@ -102,7 +102,7 @@ foreach $file (sort @files)
 	print OUTEVA "$filename\t$tmscore\t$gdttsscore\t$rmsd\n";
 	#if(defined($native_image) and defined($native_info))
     #    {
-    #    	`Rscript /data/jh7x3/GFOLD/scripts/add_info_in_image.R $native_dir/$filename.png $native_dir/$filename.info ${filename}_superimpose_rebuilt_scwrl.png ${filename}.eva ${filename}.png`;
+    #    	`Rscript /data/raj/GFOLD/scripts/add_info_in_image.R $native_dir/$filename.png $native_dir/$filename.info ${filename}_superimpose_rebuilt_scwrl.png ${filename}.eva ${filename}.png`;
     #    	`rm ${filename}_superimpose_rebuilt_scwrl.png`;
 	#}else{
     #            `mv ${filename}_superimpose_rebuilt_scwrl.png ${filename}.png`;

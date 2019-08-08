@@ -69,8 +69,8 @@ foreach $file (sort @files)
 	
 	$start_run = time();
 	
-	print "python /data/jh7x3/GFOLD/src/GFOLD.py  --target $pdbname  --fasta $fasta_dir/$file --ss $ssfile  --hbond 1 --restraints $restraintsfile --type CB --distdev 1  --epoch 100  --cgstep 100  --dir  $outdir\n";
-	system("python /data/jh7x3/GFOLD/src/GFOLD.py  --target $pdbname  --fasta $fasta_dir/$file --ss $ssfile  --hbond 1 --restraints $restraintsfile --type CB --distdev 1 --epoch 100  --cgstep 100  --dir  $outdir");
+	print "python /data/raj/GFOLD/src/GFOLD.py  --target $pdbname  --fasta $fasta_dir/$file --ss $ssfile  --hbond 1 --restraints $restraintsfile --type CB --distdev 1  --epoch 100  --cgstep 100  --dir  $outdir\n";
+	system("python /data/raj/GFOLD/src/GFOLD.py  --target $pdbname  --fasta $fasta_dir/$file --ss $ssfile  --hbond 1 --restraints $restraintsfile --type CB --distdev 1 --epoch 100  --cgstep 100  --dir  $outdir");
 	
 	$end_run = time();
 	$run_time = $end_run - $start_run;

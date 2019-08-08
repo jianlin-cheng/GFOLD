@@ -9,35 +9,35 @@
 #SBATCH --time 1-00:00
 
 
-mkdir -p /data/jh7x3/GFOLD/test_out/1BYR-A/
-cd /data/jh7x3/GFOLD/test_out/1BYR-A/
+mkdir -p /data/raj/GFOLD/test_out/1BYR-A/
+cd /data/raj/GFOLD/test_out/1BYR-A/
 
 
 
 
-export LD_LIBRARY_PATH=/data/jh7x3/GFOLD/tools/modeller-9.16/lib/x86_64-intel8/:/data/jh7x3/GFOLD/tools/IMP2.6/lib:/data/jh7x3/GFOLD/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
-PYTHONPATH="/data/jh7x3/GFOLD/tools/IMP2.6/lib:/data/jh7x3/GFOLD/tools/modeller-9.16/lib/x86_64-intel8/python2.5/:/data/jh7x3/GFOLD/tools/modeller-9.16/modlib/:$PYTHONPATH"
+export LD_LIBRARY_PATH=/data/raj/GFOLD/tools/modeller-9.16/lib/x86_64-intel8/:/data/raj/GFOLD/tools/IMP2.6/lib:/data/raj/GFOLD/tools/boost_1_55_0/lib:$LD_LIBRARY_PATH
+PYTHONPATH="/data/raj/GFOLD/tools/IMP2.6/lib:/data/raj/GFOLD/tools/modeller-9.16/lib/x86_64-intel8/python2.5/:/data/raj/GFOLD/tools/modeller-9.16/modlib/:$PYTHONPATH"
 export PYTHONPATH
 
 
 
-if [[ ! -f "/data/jh7x3/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb" ]];then 
-	printf "python /data/jh7x3/GFOLD/src/GFOLD.py  --target 1BYR-A  --fasta /data/jh7x3/GFOLD/examples/1BYR-A.fasta --ss /data/jh7x3/GFOLD/examples/1BYR-A.ss  --hbond 1 --restraints /data/jh7x3/GFOLD/examples/1BYR-A.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  /data/jh7x3/GFOLD/test_out/1BYR-A/ --sep 1\n\n"
-	python /data/jh7x3/GFOLD/src/GFOLD.py  --target 1BYR-A  --fasta /data/jh7x3/GFOLD/examples/1BYR-A.fasta --ss /data/jh7x3/GFOLD/examples/1BYR-A.ss  --hbond 1 --restraints /data/jh7x3/GFOLD/examples/1BYR-A.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  /data/jh7x3/GFOLD/test_out/1BYR-A/ --sep 1 
+if [[ ! -f "/data/raj/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb" ]];then 
+	printf "python /data/raj/GFOLD/src/GFOLD.py  --target 1BYR-A  --fasta /data/raj/GFOLD/examples/1BYR-A.fasta --ss /data/raj/GFOLD/examples/1BYR-A.ss  --hbond 1 --restraints /data/raj/GFOLD/examples/1BYR-A.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  /data/raj/GFOLD/test_out/1BYR-A/ --sep 1\n\n"
+	python /data/raj/GFOLD/src/GFOLD.py  --target 1BYR-A  --fasta /data/raj/GFOLD/examples/1BYR-A.fasta --ss /data/raj/GFOLD/examples/1BYR-A.ss  --hbond 1 --restraints /data/raj/GFOLD/examples/1BYR-A.restraints --type CB --distdev 0.1  --epoch 10  --cgstep 100  --dir  /data/raj/GFOLD/test_out/1BYR-A/ --sep 1 
 fi
 
 printf "\nFinished.."
-printf "\nCheck log file </data/jh7x3/GFOLD/test_out/1BYR-A.log>\n\n"
+printf "\nCheck log file </data/raj/GFOLD/test_out/1BYR-A.log>\n\n"
 
 
-if [[ ! -f "/data/jh7x3/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb" ]];then 
-	printf "!!!!! Failed to run GFOLD, check the installation </data/jh7x3/GFOLD/src/>\n\n"
+if [[ ! -f "/data/raj/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb" ]];then 
+	printf "!!!!! Failed to run GFOLD, check the installation </data/raj/GFOLD/src/>\n\n"
 else
 	printf "\nJob successfully completed!"
-	printf "\nResults: /data/jh7x3/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb\n\n"
+	printf "\nResults: /data/raj/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb\n\n"
 fi
 
 printf "Validating the results\n\n";
-printf "/data/jh7x3/GFOLD/tools/TMscore  /data/jh7x3/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb  /data/jh7x3/GFOLD/installation/benchmark/native_structure/1BYR-A.pdb\n\n"
-/data/jh7x3/GFOLD/tools/TMscore  /data/jh7x3/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb  /data/jh7x3/GFOLD/installation/benchmark/native_structure/1BYR-A.pdb
+printf "/data/raj/GFOLD/tools/TMscore  /data/raj/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb  /data/raj/GFOLD/installation/benchmark/native_structure/1BYR-A.pdb\n\n"
+/data/raj/GFOLD/tools/TMscore  /data/raj/GFOLD/test_out/1BYR-A/1BYR-A/1BYR-A_GFOLD.pdb  /data/raj/GFOLD/installation/benchmark/native_structure/1BYR-A.pdb
 
